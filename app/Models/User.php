@@ -1,14 +1,19 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use App\Models\Group;
+use App\Models\Role;
+use App\Models\Task;
+
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -16,7 +21,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'is_admin'
     ];
 
     /**
@@ -36,4 +41,21 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    public function isAdmin()
+    {
+        return $this->is_admin;
+    }
+    
+    public function roles() {
+      return $this->belongsToMany(Role::class,'role_user');
+    }
+   
+    public function groups() {
+      return $this->belongsToMany(Group::class,'group_user');
+    }
+    
+    public function Tasks() {
+      return $this->hasMany(Task::class, 'user_id');
+    }
 }
