@@ -26,12 +26,13 @@
 
             axios.get('api/logout').
                 then((response) => {
-                    console.log(response.data);
+                    //console.log(response.data);
                     localStorage.removeItem('jwt');
                     this.$router.push({name: 'login'});
                 })
                 .catch(e => {
-                    	console.log(e);
+                    	//console.log(e);
+                    	localStorage.removeItem('jwt');
                     });
                     
             //this.$router.go('/board')

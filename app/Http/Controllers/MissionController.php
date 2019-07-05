@@ -39,14 +39,14 @@ class MissionController extends Controller
     {
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:missions',
-            'queue' => 'required|unique:missions',
+            'sequence' => 'required|unique:missions',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
         
         $mission = Mission::create([
             'name' => $request->get('name'),
-            'queue' => $request->get('queue'),
+            'sequence' => $request->get('sequence'),
             'is_super' => $request->get('is_super'),
             'is_final' => $request->get('is_final'),
         ]);
@@ -89,18 +89,18 @@ class MissionController extends Controller
         
         $validator = $request->validate([
             'name' => 'required|string|max:255',
-            'queue' => 'required',
+            'sequence' => 'required',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
-        /*
+        
         $mission->name = $request->get('name');
-        $mission->queue = $request->get('queue');
+        $mission->sequence = $request->get('sequence');
         $mission->is_super = $request->get('is_super');
         $mission->is_final = $request->get('is_final');
         $mission->save();
-        */
-        $mission->update($request->all());
+        
+        //$mission->update($request->all());
         
         return new MissionResource($mission);
     }

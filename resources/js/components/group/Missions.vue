@@ -18,7 +18,7 @@
                 <tbody>
                     <tr v-for="mission in missions" :key="mission.id">
                         <td>{{ mission.name  }}</td>
-                        <td>{{ mission.queue  }}</td>
+                        <td>{{ mission.sequence  }}</td>
                         <td>{{ mission.is_super  }}</td>
                         <td>{{ mission.is_final  }}</td>
                         <td>
@@ -53,6 +53,11 @@
             }
         },
         mounted() {
+            let token = localStorage.getItem('jwt')
+
+            this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+            this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+            
             let uri = '/api/missions';
             this.axios.get(uri)
             	.then((response) => {
@@ -80,6 +85,13 @@
                         });
                 }
             }
+        },
+        beforeRouteEnter (to, from, next) { 
+            if ( ! localStorage.getItem('jwt')) {
+                return next('login')
+            }
+
+            next()
         }
     }
     

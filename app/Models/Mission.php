@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Group;
+use App\Models\User;
 
 class Mission extends Model
 {
@@ -13,10 +14,19 @@ class Mission extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'queue', 'is_super, is_final'
+        'name', 'sequence', 'is_super, is_final'
     ];
     
     public function groups() {
         return $this->belongsToMany(Group::class,'group_mission');
     }
+    
+    /*
+    public static function scopeMissionsForUser($query, User $user) {
+        return self::with('groups.users')
+                        ->whereHas('groups.users', function($query) use($user) {
+                                $query->where('groups.users.id', $user->id);
+                        })->get();
+    }
+    */
 }

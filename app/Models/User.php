@@ -7,13 +7,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use App\Models\Traits\PermissionsTrait;
+
 use App\Models\Group;
 use App\Models\Role;
 use App\Models\Task;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, PermissionsTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -58,4 +60,17 @@ class User extends Authenticatable
     public function Tasks() {
       return $this->hasMany(Task::class, 'user_id');
     }
+    
+    //-----------------------------------------------------//
+    
+    
+    public function scopeCurrentSequence() {
+        
+    }
+    
+    public function scopeNextSequence() {
+        
+    }
+    
+    
 }

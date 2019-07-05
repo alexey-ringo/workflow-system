@@ -155,6 +155,25 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
+                Рабочий кабинет
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <router-link :to="{ name: 'tasks'}"><i class="fa fa-circle-o nav-icon"></i><p>Мои задачи</p></router-link>
+              </li>
+              <li class="nav-item">
+                <router-link :to="{ name: 'task-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая задача</p></router-link>
+              </li>
+            </ul>
+          </li>
+          
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-dashboard"></i>
+              <p>
                 Пользователи
                 <i class="right fa fa-angle-left"></i>
               </p>

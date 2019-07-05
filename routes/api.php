@@ -20,17 +20,17 @@ use Illuminate\Http\Request;
 Route::post('login', 'AuthController@login');
 //Route::post('register', 'AuthController@register');
 
-Route::apiResource('/users','UserController');
-Route::apiResource('/roles','RoleController');
-Route::apiResource('/permissions','PermissionController');
-Route::apiResource('/groups','GroupController');
-Route::apiResource('/missions','MissionController');
-
 //Группа роутов для пользователей
 
-Route::group(['middleware' => ['auth:api'] ], function () {
+Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/logout', 'AuthController@logout');
-    Route::get('/current-user', 'DashboardController@currentUser');
+    Route::apiResource('/users','UserController');
+    Route::apiResource('/roles','RoleController');
+    Route::apiResource('/permissions','PermissionController');
+    Route::apiResource('/groups','GroupController');
+    Route::apiResource('/missions','MissionController');
+    Route::apiResource('/tasks','TaskController');
+    //Route::get('/current-user', 'DashboardController@currentUser');
     //Route::apiResource('/users','UserController');
     
     

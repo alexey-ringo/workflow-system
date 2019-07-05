@@ -26,6 +26,10 @@ import Missions from './components/group/Missions';
 import MissionUpdate from './components/group/MissionUpdate';
 import MissionCreate from './components/group/MissionCreate';
 
+import Tasks from './components/task/Tasks';
+import TaskUpdate from './components/task/TaskUpdate';
+import TaskCreate from './components/task/TaskCreate';
+
 
 
 
@@ -79,6 +83,10 @@ export default new VueRouter({
             { path: 'missions',  name: 'missions', component: Missions },
             { path: 'mission/:id',  name: 'mission-update', component: MissionUpdate },
             { path: 'mission-new',  name: 'mission-create', component: MissionCreate },
+            
+            { path: 'tasks',  name: 'tasks', component: Tasks },
+            { path: 'task/:id',  name: 'task-update', component: TaskUpdate },
+            { path: 'task-new',  name: 'task-create', component: TaskCreate },
             
             // UserPosts will be rendered inside User's <router-view>
             // when /user/:id/posts is matched

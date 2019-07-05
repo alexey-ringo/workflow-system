@@ -50,6 +50,11 @@
             }
         },
         mounted() {
+            let token = localStorage.getItem('jwt')
+
+            this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+            this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+            
             let uri = '/api/permissions';
             this.axios.get(uri)
             	.then((response) => {
@@ -77,6 +82,13 @@
                         });
                 }
             }
+        },
+        beforeRouteEnter (to, from, next) { 
+            if ( ! localStorage.getItem('jwt')) {
+                return next('login')
+            }
+
+            next()
         }
     }
     

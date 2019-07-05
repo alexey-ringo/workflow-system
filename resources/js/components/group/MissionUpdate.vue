@@ -18,29 +18,20 @@
         <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              <h6>Очередь выполнения процесса</h6>
-              <select v-model="queueSelected">
-                <option disabled value="">Порядковый номер процесса</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-              </select>
+              <input type="text" id="sequenceBox" v-model="sequenceNum" disabled>
+              <label for="sequenceBox">Очередь выполнения процесса</label>
             </div>
           </div>
           <div class="col-md-4">
             <div class="form-group">
               <input type="checkbox" id="superCheckbox" v-model="superChecked">
-              <label for="checkbox">Процесс супервайзера</label>
+              <label for="superCheckbox">Процесс супервайзера</label>
             </div>
           </div>
           <div class="col-md-4">
             <div class="form-group">
               <input type="checkbox" id="finalCheckbox" v-model="finalChecked">
-              <label for="checkbox">Финальный процесс</label>
+              <label for="finalCheckbox">Финальный процесс</label>
             </div>
           </div>
         </div>
@@ -62,7 +53,7 @@
     data(){
       return {
         mission:{},
-        queueSelected: '',
+        sequenceNum: '',
         superChecked: false,
         finalChecked: false
       }
@@ -71,7 +62,7 @@
       let uri = `/api/missions/${this.$route.params.id}`;
       this.axios.get(uri).then((response) => {
         this.mission = response.data.data;
-        this.setQueueSelected();
+        this.setSequenceSelected();
         this.setSuperChecked();
         this.setFinalChecked();
       });
@@ -84,7 +75,7 @@
     },
     methods: {
       updateMission(/*event*/){
-        this.mission.queue = this.queueSelected;
+        this.mission.sequence = this.sequenceNum;
         this.mission.is_super = this.superChecked;
         this.mission.is_final = this.finalChecked;
         console.log(this.mission);
@@ -105,8 +96,8 @@
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
           });
         },
-        setQueueSelected() {
-          this.queueSelected = this.mission.queue;
+        setSequenceSelected() {
+          this.sequenceNum = this.mission.sequence;
         },
         setSuperChecked() {
           this.superChecked = this.mission.is_super;
