@@ -8,7 +8,7 @@ use App\Models\Mission;
 
 use App\Services\TaskService;
 use App\Services\UserService;
-use App\Services\MissionService;
+//use App\Services\MissionService;
 
 
 use Illuminate\Http\Request;
@@ -30,6 +30,7 @@ class TaskController extends Controller
         return (new TaskCollection(Task::all()/*->load('comments')*/))
                 ->additional(['meta' => [
                     'canTaskCreate' => $userService->canFirstCreate($currentUser),
+                    'allMissions' => Mission::all()->toArray()
                 ]]);
         //return response()->json(['isFirstStep' => $currentUser->hasSequences()]);
         //return response()->json(['isFirstStep' => Mission::missionsForUser($currentUser)]);
@@ -74,14 +75,17 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task, MissionService $missionService)
+    public function show(Task $task)
     {
-        $prevMissionId = $missionService->getPrevMissionId($task->sequence);
-        $nextMissionId = $missionService->getNextMissionId($task->sequence);
-        $prevMissionName = $missionService->getPrevMissionName($task->sequence);
-        $nextMissionName = $missionService->getNextMissionName($task->sequence);
-        $isSequenceLast = $missionService->isSequenceLast($task->sequence);
-        return new TaskCustomResource($task, $prevMissionId, $nextMissionId, $prevMissionName, $nextMissionName, $isSequenceLast);
+        $prevMissionId = $task->mission->prevMissionId();
+        $nextMissionId = $task->mission->nextMissionId();
+        $prevMissionName = $task->mission->prevMissionName();
+        $nextMissionName = $task->mission->nextMissionName();
+        $isSequenceFirst = $task->mission->isSequenceFirst();
+        $isSequenceLast = $task->mission->isSequenceLast();
+        
+        
+        return new TaskCustomResource($task, $prevMissionId, $nextMissionId, $prevMissionName, $nextMissionName, $isSequenceFirst, $isSequenceLast);
         
     }
 
@@ -103,18 +107,17 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task, TaskService $taskService/*, MissionService $missionService*/)
+    public function update(Request $request, Task $task, TaskService $taskService)
     {
         $currentUser = $request->user('api');
-        
-        //$nextSequence = $missionService->getSequence($request['execMissionId']);
-        $updatedTask;
-        if(!$request['isSequenceLast']) {
-            $updatedTask = $taskService->createNextSeqTask($task, $currentUser, $request['execMissionId'], $request['execMissionName']/*, $nextSequence*/);
-        }
-        else {
-            $updatedTask = $taskService->closeTask($task, $currentUser);
-        }
+       
+        $updatedTask = $taskService->createNextSeqTask(
+                                                        $task, 
+                                                        $currentUser, 
+                                                        $request['execMissionId'], 
+                                                        $request['execMissionName'],
+                                                        $request['destination']
+                                                        );
         
         return new TaskResource($updatedTask);
     }

@@ -16,7 +16,7 @@ class CreateMissionsTable extends Migration
         Schema::create('missions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->unique();
-            $table->tinyInteger('sequence')->unsigned()->unique();
+            $table->tinyInteger('sequence')->unsigned()->nullable()->unique();
             $table->boolean('is_super')->default(false);
             $table->boolean('is_final')->default(false);
             $table->timestamps();

@@ -6,13 +6,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TaskCustomResource extends JsonResource
 {
-    public function __construct($resource, int $prevMissionId, int $nextMissionId, string $prevMissionName, string $nextMissionName, bool $isSequenceLast)
+    public function __construct($resource, int $prevMissionId, int $nextMissionId, string $prevMissionName, string $nextMissionName, bool $isSequenceFirst, bool $isSequenceLast)
     {
         $this->resource = $resource;
         $this->prevMissionName = $prevMissionName;
         $this->nextMissionName = $nextMissionName;
         $this->prevMissionId = $prevMissionId;
         $this->nextMissionId = $nextMissionId;
+        $this->isSequenceFirst = $isSequenceFirst;
         $this->isSequenceLast = $isSequenceLast;
     }
     
@@ -35,6 +36,7 @@ class TaskCustomResource extends JsonResource
             'nextMissionId' => $this->nextMissionId,
             'prevMissionName' => $this->prevMissionName,
             'nextMissionName' => $this->nextMissionName,
+            'isSequenceFirst' => $this->isSequenceFirst,
             'isSequenceLast' => $this->isSequenceLast
             ];
     }

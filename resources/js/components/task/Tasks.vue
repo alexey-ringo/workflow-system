@@ -93,6 +93,19 @@
         computed: {
             visibleCreate() {
                 return this.meta['canTaskCreate'];
+            },
+            maxSequenceNum() {
+                //let arr = [];
+				//let j = 0;
+    			//for(let i = 0; i < this.tasks.length; i++) {
+    			//	if(this.globalProducts.products[i].color.value == this.selectedColor) {
+    			//		arr[j] = this.globalProducts.products[i].size.value;
+    			//		j++;
+    			//	}
+    			//}
+				//let result = Array.from(new Set(arr));
+				//return result;
+				//return arr;
             }
         },
         beforeRouteEnter (to, from, next) { 

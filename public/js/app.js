@@ -3849,6 +3849,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -3878,6 +3879,7 @@ __webpack_require__.r(__webpack_exports__);
 
       this.task.execMissionId = this.task.nextMissionId;
       this.task.execMissionName = this.task.nextMissionName;
+      this.task.destination = 1;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
       /*{}*/
@@ -3893,7 +3895,7 @@ __webpack_require__.r(__webpack_exports__);
         }
       })["catch"](function (e) {
         //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        swal('Ошибка', "Внутренняя ошибка сервера updateToNext", "error");
       });
     },
     updateTaskToPrev: function updateTaskToPrev() {
@@ -3901,6 +3903,7 @@ __webpack_require__.r(__webpack_exports__);
 
       this.task.execMissionId = this.task.prevMissionId;
       this.task.execMissionName = this.task.prevMissionName;
+      this.task.destination = 2;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
       /*{}*/
@@ -3919,9 +3922,12 @@ __webpack_require__.r(__webpack_exports__);
         swal('Ошибка', "Внутренняя ошибка сервера", "error");
       });
     },
-    updateTaskClose: function updateTaskClose() {
+    updateTaskToClose: function updateTaskToClose() {
       var _this4 = this;
 
+      this.task.execMissionId = this.task.nextMissionId;
+      this.task.execMissionName = this.task.nextMissionName;
+      this.task.destination = 3;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
       /*{}*/
@@ -3944,6 +3950,9 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     isSequenceLast: function isSequenceLast() {
       return this.task.isSequenceLast;
+    },
+    isSequenceFirst: function isSequenceFirst() {
+      return this.task.isSequenceFirst;
     }
   }
 });
@@ -4051,6 +4060,18 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     visibleCreate: function visibleCreate() {
       return this.meta['canTaskCreate'];
+    },
+    maxSequenceNum: function maxSequenceNum() {//let arr = [];
+      //let j = 0;
+      //for(let i = 0; i < this.tasks.length; i++) {
+      //	if(this.globalProducts.products[i].color.value == this.selectedColor) {
+      //		arr[j] = this.globalProducts.products[i].size.value;
+      //		j++;
+      //	}
+      //}
+      //let result = Array.from(new Set(arr));
+      //return result;
+      //return arr;
     }
   },
   beforeRouteEnter: function beforeRouteEnter(to, from, next) {
@@ -43492,123 +43513,141 @@ var render = function() {
         : _vm._e()
     ]),
     _vm._v(" "),
-    _c(
-      "form",
-      {
-        staticClass: "form-horizontal",
-        on: {
-          submit: function($event) {
-            $event.preventDefault()
-            return _vm.updateTaskToNext($event)
-          }
-        }
-      },
-      [
-        _c("div", { staticClass: "card-body" }, [
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputTaskName" }
-              },
-              [_vm._v("Название заявки")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.task.title,
-                    expression: "task.title"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputTaskName",
-                  disabled: "",
-                  placeholder: "Название заявки"
-                },
-                domProps: { value: _vm.task.title },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.task, "title", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
+    _c("div", { staticClass: "form-horizontal" }, [
+      _c("div", { staticClass: "card-body" }, [
+        _c("div", { staticClass: "form-group" }, [
+          _c(
+            "label",
+            {
+              staticClass: "col-sm-4 control-label",
+              attrs: { for: "inputTaskName" }
+            },
+            [_vm._v("Название заявки")]
+          ),
           _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputTaskDesc" }
-              },
-              [_vm._v("Краткое описание")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.task.description,
-                    expression: "task.description"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputTaskDesc",
-                  disabled: "",
-                  placeholder: "Краткое описание"
-                },
-                domProps: { value: _vm.task.description },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.task, "description", $event.target.value)
-                  }
+          _c("div", { staticClass: "col-sm-10" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.task.title,
+                  expression: "task.title"
                 }
-              })
-            ])
+              ],
+              staticClass: "form-control",
+              attrs: {
+                type: "text",
+                id: "inputTaskName",
+                disabled: "",
+                placeholder: "Название заявки"
+              },
+              domProps: { value: _vm.task.title },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.task, "title", $event.target.value)
+                }
+              }
+            })
           ])
         ]),
         _vm._v(" "),
-        _c(
-          "div",
-          { staticClass: "card-footer" },
-          [
-            !_vm.isSequenceLast
-              ? _c("button", { staticClass: "btn btn-primary" }, [
-                  _vm._v("Следующая")
-                ])
-              : _vm._e(),
-            _vm._v(" "),
-            _c(
-              "router-link",
-              {
-                staticClass: "btn btn-default float-right",
-                attrs: { to: { name: "tasks" } }
+        _c("div", { staticClass: "form-group" }, [
+          _c(
+            "label",
+            {
+              staticClass: "col-sm-4 control-label",
+              attrs: { for: "inputTaskDesc" }
+            },
+            [_vm._v("Краткое описание")]
+          ),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-sm-10" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.task.description,
+                  expression: "task.description"
+                }
+              ],
+              staticClass: "form-control",
+              attrs: {
+                type: "text",
+                id: "inputTaskDesc",
+                disabled: "",
+                placeholder: "Краткое описание"
               },
-              [_vm._v("Отмена")]
-            )
-          ],
-          1
-        )
-      ]
-    )
+              domProps: { value: _vm.task.description },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.task, "description", $event.target.value)
+                }
+              }
+            })
+          ])
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "card-footer" },
+        [
+          !_vm.isSequenceFirst
+            ? _c(
+                "button",
+                {
+                  staticClass: "btn btn-primary",
+                  attrs: { name: "prev" },
+                  on: { click: _vm.updateTaskToPrev }
+                },
+                [_vm._v("Предидущая")]
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.isSequenceLast
+            ? _c(
+                "button",
+                {
+                  staticClass: "btn btn-primary",
+                  attrs: { name: "next" },
+                  on: { click: _vm.updateTaskToNext }
+                },
+                [_vm._v("Следующая")]
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.isSequenceLast
+            ? _c(
+                "button",
+                {
+                  staticClass: "btn btn-primary",
+                  attrs: { name: "close" },
+                  on: { click: _vm.updateTaskToClose }
+                },
+                [_vm._v("Закрыть")]
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c(
+            "router-link",
+            {
+              staticClass: "btn btn-default float-right",
+              attrs: { name: "exit", to: { name: "tasks" } }
+            },
+            [_vm._v("Отмена")]
+          )
+        ],
+        1
+      )
+    ])
   ])
 }
 var staticRenderFns = []

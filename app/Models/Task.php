@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 use App\Models\User;
+use App\Models\Mission;
 
 class Task extends Model
 {
@@ -13,11 +14,13 @@ class Task extends Model
     ];
     
     public function user() {
-      return $this->belongsTo(User::class, 'id');
+      //return $this->belongsTo(User::class, 'id');
+      return $this->belongsTo(User::class);
     }
     
     public function mission() {
-      return $this->belongsTo(Mission::class, 'id');
+      //return $this->belongsTo(Mission::class, 'id');
+      return $this->belongsTo(Mission::class);
     }
     
     //---------------------------------------------------------//
