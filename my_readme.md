@@ -25,36 +25,10 @@ php artisan make:migration create_role_user_table --create=role_user
 php artisan make:model Models/Task -m                                         
 php artisan make:model Models/Comment -m    
 
- :value="permission.id"
-                    :checked="booleanValue"  
-                    v-on:input="checkboxVal = $event.target.value"
-                    
- <div class="form-group" v-if="(!role.all_permissions.length == 0)">
-          <div class="col-sm-offset-2 col-sm-10">
-            <div class="form-check" v-for="permission in role.all_permissions" :key="permission.id">
-              <input type="checkbox" class="form-check-input"
-                   v-bind:value="permission.id"
-                   v-model="checkPermission"
-                   >
-              <label class="form-check-label" for="permissionCheckBox">{{ permission.name }}</label>
-            </div>
-          </div>
-          
-        </div>
-        
-        
-<div class="form-group">
-          <div class="col-sm-offset-2 col-sm-10">
-            <div class="form-check" v-for="permission in role.all_permissions" :key="permission.id">
-              <input type="checkbox" class="form-check-input"
-                   v-bind:value="permission.id"
-                   v-model="role.permissions"
-                   >
-              <label class="form-check-label" for="permissionCheckBox">{{ permission.name }}</label>
-            </div>
-          </div>
-          
-        </div>         
+git rm -r --cached .c9
+git add .
+git commit -m "remove .c9"
+git push -u origin master
 
 +----+----------------------------------------------------------+----------+----------+----------+---------------------+---------------------+
 | id | name                                                     | sequence | is_super | is_final | created_at          | updated_at          |
@@ -67,6 +41,4 @@ php artisan make:model Models/Comment -m
 +----+----------------------------------------------------------+----------+----------+----------+---------------------+---------------------+
 5 rows in set (0.01 sec)
 
-<button class="btn btn-primary" v-if="!isSequenceLast" @submit.prevent="updateTaskToPrev">Предидущая</button>
-        <button class="btn btn-primary" v-if="!isSequenceLast" @submit.prevent="updateTaskToNext">Следующая</button>
-        <button class="btn btn-primary" v-if="isSequenceLast" @submit.prevent="updateTaskClose">Закрыть</button>
+

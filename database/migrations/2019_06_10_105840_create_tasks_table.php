@@ -34,7 +34,7 @@ class CreateTasksTable extends Migration
             $table->date('deadline');
             $table->timestamps();
             
-            $table->unique(['task', 'sequence'], 'task_seq_tasks_index');
+            $table->unique(['task', 'sequence', 'status'], 'task_seq_stat_tasks_index');
             //$table->primary(['id', 'task', 'sequence']);
         });
         

@@ -14,7 +14,8 @@
         </div>
         <!-- /.card-header -->
         <div class="card-body">
-            <table id="example1" class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped" v-for="mission in missions" :key="mission.id">
+                <caption>Очередь {{ mission.name  }}</caption>
                 <thead>
                     <tr>
                         <th>Номер заявки</th>
@@ -25,20 +26,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="task in tasks" :key="task.id">
-                        <td>{{ task.task  }}</td>
-                        <td>{{ task.sequence  }}</td>
-                        <td>{{ task.title  }}</td>
-                        <td>{{ task.description }}</td>
-                        <td>
-                            <router-link :to="{name: 'task-update', params: {id: task.id}}" class="btn btn-xs btn-default">
-                                Edit
-                            </router-link>
-                        </td>
-                    </tr>
-                </tbody>
-                <tbody>
-                    <tr v-for="task in tasks" :key="task.id">
+                    <tr v-for="task in mission.tasks" :key="task.id">
                         <td>{{ task.task  }}</td>
                         <td>{{ task.sequence  }}</td>
                         <td>{{ task.title  }}</td>
@@ -51,13 +39,6 @@
                     </tr>
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <th>Номер заявки</th>
-                        <th>Процесс</th>
-                        <th>Название заявки</th>
-                        <th>Краткое описание</th>
-                        <th>Обработать</th>
-                    </tr>
                 </tfoot>
             </table>
         </div>
@@ -70,6 +51,7 @@
     export default {
         data: function () {
             return {
+                missions: [],
                 tasks: [],
                 meta: []
             }
@@ -83,7 +65,8 @@
             let uri = '/api/tasks';
             this.axios.get(uri)
             	.then((response) => {
-                	this.tasks = response.data.data;
+            	    this.missions = response.data.data;
+                	//this.tasks = response.data.data;
                 	this.meta = response.data.meta;
                 })
                 .catch(e => {

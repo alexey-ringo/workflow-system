@@ -27,10 +27,9 @@ class TaskController extends Controller
     {
         $currentUser = $request->user('api');
         
-        return (new TaskCollection(Task::all()/*->load('comments')*/))
+        return (new TaskCollection(Mission::with('tasks')->get()/*->load('comments')*/))
                 ->additional(['meta' => [
-                    'canTaskCreate' => $userService->canFirstCreate($currentUser),
-                    'allMissions' => Mission::all()->toArray()
+                    'canTaskCreate' => $userService->canFirstCreate($currentUser)
                 ]]);
         //return response()->json(['isFirstStep' => $currentUser->hasSequences()]);
         //return response()->json(['isFirstStep' => Mission::missionsForUser($currentUser)]);

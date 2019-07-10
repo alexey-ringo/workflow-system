@@ -4017,28 +4017,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      missions: [],
       tasks: [],
       meta: []
     };
@@ -4051,7 +4033,8 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     var uri = '/api/tasks';
     this.axios.get(uri).then(function (response) {
-      _this.tasks = response.data.data;
+      _this.missions = response.data.data; //this.tasks = response.data.data;
+
       _this.meta = response.data.meta;
     })["catch"](function (e) {
       //console.log(e);
@@ -43714,94 +43697,64 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "card-body" }, [
-      _c(
-        "table",
-        {
-          staticClass: "table table-bordered table-striped",
-          attrs: { id: "example1" }
-        },
-        [
-          _vm._m(1),
-          _vm._v(" "),
-          _c(
-            "tbody",
-            _vm._l(_vm.tasks, function(task) {
-              return _c("tr", { key: task.id }, [
-                _c("td", [_vm._v(_vm._s(task.task))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.sequence))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.title))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.description))]),
-                _vm._v(" "),
-                _c(
-                  "td",
-                  [
-                    _c(
-                      "router-link",
-                      {
-                        staticClass: "btn btn-xs btn-default",
-                        attrs: {
-                          to: { name: "task-update", params: { id: task.id } }
-                        }
-                      },
-                      [
-                        _vm._v(
-                          "\n                            Edit\n                        "
-                        )
-                      ]
-                    )
-                  ],
-                  1
-                )
-              ])
-            }),
-            0
-          ),
-          _vm._v(" "),
-          _c(
-            "tbody",
-            _vm._l(_vm.tasks, function(task) {
-              return _c("tr", { key: task.id }, [
-                _c("td", [_vm._v(_vm._s(task.task))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.sequence))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.title))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(task.description))]),
-                _vm._v(" "),
-                _c(
-                  "td",
-                  [
-                    _c(
-                      "router-link",
-                      {
-                        staticClass: "btn btn-xs btn-default",
-                        attrs: {
-                          to: { name: "task-update", params: { id: task.id } }
-                        }
-                      },
-                      [
-                        _vm._v(
-                          "\n                            Edit\n                        "
-                        )
-                      ]
-                    )
-                  ],
-                  1
-                )
-              ])
-            }),
-            0
-          ),
-          _vm._v(" "),
-          _vm._m(2)
-        ]
-      )
-    ])
+    _c(
+      "div",
+      { staticClass: "card-body" },
+      _vm._l(_vm.missions, function(mission) {
+        return _c(
+          "table",
+          {
+            key: mission.id,
+            staticClass: "table table-bordered table-striped"
+          },
+          [
+            _c("caption", [_vm._v("Очередь " + _vm._s(mission.name))]),
+            _vm._v(" "),
+            _vm._m(1, true),
+            _vm._v(" "),
+            _c(
+              "tbody",
+              _vm._l(mission.tasks, function(task) {
+                return _c("tr", { key: task.id }, [
+                  _c("td", [_vm._v(_vm._s(task.task))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(task.sequence))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(task.title))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(task.description))]),
+                  _vm._v(" "),
+                  _c(
+                    "td",
+                    [
+                      _c(
+                        "router-link",
+                        {
+                          staticClass: "btn btn-xs btn-default",
+                          attrs: {
+                            to: { name: "task-update", params: { id: task.id } }
+                          }
+                        },
+                        [
+                          _vm._v(
+                            "\n                            Edit\n                        "
+                          )
+                        ]
+                      )
+                    ],
+                    1
+                  )
+                ])
+              }),
+              0
+            ),
+            _vm._v(" "),
+            _c("tfoot")
+          ]
+        )
+      }),
+      0
+    )
   ])
 }
 var staticRenderFns = [
@@ -43820,24 +43773,6 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("thead", [
-      _c("tr", [
-        _c("th", [_vm._v("Номер заявки")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Процесс")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Название заявки")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Краткое описание")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Обработать")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("tfoot", [
       _c("tr", [
         _c("th", [_vm._v("Номер заявки")]),
         _vm._v(" "),
