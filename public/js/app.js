@@ -4023,6 +4023,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -43710,6 +43723,43 @@ var render = function() {
         },
         [
           _vm._m(1),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            _vm._l(_vm.tasks, function(task) {
+              return _c("tr", { key: task.id }, [
+                _c("td", [_vm._v(_vm._s(task.task))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(task.sequence))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(task.title))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(task.description))]),
+                _vm._v(" "),
+                _c(
+                  "td",
+                  [
+                    _c(
+                      "router-link",
+                      {
+                        staticClass: "btn btn-xs btn-default",
+                        attrs: {
+                          to: { name: "task-update", params: { id: task.id } }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                            Edit\n                        "
+                        )
+                      ]
+                    )
+                  ],
+                  1
+                )
+              ])
+            }),
+            0
+          ),
           _vm._v(" "),
           _c(
             "tbody",

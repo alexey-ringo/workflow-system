@@ -37,6 +37,19 @@
                         </td>
                     </tr>
                 </tbody>
+                <tbody>
+                    <tr v-for="task in tasks" :key="task.id">
+                        <td>{{ task.task  }}</td>
+                        <td>{{ task.sequence  }}</td>
+                        <td>{{ task.title  }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>
+                            <router-link :to="{name: 'task-update', params: {id: task.id}}" class="btn btn-xs btn-default">
+                                Edit
+                            </router-link>
+                        </td>
+                    </tr>
+                </tbody>
                 <tfoot>
                     <tr>
                         <th>Номер заявки</th>
