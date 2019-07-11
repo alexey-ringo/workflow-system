@@ -84,7 +84,6 @@
           .then((response) => {
             if(response.data) {
               //this.$emit("changecartevent", 1);
-              //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
               this.$router.push({name: 'missions'});
             }
             else {

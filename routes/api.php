@@ -24,6 +24,7 @@ Route::post('login', 'AuthController@login');
 
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/logout', 'AuthController@logout');
+    Route::get('/logged-user', 'DashboardController@loggedUser');
     Route::apiResource('/users','UserController');
     Route::apiResource('/roles','RoleController');
     Route::apiResource('/permissions','PermissionController');

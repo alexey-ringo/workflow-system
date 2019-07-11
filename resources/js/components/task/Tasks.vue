@@ -15,23 +15,29 @@
         <!-- /.card-header -->
         <div class="card-body">
             <table class="table table-bordered table-striped" v-for="mission in missions" :key="mission.id">
-                <caption>Очередь {{ mission.name  }}</caption>
+                <caption class="table-caption-top">Очередь: {{ mission.name  }}</caption>
                 <thead>
                     <tr>
                         <th>Номер заявки</th>
                         <th>Процесс</th>
-                        <th>Название заявки</th>
+                        <th>Шаг</th>
+                        <th>Название</th>
                         <th>Краткое описание</th>
+                        <th>Получена от</th>
+                        <th>Время поступления</th>
                         <th>Обработать</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="task in mission.tasks" :key="task.id">
-                        <td>{{ task.task  }}</td>
-                        <td>{{ task.sequence  }}</td>
-                        <td>{{ task.title  }}</td>
-                        <td>{{ task.description }}</td>
-                        <td>
+                        <td v-if="task.status">{{ task.task  }}</td>
+                        <td v-if="task.status">{{ task.sequence  }}</td>
+                        <td v-if="task.status">{{ task.task_seq  }}</td>
+                        <td v-if="task.status">{{ task.title  }}</td>
+                        <td v-if="task.status">{{ task.description }}</td>
+                        <td v-if="task.status">{{ task.creating_user_name }}</td>
+                        <td v-if="task.status">{{ task.deadline }}</td>
+                        <td v-if="task.status">
                             <router-link :to="{name: 'task-update', params: {id: task.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
@@ -90,25 +96,11 @@
             visibleCreate() {
                 return this.meta['canTaskCreate'];
             },
-            maxSequenceNum() {
-                //let arr = [];
-				//let j = 0;
-    			//for(let i = 0; i < this.tasks.length; i++) {
-    			//	if(this.globalProducts.products[i].color.value == this.selectedColor) {
-    			//		arr[j] = this.globalProducts.products[i].size.value;
-    			//		j++;
-    			//	}
-    			//}
-				//let result = Array.from(new Set(arr));
-				//return result;
-				//return arr;
-            }
         },
         beforeRouteEnter (to, from, next) { 
             if ( ! localStorage.getItem('jwt')) {
                 return next('login')
             }
-
             next()
         }
     }

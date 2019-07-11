@@ -60,7 +60,29 @@
         finalChecked: false
       }
     },
+    /*
     create() {
+      let token = localStorage.getItem('jwt')
+
+      this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+      this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+      
+      let uri = '/api/missions';
+      this.axios.get(uri)
+      	.then((response) => {
+        	this.missions = response.data.data;
+        })
+        .catch(e => {
+        	swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        });
+    },
+    */
+    mounted() {
+      let token = localStorage.getItem('jwt')
+
+      this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+      this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+      
       let uri = '/api/missions';
       this.axios.get(uri)
       	.then((response) => {
@@ -78,7 +100,6 @@
         let uri = '/api/missions';
         this.axios.post(uri, this.mission).then((response) => {
           if(response.data) {
-            //swal("Заказ", "Ваш заказ принят!", "success");
             this.$router.push({name: 'missions'});
           }
           else {

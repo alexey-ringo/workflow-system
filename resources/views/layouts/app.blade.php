@@ -7,6 +7,7 @@
         <meta name="csrf-token" content="{{csrf_token()}}">
         <title>Админка</title>
         <link href=" {{ mix('css/adminlte.css') }}" rel="stylesheet">
+        <link href=" {{ asset('css/custom.css') }}" rel="stylesheet">
     </head>
     <body class="hold-transition sidebar-mini">
         <div id="app"></div>

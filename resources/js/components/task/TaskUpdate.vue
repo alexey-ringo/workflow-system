@@ -81,8 +81,16 @@
             }
           })
           .catch(e => {
-          	//console.log(e);
-            swal('Ошибка', "Внутренняя ошибка сервера updateToNext", "error");
+          	if(e == 'Error: Request failed with status code 401') {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+                this.$router.push({name: 'login'});
+              }
+              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else {
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            }
           });
       },
       updateTaskToPrev(){
@@ -102,8 +110,16 @@
             }
           })
           .catch(e => {
-        	  //console.log(e);
-            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        	  if(e == 'Error: Request failed with status code 401') {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+                this.$router.push({name: 'login'});
+              }
+              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else {
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            }
           });
       },
       updateTaskToClose(){
@@ -123,8 +139,16 @@
             }
           })
           .catch(e => {
-        	  //console.log(e);
-            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        	  if(e == 'Error: Request failed with status code 401') {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+                this.$router.push({name: 'login'});
+              }
+              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else {
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            }
           });
       },
     },

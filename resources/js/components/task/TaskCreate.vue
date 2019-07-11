@@ -59,9 +59,12 @@
           }
         })
         .catch(e => {
-          //console.log(e);
           if(e == 'Error: Request failed with status code 401') {
-            swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            if (localStorage.getItem('jwt')) {
+              localStorage.removeItem('jwt');
+              this.$router.push({name: 'login'});
+            }
+            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");

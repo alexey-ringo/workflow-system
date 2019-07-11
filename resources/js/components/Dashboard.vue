@@ -142,7 +142,7 @@
           <img src="" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block">Alexander Pierce</a>
+          <a href="#" class="d-block">{{ loggedUserName2 }}</a>
         </div>
       </div>
 
@@ -605,15 +605,43 @@
         data(){
             return {
                 isLoggedIn : null,
-                name : null
+                name : null,
+                loggedUser : {},
+                loggedUserName2: ''
             }
         },
         mounted() {
-            console.log('AdminLte Component mounted.');
+            //console.log('AdminLte Component mounted.');
             this.isLoggedIn = localStorage.getItem('jwt');
             this.name = localStorage.getItem('user');
+            this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+            this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.isLoggedIn
+            
+            let uri = '/api/logged-user';
+            this.axios.get(uri)
+            	.then((response) => {
+                	this.loggedUser = response.data.loggedUser;
+                	this.loggedUserName2 = response.data.loggedUser.name;
+                })
+                .catch(e => {
+                	//console.log(e);
+                    if(e == 'Error: Request failed with status code 401') {
+                        if (localStorage.getItem('jwt')) {
+                            localStorage.removeItem('jwt');
+                            this.$router.push({name: 'login'});
+                        }
+                        //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                    }
+                    else {
+                        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                    }
+                });
         },
-        
+        computed: {
+          loggedUserName() {
+            return this.loggedUser.name;
+          }
+        },
         beforeRouteEnter (to, from, next) { 
             if (!localStorage.getItem('jwt')) {
                 return next({name: 'login'});

@@ -53,7 +53,7 @@ class Mission extends Model
     
     public function scopePrevMissionId(Builder $query): int
     {
-        $mission =  $query->where('sequence', $this->sequence)->first();
+        $mission =  $query->where('sequence', $this->sequence - 1)->first();
         return $mission ? $mission->id : $this->id;
     }
     

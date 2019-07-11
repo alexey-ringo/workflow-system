@@ -16,6 +16,7 @@ class CreateTasksTable extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('task')->unsigned();
+            $table->integer('task_seq')->unsigned();
             $table->integer('sequence')->unsigned();
             $table->string('title');
             $table->text('description');
@@ -34,7 +35,7 @@ class CreateTasksTable extends Migration
             $table->date('deadline');
             $table->timestamps();
             
-            $table->unique(['task', 'sequence', 'status'], 'task_seq_stat_tasks_index');
+            $table->unique(['task', 'task_seq'], 'task_task_seq_tasks_index');
             //$table->primary(['id', 'task', 'sequence']);
         });
         

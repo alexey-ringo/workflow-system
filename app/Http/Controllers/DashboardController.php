@@ -25,4 +25,8 @@ class DashboardController extends Controller
     {
         return view('layouts.app');
     }
+    
+    public function loggedUser(Request $request) {
+        return response()->json(['loggedUser' => $request->user('api')]);
+    }
 }

@@ -109,11 +109,10 @@
           .then((response) => {
             if(response.data) {
               //this.$emit("changecartevent", 1);
-              //swal("Заказ", "Ваш заказ принят!", "success");
               this.$router.push({name: 'users'});
             }
             else {
-            	//swal("Заказ", "Что то пошло не так...", "error");
+            	swal("Изменение профиля пользователя", "Что то пошло не так...", "error");
             }
           })
           .catch(e => {

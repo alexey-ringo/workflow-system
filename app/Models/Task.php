@@ -10,7 +10,7 @@ use App\Models\Mission;
 class Task extends Model
 {
     protected $fillable = [
-        'task', 'sequence', 'title', 'description', 'status', 'mission_id', 'creating_user_id', 'mission_name', 'creating_user_name', 'creating_user_email', 'closing_user_name', 'closing_user_email', 'deadline' 
+        'task', 'task_seq', 'sequence', 'title', 'description', 'status', 'mission_id', 'creating_user_id', 'mission_name', 'creating_user_name', 'creating_user_email', 'closing_user_name', 'closing_user_email', 'deadline' 
     ];
     
     public function user() {

@@ -60,11 +60,10 @@
         let uri = '/api/users';
         this.axios.post(uri, this.user).then((response) => {
           if(response.data) {
-            //swal("Заказ", "Ваш заказ принят!", "success");
             this.$router.push({name: 'users'});
           }
           else {
-          
+            swal("Создание нового пользователя", "Что то пошло не так...", "error");
           }
         })
         .catch(e => {
