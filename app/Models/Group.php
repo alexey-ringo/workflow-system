@@ -13,6 +13,7 @@ class Group extends Model
      *
      * @var array
      */
+    protected $table = 'groups';
     protected $fillable = [
         'name', 'slug',
     ];

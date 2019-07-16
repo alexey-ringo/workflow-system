@@ -2337,6 +2337,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //import Products from './lteitems/Products.vue';
 //import Orders from './lteitems/Orders.vue';
 //import Purchases from './lteitems/Purchases.vue';
@@ -4154,6 +4172,279 @@ __webpack_require__.r(__webpack_exports__);
     }
 
     next();
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      settingCollection: [],
+      setting: {
+        url_callback_bot: null,
+        url: null
+      }
+    };
+  },
+  created: function created() {//
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = '/api/telegram-index';
+    this.axios.get(uri).then(function (response) {
+      _this.settingCollection = response.data.data;
+
+      if (response.data.data.length) {
+        _this.updateSettingFields();
+      }
+    })["catch"](function (e) {
+      //console.log(e);
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
+    });
+  },
+  methods: {
+    updateSettingFields: function updateSettingFields() {
+      this.setting.url_callback_bot = this.settingCollection[0].value;
+    },
+    storeUrlCallbackBot: function storeUrlCallbackBot()
+    /*event*/
+    {
+      var _this2 = this;
+
+      var uri = '/api/telegram-store';
+      this.axios.post(uri, this.setting
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.data) {
+          //this.$emit("changecartevent", 1);
+          swal("Сохранение изменений", "URI CallBack for Bot успешно отредактирован!", "success").then(function () {
+            _this2.$router.push({
+              name: 'bot-setting'
+            });
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    },
+    setWebhook: function setWebhook()
+    /*event*/
+    {
+      var _this3 = this;
+
+      this.setting.url = this.setting.url_callback_bot;
+      var uri = '/api/telegram-setwebhook';
+      this.axios.post(uri, this.setting
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.setwebhook) {
+          swal("WebHook установлен", response.data.setwebhook, "success").then(function () {
+            _this3.$router.push({
+              name: 'bot-setting'
+            });
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    },
+    getWebhookInfo: function getWebhookInfo()
+    /*event*/
+    {
+      var _this4 = this;
+
+      var uri = '/api/telegram-getwebhookinfo';
+      this.axios.post(uri, this.setting
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.getwebhookinfo) {
+          swal("Информация о WebHook", response.data.getwebhookinfo, "success").then(function () {
+            _this4.$router.push({
+              name: 'bot-setting'
+            });
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    }
+  },
+  computed: {
+    UrlCallbackVal: function UrlCallbackVal() {
+      return this.setting.url_callback_bot;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      permission: {}
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    var uri = "/api/permissions/".concat(this.$route.params.id);
+    this.axios.get(uri).then(function (response) {
+      _this.permission = response.data.data;
+    });
+  },
+  mounted: function mounted() {//let uri = `/api/permissions/${this.$route.params.id}`;
+    //this.axios.get(uri).then((response) => {
+    //  this.permission = response.data.data;
+    //});
+  },
+  methods: {
+    updatePermission: function updatePermission()
+    /*event*/
+    {
+      var _this2 = this;
+
+      var uri = "/api/permissions/".concat(this.$route.params.id);
+      this.axios.patch(uri, this.permission
+      /*{}*/
+      ).then(function (response) {
+        if (response.data) {
+          //this.$emit("changecartevent", 1);
+          //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+          _this2.$router.push({
+            name: 'permissions'
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    }
   }
 });
 
@@ -39873,7 +40164,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "tasks" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "tasks" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Мои задачи")])
@@ -39889,7 +40183,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "task-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "task-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новая задача")])
@@ -39911,7 +40208,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "users" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "users" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Все пользователи")])
@@ -39927,7 +40227,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "user-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "user-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новый пользователь")])
@@ -39949,7 +40252,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "roles" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "roles" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Все политики")])
@@ -39965,7 +40271,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "role-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "role-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новая политика")])
@@ -39987,7 +40296,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "permissions" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "permissions" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Все разрешения")])
@@ -40003,7 +40315,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "permission-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "permission-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новое разрешение")])
@@ -40025,7 +40340,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "groups" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "groups" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Все группы")])
@@ -40041,7 +40359,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "group-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "group-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новая группа")])
@@ -40063,7 +40384,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "missions" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "missions" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Все процессы")])
@@ -40079,7 +40403,10 @@ var render = function() {
                       [
                         _c(
                           "router-link",
-                          { attrs: { to: { name: "mission-create" } } },
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "mission-create" } }
+                          },
                           [
                             _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
                             _c("p", [_vm._v("Новый процесс")])
@@ -40091,7 +40418,49 @@ var render = function() {
                   ])
                 ]),
                 _vm._v(" "),
-                _vm._m(9),
+                _c("li", { staticClass: "nav-item has-treeview" }, [
+                  _vm._m(9),
+                  _vm._v(" "),
+                  _c("ul", { staticClass: "nav nav-treeview" }, [
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "bot-status" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Статус")])
+                          ]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "bot-setting" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Настройки")])
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ])
+                ]),
                 _vm._v(" "),
                 _vm._m(10),
                 _vm._v(" "),
@@ -40101,9 +40470,9 @@ var render = function() {
                 _vm._v(" "),
                 _vm._m(13),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-header" }, [_vm._v("EXAMPLES")]),
-                _vm._v(" "),
                 _vm._m(14),
+                _vm._v(" "),
+                _c("li", { staticClass: "nav-header" }, [_vm._v("EXAMPLES")]),
                 _vm._v(" "),
                 _vm._m(15),
                 _vm._v(" "),
@@ -40111,19 +40480,21 @@ var render = function() {
                 _vm._v(" "),
                 _vm._m(17),
                 _vm._v(" "),
+                _vm._m(18),
+                _vm._v(" "),
                 _c("li", { staticClass: "nav-header" }, [
                   _vm._v("MISCELLANEOUS")
                 ]),
                 _vm._v(" "),
-                _vm._m(18),
+                _vm._m(19),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-header" }, [_vm._v("LABELS")]),
                 _vm._v(" "),
-                _vm._m(19),
-                _vm._v(" "),
                 _vm._m(20),
                 _vm._v(" "),
-                _vm._m(21)
+                _vm._m(21),
+                _vm._v(" "),
+                _vm._m(22)
               ]
             )
           ])
@@ -40132,7 +40503,7 @@ var render = function() {
     ),
     _vm._v(" "),
     _c("div", { staticClass: "content-wrapper" }, [
-      _vm._m(22),
+      _vm._m(23),
       _vm._v(" "),
       _c("section", { staticClass: "content" }, [
         _c("div", { staticClass: "row" }, [
@@ -40141,7 +40512,7 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _vm._m(23),
+    _vm._m(24),
     _vm._v(" "),
     _c("aside", { staticClass: "control-sidebar control-sidebar-dark" }, [
       _c(
@@ -40582,6 +40953,19 @@ var staticRenderFns = [
       _vm._v(" "),
       _c("p", [
         _vm._v("\n                Процессы\n                "),
+        _c("i", { staticClass: "right fa fa-angle-left" })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
+      _c("i", { staticClass: "nav-icon fa fa-dashboard" }),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n                Telegram Bot\n                "),
         _c("i", { staticClass: "right fa fa-angle-left" })
       ])
     ])
@@ -41732,13 +42116,10 @@ var render = function() {
   return _c("div", { staticClass: "card" }, [
     _vm._m(0),
     _vm._v(" "),
-    _c("div", { staticClass: "card-body" }, [
+    _c("div", { staticClass: "card-body table-responsive p-0" }, [
       _c(
         "table",
-        {
-          staticClass: "table table-bordered table-striped",
-          attrs: { id: "example1" }
-        },
+        { staticClass: "table table-hover table-bordered table-striped" },
         [
           _vm._m(1),
           _vm._v(" "),
@@ -42337,13 +42718,10 @@ var render = function() {
   return _c("div", { staticClass: "card" }, [
     _vm._m(0),
     _vm._v(" "),
-    _c("div", { staticClass: "card-body" }, [
+    _c("div", { staticClass: "card-body table-responsive p-0" }, [
       _c(
         "table",
-        {
-          staticClass: "table table-bordered table-striped",
-          attrs: { id: "example1" }
-        },
+        { staticClass: "table table-hover table-bordered table-striped" },
         [
           _vm._m(1),
           _vm._v(" "),
@@ -43778,13 +44156,13 @@ var render = function() {
     _vm._v(" "),
     _c(
       "div",
-      { staticClass: "card-body" },
+      { staticClass: "card-body table-responsive p-0" },
       _vm._l(_vm.missions, function(mission) {
         return _c(
           "table",
           {
             key: mission.id,
-            staticClass: "table table-bordered table-striped"
+            staticClass: "table table-hover table-bordered table-striped"
           },
           [
             _c("caption", { staticClass: "table-caption-top" }, [
@@ -43895,6 +44273,293 @@ var staticRenderFns = [
         _c("th", [_vm._v("Время поступления")]),
         _vm._v(" "),
         _c("th", [_vm._v("Обработать")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208& ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c("div", { staticClass: "card-body" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("div", { staticClass: "input-group input-group-lg mb-3" }, [
+          _c("div", { staticClass: "input-group-prepend" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-warning dropdown-toggle",
+                attrs: { type: "button", "data-toggle": "dropdown" }
+              },
+              [_vm._v("\n              Действие\n            ")]
+            ),
+            _vm._v(" "),
+            _c("ul", { staticClass: "dropdown-menu" }, [
+              _c("li", { staticClass: "dropdown-item" }, [
+                _c(
+                  "a",
+                  {
+                    attrs: { href: "#" },
+                    on: { click: _vm.storeUrlCallbackBot }
+                  },
+                  [_vm._v("Сохранить настройки url")]
+                )
+              ]),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-divider" }),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-item" }, [
+                _c(
+                  "a",
+                  { attrs: { href: "#" }, on: { click: _vm.setWebhook } },
+                  [_vm._v("Установить webhook")]
+                )
+              ]),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-divider" }),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-item" }, [
+                _c(
+                  "a",
+                  { attrs: { href: "#" }, on: { click: _vm.getWebhookInfo } },
+                  [_vm._v("Получить информацию о webhook")]
+                )
+              ])
+            ])
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.setting.url_callback_bot,
+                expression: "setting.url_callback_bot"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { type: "text" },
+            domProps: { value: _vm.setting.url_callback_bot },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.setting, "url_callback_bot", $event.target.value)
+              }
+            }
+          })
+        ])
+      ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticStyle: { display: "none" },
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.setWebhook($event)
+          }
+        }
+      },
+      [_c("input", { attrs: { type: "hidden", value: "UrlCallbackVal" } })]
+    ),
+    _vm._v(" "),
+    _c("form", {
+      staticStyle: { display: "none" },
+      on: {
+        submit: function($event) {
+          $event.preventDefault()
+          return _vm.getWebhookInfo($event)
+        }
+      }
+    })
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Настройки Телеграм - Бота")
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6&":
+/*!*********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6& ***!
+  \*********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.updatePermission($event)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputUIPermission" }
+              },
+              [_vm._v("UI разрешения операции")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.permission.slug,
+                    expression: "permission.slug"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputUIPermission",
+                  disabled: "",
+                  required: "",
+                  placeholder: "UI роли"
+                },
+                domProps: { value: _vm.permission.slug },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.permission, "slug", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputPermissionName" }
+              },
+              [_vm._v("Название разрешения операции")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.permission.name,
+                    expression: "permission.name"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputPermissionName",
+                  required: "",
+                  placeholder: "Название роли"
+                },
+                domProps: { value: _vm.permission.name },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.permission, "name", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "card-footer" },
+          [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Применить")
+            ]),
+            _vm._v(" "),
+            _c(
+              "router-link",
+              {
+                staticClass: "btn btn-default float-right",
+                attrs: { to: { name: "permissions" } }
+              },
+              [_vm._v("Отмена")]
+            )
+          ],
+          1
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Редактирование разрешения операции")
       ])
     ])
   }
@@ -44535,13 +45200,10 @@ var render = function() {
   return _c("div", { staticClass: "card" }, [
     _vm._m(0),
     _vm._v(" "),
-    _c("div", { staticClass: "card-body" }, [
+    _c("div", { staticClass: "card-body table-responsive p-0" }, [
       _c(
         "table",
-        {
-          staticClass: "table table-bordered table-striped",
-          attrs: { id: "example1" }
-        },
+        { staticClass: "table table-hover table-bordered table-striped" },
         [
           _vm._m(1),
           _vm._v(" "),
@@ -60906,6 +61568,144 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/telegram/BotSetting.vue":
+/*!*********************************************************!*\
+  !*** ./resources/js/components/telegram/BotSetting.vue ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BotSetting.vue?vue&type=template&id=39c8b208& */ "./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208&");
+/* harmony import */ var _BotSetting_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BotSetting.vue?vue&type=script&lang=js& */ "./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _BotSetting_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/telegram/BotSetting.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************!*\
+  !*** ./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_BotSetting_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./BotSetting.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotSetting.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_BotSetting_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208& ***!
+  \****************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./BotSetting.vue?vue&type=template&id=39c8b208& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotSetting.vue?vue&type=template&id=39c8b208&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotSetting_vue_vue_type_template_id_39c8b208___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/telegram/BotStatus.vue":
+/*!********************************************************!*\
+  !*** ./resources/js/components/telegram/BotStatus.vue ***!
+  \********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BotStatus.vue?vue&type=template&id=2f0d98f6& */ "./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6&");
+/* harmony import */ var _BotStatus_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BotStatus.vue?vue&type=script&lang=js& */ "./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _BotStatus_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/telegram/BotStatus.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js&":
+/*!*********************************************************************************!*\
+  !*** ./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js& ***!
+  \*********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_BotStatus_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./BotStatus.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotStatus.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_BotStatus_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6&":
+/*!***************************************************************************************!*\
+  !*** ./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6& ***!
+  \***************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./BotStatus.vue?vue&type=template&id=2f0d98f6& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/telegram/BotStatus.vue?vue&type=template&id=2f0d98f6&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_BotStatus_vue_vue_type_template_id_2f0d98f6___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/user/UserCreate.vue":
 /*!*****************************************************!*\
   !*** ./resources/js/components/user/UserCreate.vue ***!
@@ -61144,7 +61944,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
 /* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
 /* harmony import */ var _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/task/TaskCreate */ "./resources/js/components/task/TaskCreate.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
+
+
 
 
 
@@ -61260,6 +62064,14 @@ __webpack_require__.r(__webpack_exports__);
       path: 'task-new',
       name: 'task-create',
       component: _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__["default"]
+    }, {
+      path: 'bot-setting',
+      name: 'bot-setting',
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_22__["default"]
+    }, {
+      path: 'bot-status',
+      name: 'bot-status',
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_23__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

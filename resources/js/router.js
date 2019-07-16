@@ -30,6 +30,9 @@ import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
 import TaskCreate from './components/task/TaskCreate';
 
+import BotSetting from './components/telegram/BotSetting';
+import BotStatus from './components/telegram/BotStatus';
+
 
 
 
@@ -87,6 +90,10 @@ export default new VueRouter({
             { path: 'tasks',  name: 'tasks', component: Tasks },
             { path: 'task/:id',  name: 'task-update', component: TaskUpdate },
             { path: 'task-new',  name: 'task-create', component: TaskCreate },
+            
+            { path: 'bot-setting',  name: 'bot-setting', component: BotSetting },
+            { path: 'bot-status',  name: 'bot-status', component: BotStatus },
+            
             
             // UserPosts will be rendered inside User's <router-view>
             // when /user/:id/posts is matched

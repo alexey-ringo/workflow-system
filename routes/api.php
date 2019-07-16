@@ -34,6 +34,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     //Route::get('/current-user', 'DashboardController@currentUser');
     //Route::apiResource('/users','UserController');
     
+    Route::get('/telegram-index', 'TelegramController@index');
+    Route::post('/telegram-store', 'TelegramController@store');
+    Route::post('/telegram-setwebhook', 'TelegramController@setWebhook');
+    Route::post('/telegram-getwebhookinfo', 'TelegramController@getWebhookInfo');
+    
     
     
     

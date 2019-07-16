@@ -161,10 +161,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'tasks'}"><i class="fa fa-circle-o nav-icon"></i><p>Мои задачи</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'tasks'}"><i class="fa fa-circle-o nav-icon"></i><p>Мои задачи</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'task-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая задача</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'task-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая задача</p></router-link>
               </li>
             </ul>
           </li>
@@ -180,10 +180,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'users'}"><i class="fa fa-circle-o nav-icon"></i><p>Все пользователи</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'users'}"><i class="fa fa-circle-o nav-icon"></i><p>Все пользователи</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'user-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый пользователь</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'user-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый пользователь</p></router-link>
               </li>
             </ul>
           </li>
@@ -198,10 +198,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'roles'}"><i class="fa fa-circle-o nav-icon"></i><p>Все политики</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'roles'}"><i class="fa fa-circle-o nav-icon"></i><p>Все политики</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'role-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая политика</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'role-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая политика</p></router-link>
               </li>
             </ul>
           </li>
@@ -216,10 +216,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'permissions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все разрешения</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'permissions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все разрешения</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'permission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новое разрешение</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'permission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новое разрешение</p></router-link>
               </li>
             </ul>
           </li>
@@ -234,10 +234,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'groups'}"><i class="fa fa-circle-o nav-icon"></i><p>Все группы</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'groups'}"><i class="fa fa-circle-o nav-icon"></i><p>Все группы</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'group-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая группа</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'group-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая группа</p></router-link>
               </li>
             </ul>
           </li>
@@ -252,10 +252,28 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link :to="{ name: 'missions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все процессы</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'missions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все процессы</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link :to="{ name: 'mission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый процесс</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'mission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый процесс</p></router-link>
+              </li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-dashboard"></i>
+              <p>
+                Telegram Bot
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'bot-status'}"><i class="fa fa-circle-o nav-icon"></i><p>Статус</p></router-link>
+              </li>
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'bot-setting'}"><i class="fa fa-circle-o nav-icon"></i><p>Настройки</p></router-link>
               </li>
             </ul>
           </li>

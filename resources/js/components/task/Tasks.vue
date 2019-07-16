@@ -13,8 +13,8 @@
             </div>
         </div>
         <!-- /.card-header -->
-        <div class="card-body">
-            <table class="table table-bordered table-striped" v-for="mission in missions" :key="mission.id">
+        <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-bordered table-striped" v-for="mission in missions" :key="mission.id">
                 <caption class="table-caption-top">Очередь: {{ mission.name  }}</caption>
                 <thead>
                     <tr>

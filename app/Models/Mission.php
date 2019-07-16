@@ -15,6 +15,7 @@ class Mission extends Model
      *
      * @var array
      */
+    protected $table = 'missions';
     protected $fillable = [
         'name', 'sequence', 'is_super, is_final'
     ];
