@@ -15,19 +15,19 @@ class CreateCommentsTable extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('task_num')->unsigned();
+            $table->bigInteger('task_num')->unsigned()->index();
             $table->integer('task_seq_num')->unsigned();
-            $table->integer('sequence')->unsigned();
-            $table->text('comment');
             $table->bigInteger('task_id')->unsigned();
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
+            $table->integer('comment_seq')->unsigned();
+            $table->text('comment');
             $table->bigInteger('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->string('user_name');
             $table->string('user_email');
             $table->timestamps();
             
-            $table->unique(['task_num', 'task_seq_num', 'sequence'], 'task_seq_comment_index');
+            $table->unique(['task_id', 'comment_seq'], 'task_comment_seq_index');
         });
     }
 

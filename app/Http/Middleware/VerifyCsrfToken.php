@@ -21,4 +21,12 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         //
     ];
+    
+    public function __construct(\Illuminate\Contracts\Foundation\Application $app, 
+                                \Illuminate\Contracts\Encryption\Encrypter $encrypter)
+    {
+        $this->app = $app;
+        $this->encrypter = $encrypter;
+        $this->except[] = \TelegramBot::getAccessToken();
+    }
 }

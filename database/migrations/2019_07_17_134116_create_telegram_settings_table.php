@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTelegramsTable extends Migration
+class CreateTelegramSettingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateTelegramsTable extends Migration
      */
     public function up()
     {
-        Schema::create('telegrams', function (Blueprint $table) {
+        Schema::create('telegram_settings', function (Blueprint $table) {
             $table->string('key', 40)->index()->unique();
             $table->mediumtext('value');
             $table->boolean('serialized')->default(0);
+            $table->boolean('set_webhook')->default(0);
         });
     }
 
@@ -27,6 +28,6 @@ class CreateTelegramsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('telegrams');
+        Schema::dropIfExists('telegram_settings');
     }
 }

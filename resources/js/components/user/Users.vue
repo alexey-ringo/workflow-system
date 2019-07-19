@@ -53,13 +53,27 @@
             }
         },
         mounted() {
+            let token = localStorage.getItem('jwt')
+
+            this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+            this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+            
             let uri = '/api/users';
             this.axios.get(uri)
             	.then((response) => {
                 	this.users = response.data.data;
                 })
                 .catch(e => {
-                	//console.log(e);
+                	if(e == 'Error: Request failed with status code 401') {
+                        if (localStorage.getItem('jwt')) {
+                            localStorage.removeItem('jwt');
+                            this.$router.push({name: 'login'});
+                        }
+                        //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                    }
+                    else {
+                        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                    }
                 });
         },
         methods: {

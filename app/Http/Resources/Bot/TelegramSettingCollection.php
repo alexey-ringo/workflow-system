@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Bot;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class TelegramCollection extends ResourceCollection
+class TelegramSettingCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.

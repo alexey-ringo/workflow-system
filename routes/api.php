@@ -34,11 +34,13 @@ Route::group(['middleware' => 'auth:api'], function () {
     //Route::get('/current-user', 'DashboardController@currentUser');
     //Route::apiResource('/users','UserController');
     
-    Route::get('/telegram-index', 'TelegramController@index');
-    Route::post('/telegram-store', 'TelegramController@store');
-    Route::post('/telegram-setwebhook', 'TelegramController@setWebhook');
-    Route::post('/telegram-getwebhookinfo', 'TelegramController@getWebhookInfo');
-    
+    Route::group([/*'prefix' => 'bot', */'namespace' => 'Bot'], function() {
+        Route::get('/telegram-index', 'TelegramSettingController@index');
+        Route::post('/telegram-store', 'TelegramSettingController@store');
+        Route::post('/telegram-setwebhook', 'TelegramSettingController@setWebhook');
+        Route::post('/telegram-suspendwebhook', 'TelegramSettingController@suspendWebhook');
+        Route::post('/telegram-getwebhookinfo', 'TelegramSettingController@getWebhookInfo');
+    });
     
     
     
@@ -55,3 +57,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     //    Route::resource('/user', 'UserController', ['as' => 'admin.user_management']);
     //});
 });
+
+

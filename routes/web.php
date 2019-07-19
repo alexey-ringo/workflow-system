@@ -15,5 +15,9 @@ Route::get('/{any}', 'DashboardController@index')->where('any', '.*');
 
 Auth::routes();
 
+Route::post(TelegramBot::getAccessToken(), function() {
+    app('App\Http\Controllers\Bot\TelegramController')->webHook();
+});
+
 //Route::get('/home', 'HomeController@index')->name('home');
 

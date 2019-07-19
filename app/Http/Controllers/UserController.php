@@ -43,6 +43,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'phone' => 'required',
             'email' => 'required|email',
             'password' => 'required|confirmed|min:6',
         ]);
@@ -96,6 +97,11 @@ class UserController extends Controller
         $validator = $request->validate([
             'name' => 'required|string|max:255',
             //Игнор валидации на уникальность для данной операции и для данного пользователя
+            'phone' => [
+                'required',
+                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
+                ],
+            //Игнор валидации на уникальность для данной операции и для данного пользователя
             'email' => [
                 'required',
                 'string',
@@ -109,6 +115,7 @@ class UserController extends Controller
         ]);
         
         $user->name = $request->get('name');
+        $user->phone = $request->get('phone');
         $user->email = $request->get('email');
         //Если поле == null - в модель пароль не передавать, иначе - зашифровать перед передачей в модель
         $request->get('password') == null ?: $user->password = bcrypt($request['password']);

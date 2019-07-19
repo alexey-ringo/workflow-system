@@ -16,30 +16,18 @@
               <ul class="dropdown-menu">
                 <li class="dropdown-item"><a href="#" @click="storeUrlCallbackBot">Сохранить настройки url</a></li>
                 <li class="dropdown-divider"></li>
-                <li class="dropdown-item"><a href="#" @click="setWebhook">Установить webhook</a></li>
+                <li class="dropdown-item"><a href="#" @click="setWebhook">Активировать webhook</a></li>
                 <li class="dropdown-divider"></li>
                 <li class="dropdown-item"><a href="#" @click="getWebhookInfo">Получить информацию о webhook</a></li>
+                <li class="dropdown-divider"></li>
+                <li class="dropdown-item"><a href="#" @click="suspendWebhook">Приостановить webhook</a></li>
               </ul>
             </div>
                   <!-- /btn-group -->
             <input type="text" class="form-control" v-model="setting.url_callback_bot">
           </div>
-          
         </div>
-                  
-        
       </div>
-      
-    
-    
-    <form @submit.prevent="setWebhook" style="display: none;">
-      <input type="hidden" value="UrlCallbackVal">
-    </form>
-    
-    <form @submit.prevent="getWebhookInfo" style="display: none;">
-      
-    </form>
-    
   </div>
 </template>
 
@@ -151,11 +139,26 @@
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
             });
         },
-      },
-      computed: {
-            UrlCallbackVal() {
-                return this.setting.url_callback_bot;
-            },
+        suspendWebhook(/*event*/){
+          this.setting.url = this.setting.url_callback_bot;
+          let uri = '/api/telegram-suspendwebhook';
+          this.axios.post(uri, this.setting/*{}*/)
+            .then((response) => {
+              if(response.data.suspendwebhook) {
+                swal("WebHook временно остановлен", response.data.suspendwebhook, "success")
+                .then(() => {
+                  this.$router.push({name: 'bot-setting'});
+                })
+              }
+              else {
+            	  swal("Сохранение изменений", "Что то пошло не так...", "error");
+              }
+            })
+            .catch(e => {
+          	  //console.log(e);
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            });
         },
+      },
     }
 </script>

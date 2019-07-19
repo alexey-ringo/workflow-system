@@ -14,6 +14,13 @@
             <input type="text" v-model="user.name" class="form-control" id="inputUserName" required placeholder="Имя">
           </div>
         </div>
+        
+        <div class="form-group">
+          <label for="inputUserPhone" class="col-sm-4 control-label">Номер телефона</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="user.phone" class="form-control" id="inputUserPhone" placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
+          </div>
+        </div>
 
         <div class="form-group">
           <label for="inputUserEmail" class="col-sm-4 control-label">Email</label>
@@ -55,6 +62,12 @@
         user:{}
       }
     },
+    mounted() {
+      let token = localStorage.getItem('jwt')
+
+      this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+      this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+    },
     methods: {
       addUser(){
         let uri = '/api/users';
@@ -67,8 +80,16 @@
           }
         })
         .catch(e => {
-          //console.log(e);
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          if(e == 'Error: Request failed with status code 401') {
+            if (localStorage.getItem('jwt')) {
+              localStorage.removeItem('jwt');
+              this.$router.push({name: 'login'});
+            }
+            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       },
     }

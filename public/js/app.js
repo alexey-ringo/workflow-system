@@ -4220,18 +4220,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -4348,11 +4336,30 @@ __webpack_require__.r(__webpack_exports__);
         //console.log(e);
         swal('Ошибка', "Внутренняя ошибка сервера", "error");
       });
-    }
-  },
-  computed: {
-    UrlCallbackVal: function UrlCallbackVal() {
-      return this.setting.url_callback_bot;
+    },
+    suspendWebhook: function suspendWebhook()
+    /*event*/
+    {
+      var _this5 = this;
+
+      this.setting.url = this.setting.url_callback_bot;
+      var uri = '/api/telegram-suspendwebhook';
+      this.axios.post(uri, this.setting
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.suspendwebhook) {
+          swal("WebHook временно остановлен", response.data.suspendwebhook, "success").then(function () {
+            _this5.$router.push({
+              name: 'bot-setting'
+            });
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
     }
   }
 });
@@ -4509,11 +4516,23 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       user: {}
     };
+  },
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
   },
   methods: {
     addUser: function addUser() {
@@ -4529,8 +4548,18 @@ __webpack_require__.r(__webpack_exports__);
           swal("Создание нового пользователя", "Что то пошло не так...", "error");
         }
       })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        }
       });
     }
   }
@@ -4632,6 +4661,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -4643,6 +4679,9 @@ __webpack_require__.r(__webpack_exports__);
   mounted: function mounted() {
     var _this = this;
 
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     var uri = "/api/users/".concat(this.$route.params.id);
     this.axios.get(uri).then(function (response) {
       _this.user = response.data.data;
@@ -4671,8 +4710,18 @@ __webpack_require__.r(__webpack_exports__);
           swal("Изменение профиля пользователя", "Что то пошло не так...", "error");
         }
       })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this2.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        }
       });
     },
     setRolesChecked: function setRolesChecked() {
@@ -4755,10 +4804,25 @@ __webpack_require__.r(__webpack_exports__);
   mounted: function mounted() {
     var _this = this;
 
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     var uri = '/api/users';
     this.axios.get(uri).then(function (response) {
       _this.users = response.data.data;
-    })["catch"](function (e) {//console.log(e);
+    })["catch"](function (e) {
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
     });
   },
   methods: {
@@ -44332,7 +44396,7 @@ var render = function() {
                 _c(
                   "a",
                   { attrs: { href: "#" }, on: { click: _vm.setWebhook } },
-                  [_vm._v("Установить webhook")]
+                  [_vm._v("Активировать webhook")]
                 )
               ]),
               _vm._v(" "),
@@ -44343,6 +44407,16 @@ var render = function() {
                   "a",
                   { attrs: { href: "#" }, on: { click: _vm.getWebhookInfo } },
                   [_vm._v("Получить информацию о webhook")]
+                )
+              ]),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-divider" }),
+              _vm._v(" "),
+              _c("li", { staticClass: "dropdown-item" }, [
+                _c(
+                  "a",
+                  { attrs: { href: "#" }, on: { click: _vm.suspendWebhook } },
+                  [_vm._v("Приостановить webhook")]
                 )
               ])
             ])
@@ -44371,31 +44445,7 @@ var render = function() {
           })
         ])
       ])
-    ]),
-    _vm._v(" "),
-    _c(
-      "form",
-      {
-        staticStyle: { display: "none" },
-        on: {
-          submit: function($event) {
-            $event.preventDefault()
-            return _vm.setWebhook($event)
-          }
-        }
-      },
-      [_c("input", { attrs: { type: "hidden", value: "UrlCallbackVal" } })]
-    ),
-    _vm._v(" "),
-    _c("form", {
-      staticStyle: { display: "none" },
-      on: {
-        submit: function($event) {
-          $event.preventDefault()
-          return _vm.getWebhookInfo($event)
-        }
-      }
-    })
+    ])
   ])
 }
 var staticRenderFns = [
@@ -44646,6 +44696,45 @@ var render = function() {
               "label",
               {
                 staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputUserPhone" }
+              },
+              [_vm._v("Номер телефона")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.user.phone,
+                    expression: "user.phone"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputUserPhone",
+                  placeholder: "В формате 7xxxxxxxxxx (10 знаков после семерки)"
+                },
+                domProps: { value: _vm.user.phone },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.user, "phone", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
                 attrs: { for: "inputUserEmail" }
               },
               [_vm._v("Email")]
@@ -44871,6 +44960,45 @@ var render = function() {
                       return
                     }
                     _vm.$set(_vm.user, "name", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputUserPhone" }
+              },
+              [_vm._v("Номер телефона")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.user.phone,
+                    expression: "user.phone"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputUserPhone",
+                  placeholder: "В формате 7xxxxxxxxxx (10 знаков после семерки)"
+                },
+                domProps: { value: _vm.user.phone },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.user, "phone", $event.target.value)
                   }
                 }
               })

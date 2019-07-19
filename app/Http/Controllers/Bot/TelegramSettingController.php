@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Bot;
 
-use App\Models\Telegram;
+use App\Models\TelegramSetting;
 use Illuminate\Http\Request;
-use App\Http\Resources\TelegramCollection;
-use App\Http\Resources\TelegramResource;
-use App\Http\Resources\TelegramCustomResource;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Bot\TelegramSettingCollection;
+use App\Http\Resources\Bot\TelegramSettingResource;
+use App\Http\Resources\Bot\TelegramSettingCustomResource;
+use TelegramBot;
 
-class TelegramController extends Controller
+class TelegramSettingController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,18 +22,18 @@ class TelegramController extends Controller
         //dd(Telegram::getTelegramSettings());
         //return new TelegramCollection(Telegram::getTelegramSettings());
         //return TelegramCustomResource::collection(Telegram::getTelegramSettings());
-        return new TelegramCollection(Telegram::all());
+        return new TelegramSettingCollection(TelegramSetting::all());
     }
     
     public function store(Request $request) {
-        Telegram::where('key', '!=', NULL)->delete();
+        TelegramSetting::where('key', '!=', NULL)->delete();
         
         foreach($request->all() as $key => $value) {
-            $setting = new Telegram;
+            $setting = new TelegramSetting;
             $setting->key = $key;
             $setting->value = $value;
             $setting->save();
-            return new TelegramCollection(Telegram::all()); 
+            return new TelegramSettingCollection(TelegramSetting::all()); 
             
         }
         
@@ -46,6 +48,14 @@ class TelegramController extends Controller
         return response()->json(['setwebhook' => $result]);
     }
     
+    public function suspendWebhook(Request $request)
+    {
+        $result = $this->sendTelegramData('setwebhook', [
+                'query' => ['url' => $request->url . '/' . '']
+            ]);
+            
+        return response()->json(['suspendwebhook' => $result]);
+    }
     
     public function getwebhookinfo(Request $result)
     {

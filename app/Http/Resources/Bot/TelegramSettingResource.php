@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Bot;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TelegramResource extends JsonResource
+class TelegramSettingResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

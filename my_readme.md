@@ -7,13 +7,6 @@ composer require laravel/passport
 php artisan migrate:refresh
 php artisan passport:install
 
-Encryption keys generated successfully.
-Personal access client created successfully.
-Client ID: 1
-Client secret: bhusYCDNnqYmxp1L6rRcNpsPRgwxseYK5kCMxAdu
-Password grant client created successfully.
-Client ID: 2
-Client secret: jtkVlmNXW1YR5LBUJivSDsCxuNgAjaCBujNCirx6
 
 php artisan make:model Models/Group -m                                        
 php artisan make:model Models/Role -m
