@@ -34,35 +34,29 @@ class RegnumCommand extends Command
         $this->replyWithChatAction(['action' => Actions::TYPING]);
         
         $telegramMessage = TelegramBot::getWebhookUpdates()['message'];
-        //Log::info('telegramMessage[text]', ['telegramMessage' => $telegramMessage['text']]);
         $receivedPhoneNum = $this->getArguments();
+        $receivedPhoneNum = (int) $receivedPhoneNum;
         $user = User::where('phone', $receivedPhoneNum)->first();
-        
+        //Log::info('пользователь TelegramUser привязанный к user', ['$user->telegramUser' => $user]);
         if($user) {
-            $telegramUser = TelegramUser::create(json_decode($telegramMessage['from'], true));
-            $telegramUser->user_id = $user->id;
-            $telegramUser->save();
-            $this->replyWithMessage(['text' => 'Телефон: ' . $user->phone . ' успешно привязан к настройкам пользователя ' . $user->email]);
+            if(!$user->telegramUser) {
+                $receivedUser = json_decode($telegramMessage['from'], true);
+                $userId['user_id'] = $user->id;
+                //$telegramUser = TelegramUser::create(json_decode($telegramMessage['from'], true));
+                $telegramUser = TelegramUser::create(array_merge($receivedUser, $userId));
+                if($telegramUser) {
+                    $this->replyWithMessage(['text' => 'Телефон: ' . $user->phone . ' успешно привязан к настройкам пользователя ' . $user->email . ' Аккайнт Телеграм: ' . $telegramUser->tlgrmuser]);
+                }
+                else {
+                    $this->replyWithMessage(['text' => 'Извините, но в настоящее время сервис регистрации недоступен']);
+                }
+            }
+            else {
+                $this->replyWithMessage(['text' => 'К пользователю с телефонным номером ' . $receivedPhoneNum . ' . уже привязан аккаунт Telegram: ' . $user->telegramUser->first_name . ' ' . $user->telegramUser->last_name]);
+            }
         }
         else {
-            $this->replyWithMessage(['text' => 'Вот телефонный номер, который Вы ввели: ' . $receivedPhoneNum . ' . Пользователь с таким телефонным номером отсутствует в базе нашего CRM. Попробуйте еще раз ввести номер повнимательней']);
+            $this->replyWithMessage(['text' => 'Вот телефонный номер, который Вы ввели: ' . $receivedPhoneNum . ' . Пользователь с таким телефонным номером отсутствует в базе нашей системы WorkFlow. Попробуйте еще раз ввести номер повнимательней']);
         }
-        
-        
-        
-        //Метод для получения обновлений от бота
-        //$telegramUser = \TelegramBot::getWebhookUpdates()['message'];
-        //$text = sprintf('/%s - %s'.PHP_EOL, 'Ваш номер чата', $telegramUser['from']['id']);
-        
-        
-        //$text .= sprintf('/%s - %s'.PHP_EOL, 'Ваше имя пользователя в Телеграм', $telegramUser['from']['username']);
-        
-        
-        
-        
-        
-        
-
-        //$this->replyWithMessage(compact('text'));
     }
 }

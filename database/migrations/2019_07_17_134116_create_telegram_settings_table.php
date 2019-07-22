@@ -14,6 +14,7 @@ class CreateTelegramSettingsTable extends Migration
     public function up()
     {
         Schema::create('telegram_settings', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->string('key', 40)->index()->unique();
             $table->mediumtext('value');
             $table->boolean('serialized')->default(0);

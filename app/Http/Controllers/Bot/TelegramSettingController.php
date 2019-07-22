@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Bot\TelegramSettingCollection;
 use App\Http\Resources\Bot\TelegramSettingResource;
 use App\Http\Resources\Bot\TelegramSettingCustomResource;
-use TelegramBot;
 
 class TelegramSettingController extends Controller
 {

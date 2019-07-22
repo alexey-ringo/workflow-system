@@ -14,6 +14,7 @@ class CreateTelegramUsersTable extends Migration
     public function up()
     {
         Schema::create('telegram_users', function (Blueprint $table) {
+            $table->bigIncrements('tlgrmuser');
             $table->integer('id')->unique()->index();
             $table->boolean('is_bot')->nullable();
             $table->string('first_name')->nullable();

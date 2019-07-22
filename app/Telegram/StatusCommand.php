@@ -2,8 +2,13 @@
 
 namespace App\Telegram;
 
+use TelegramBot;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
+use App\Models\User;
+use App\Models\TelegramUser;
+
+use Log;
 
 /**
  * Class HelpCommand.
@@ -18,7 +23,7 @@ class StatusCommand extends Command
     /**
      * @var string Command Description
      */
-    protected $description = 'Test command, Get a list of commands';
+    protected $description = 'Статус привязки пользователя Telegram к системе авторизации WorkFlow';
 
     /**
      * {@inheritdoc}
@@ -28,43 +33,16 @@ class StatusCommand extends Command
         //Бот набирает (печатает) сообщение
         $this->replyWithChatAction(['action' => Actions::TYPING]);
         
-        $user = \App\Models\User::find(1);
-        
-        $this->replyWithMessage(['text' => 'Почта администратора системы документооборота: ' . $user->email]);
-        
-        //Метод для получения обновлений от бота
-        $telegramUser = \TelegramBot::getWebhookUpdates()['message'];
-        $text = sprintf('/%s - %s'.PHP_EOL, 'Ваш номер чата', $telegramUser['from']['id']);
-        
-        
-        //$text .= sprintf('/%s - %s'.PHP_EOL, 'Ваше имя пользователя в Телеграм', $telegramUser['from']['username']);
-        
-        
-        
-        
-        $keyboard = [
-            ['7', '8', '9'],
-            ['4', '5', '6'],
-            ['1', '2', '3'],
-                ['0']
-        ];
-
-        $reply_markup = \TelegramBot::replyKeyboardMarkup([
-	        'keyboard' => $keyboard, 
-	        'resize_keyboard' => true, 
-	        'one_time_keyboard' => true
-        ]);
-
-        $response = \TelegramBot::sendMessage([
-	        'chat_id' => $telegramUser['from']['id'], 
-	        'text' => 'Hello World', 
-	        'reply_markup' => $reply_markup
-        ]);
-        
-        //id последнего отправленного сообщения
-        $messageId = $response->getMessageId();
-        
-
-        $this->replyWithMessage(compact('text'));
+        $telegramMessage = TelegramBot::getWebhookUpdates()['message'];
+        $telegramUser = TelegramUser::where('id', $telegramMessage['from']['id'])->first();
+        //Log::info('созданный пользователь TelegramUser->user', ['telegramUser->user' => $telegramUser->user]);
+        if($telegramUser) {
+            if($telegramUser->user) {
+                $this->replyWithMessage(['text' => 'Ваш аккаунт в Telegram уже привязан к учетной записи пользователя WorkFlow: ' . $telegramUser->user->email . ' с телефонным номером: ' . $telegramUser->user->phone]);
+            }
+        }
+        else {
+            $this->replyWithMessage(['text' => 'Ваш аккаунт в Telegram не привязан ни к одной учетной записи пользователя WorkFlow.']);
+        }
     }
 }

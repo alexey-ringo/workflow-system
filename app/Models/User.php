@@ -12,10 +12,13 @@ use App\Models\Traits\PermissionsTrait;
 use App\Models\Group;
 use App\Models\Role;
 use App\Models\Task;
+use App\Models\TelegramUser;
 
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable, PermissionsTrait;
+    
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
@@ -59,6 +62,10 @@ class User extends Authenticatable
     
     public function Tasks() {
       return $this->hasMany(Task::class, 'user_id');
+    }
+    
+    public function telegramUser() {
+      return $this->hasOne(TelegramUser::class, 'user_id', 'id');
     }
     
     //-----------------------------------------------------//
