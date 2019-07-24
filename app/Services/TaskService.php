@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Services\UserService;
 
 use Event;
+use App\Events\Tasks\onCreateEvent;
 use App\Events\Tasks\onUpdateEvent;
 
 
@@ -51,6 +52,7 @@ class TaskService
             'deadline' => \Carbon\Carbon::now()->format('dmyHi')
         ]);
         
+        Event::dispatch(new onCreateEvent($newTask));
         return $newTask;
     }
     

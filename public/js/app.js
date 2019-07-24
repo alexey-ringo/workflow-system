@@ -3846,13 +3846,17 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/tasks';
       this.axios.post(uri, this.task).then(function (response) {
-        if (response.data) {
+        if (response.data.data) {
           //swal("Заказ", "Ваш заказ принят!", "success");
           _this.$router.push({
             name: 'tasks'
           });
         } else {
           swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this.$router.push({
+            name: 'tasks'
+          });
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -3866,6 +3870,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'tasks'
+          });
         }
       });
     }
@@ -3956,7 +3964,7 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
+        if (response.data.data) {
           //this.$emit("changecartevent", 1);
           //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
           _this2.$router.push({
@@ -3964,6 +3972,10 @@ __webpack_require__.r(__webpack_exports__);
           });
         } else {
           swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this2.$router.push({
+            name: 'tasks'
+          });
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -3977,6 +3989,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this2.$router.push({
+            name: 'tasks'
+          });
         }
       });
     },
@@ -3990,7 +4006,7 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
+        if (response.data.data) {
           //this.$emit("changecartevent", 1);
           //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
           _this3.$router.push({
@@ -3998,6 +4014,10 @@ __webpack_require__.r(__webpack_exports__);
           });
         } else {
           swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -4011,6 +4031,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
         }
       });
     },
@@ -4024,7 +4048,7 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
+        if (response.data.data) {
           //this.$emit("changecartevent", 1);
           //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
           _this4.$router.push({
@@ -4032,6 +4056,10 @@ __webpack_require__.r(__webpack_exports__);
           });
         } else {
           swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this4.$router.push({
+            name: 'tasks'
+          });
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -4045,6 +4073,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this4.$router.push({
+            name: 'tasks'
+          });
         }
       });
     }

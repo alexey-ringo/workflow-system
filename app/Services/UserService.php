@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserService
 {
@@ -64,6 +65,16 @@ class UserService
         //                }]);
         
         return $hasMissionsWithFirst->isNotEmpty();
+    }
+    
+    public function getUsersByMission(int $missionId): Collection 
+    {
+        $usersByMission = User::with('groups.missions')
+                        ->whereHas('groups.missions', function($q) use($missionId) {
+                                $q->where('missions.id', $missionId);
+                        })->get();
+        
+        return $usersByMission;
     }
     
 }

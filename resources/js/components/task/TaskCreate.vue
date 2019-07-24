@@ -50,12 +50,13 @@
       createTask(){
         let uri = '/api/tasks';
         this.axios.post(uri, this.task).then((response) => {
-          if(response.data) {
+          if(response.data.data) {
             //swal("Заказ", "Ваш заказ принят!", "success");
             this.$router.push({name: 'tasks'});
           }
           else {
             swal("Сохранение изменений", "Что то пошло не так...", "error");
+            this.$router.push({name: 'tasks'});
           }
         })
         .catch(e => {
@@ -68,6 +69,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            this.$router.push({name: 'tasks'});
           }
         });
       },

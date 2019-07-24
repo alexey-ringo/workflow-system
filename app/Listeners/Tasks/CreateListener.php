@@ -6,6 +6,10 @@ use App\Events\Tasks\onCreateEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use App\Models\User;
+use TelegramBot;
+use Exception;
+use App\Exceptions\WorkflowException;
 use Log;
 
 class CreateListener
@@ -28,6 +32,32 @@ class CreateListener
      */
     public function handle(onCreateEvent $event)
     {
+        $sendText = 'В Вашу очередь "' . $event->task->mission_name . 
+                    '" поступила вновь созданная заявка № ' . $event->task->task . 
+                    ' "' . $event->task->title . '" ' . 
+	                ' "' . $event->task->description . '". Заявка была создана пользователем ' . 
+	                $event->task->creating_user_name;
+	    
+	    
+	    $noticedUsers = User::getUsersByMission($event->task->mission_id);
+	                   
+	    foreach($noticedUsers as $noticedUser) {
+	        if($noticedUser->telegramUser) {
+	            try {
+                    TelegramBot::sendMessage([
+	                    'chat_id' => $noticedUser->telegramUser->id, 
+	                    'text' => $sendText, 
+	                    //'reply_markup' => $reply_markup
+                    ]);
+	            }
+	            catch(Exception $exception) {
+	                report($exception);
+	                return false;
+	            }
+	        }
+	    }
+        
+        /*
         Log::info('Create new task!', [
                                             'TaskNum' => $event->task,
                                             'NextSeq' => $event->sequence,
@@ -39,5 +69,6 @@ class CreateListener
                                             'MissionName' => $event->mission_name,
                                             'Deadline' => $event->deadline
                                             ]);
+        */
     }
 }

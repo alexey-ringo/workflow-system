@@ -51,13 +51,16 @@ class DelnumCommand extends Command
                 $user->phone . ' и удален из системы. При необходимости повторной привязки используйте комманду /regnum 7xxxxxxxxxx']);
             }
             else {
-                $this->replyWithMessage(['text' => 'Уважаемый пользователь Telegram ' . $telegramMessage['from']['first_name'] . ' Ваш аккаунт в Telegram не был ранее привязан к учетной записи системы WorkFlow. 
+                $this->replyWithMessage(['text' => 'Уважаемый пользователь Telegram ' . $telegramMessage['from']['first_name'] . 
+                                                    ' Ваш аккаунт в Telegram не был ранее привязан к учетной записи системы WorkFlow. 
                                                     Соответственно - что бы от чего то отвязаться - нужно сперва к этому чему то сначала привязаться!']);
             }
         }
         else {
-            $this->replyWithMessage(['text' => 'Уважаемый пользователь Telegram ' . $telegramMessage['from']['first_name'] . ' Ваш аккаунт в Telegram не был ранее привязан к учетной записи системы WorkFlow. 
-                                                Соответственно - что бы от чего то отвязаться - нужно сперва к этому чему то привязаться! Зарегистрируйтесь в системе с помощью команды /regnum 7xxxxxxxxxx, а потом уже можете и отвязываться ))']);
+            $this->replyWithMessage(['text' => 'Уважаемый пользователь Telegram ' . $telegramMessage['from']['first_name'] . 
+                                                ' Ваш аккаунт в Telegram не был ранее привязан к учетной записи системы WorkFlow. 
+                                                Соответственно - что бы от чего то отвязаться - нужно сперва к этому чему то привязаться! 
+                                                Зарегистрируйтесь в системе с помощью команды /regnum 7xxxxxxxxxx, а потом уже можете и отвязываться ))']);
         }
     }
 }

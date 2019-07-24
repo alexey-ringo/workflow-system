@@ -71,13 +71,14 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data) {
+            if(response.data.data) {
               //this.$emit("changecartevent", 1);
               //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
               this.$router.push({name: 'tasks'});
             }
             else {
             	swal("Сохранение изменений", "Что то пошло не так...", "error");
+            	this.$router.push({name: 'tasks'});
             }
           })
           .catch(e => {
@@ -90,6 +91,7 @@
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              this.$router.push({name: 'tasks'});
             }
           });
       },
@@ -100,13 +102,14 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data) {
+            if(response.data.data) {
               //this.$emit("changecartevent", 1);
               //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
               this.$router.push({name: 'tasks'});
             }
             else {
           	  swal("Сохранение изменений", "Что то пошло не так...", "error");
+          	  this.$router.push({name: 'tasks'});
             }
           })
           .catch(e => {
@@ -119,6 +122,7 @@
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              this.$router.push({name: 'tasks'});
             }
           });
       },
@@ -129,13 +133,14 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data) {
+            if(response.data.data) {
               //this.$emit("changecartevent", 1);
               //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
               this.$router.push({name: 'tasks'});
             }
             else {
           	  swal("Сохранение изменений", "Что то пошло не так...", "error");
+          	  this.$router.push({name: 'tasks'});
             }
           })
           .catch(e => {
@@ -148,6 +153,7 @@
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              this.$router.push({name: 'tasks'});
             }
           });
       },

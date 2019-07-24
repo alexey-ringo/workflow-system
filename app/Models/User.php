@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 use App\Models\Traits\PermissionsTrait;
+use Illuminate\Database\Eloquent\Collection;
 
 use App\Models\Group;
 use App\Models\Role;
@@ -77,6 +78,26 @@ class User extends Authenticatable
     
     public function scopeNextSequence() {
         
+    }
+    
+    public function canFirstCreate(): bool 
+    {
+        $hasMissionsWithFirst = $this->with('groups.missions')
+                        ->whereHas('groups.missions', function($q) {
+                                $q->where('sequence', 1);
+                        })->get();
+        
+        return $hasMissionsWithFirst->isNotEmpty();
+    }
+    
+    public static function getUsersByMission(int $missionId): Collection 
+    {
+        $usersByMission = self::with('groups.missions')
+                        ->whereHas('groups.missions', function($q) use($missionId) {
+                                $q->where('missions.id', $missionId);
+                        })->get();
+        
+        return $usersByMission;
     }
     
     

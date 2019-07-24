@@ -38,7 +38,8 @@ class StatusCommand extends Command
         //Log::info('созданный пользователь TelegramUser->user', ['telegramUser->user' => $telegramUser->user]);
         if($telegramUser) {
             if($telegramUser->user) {
-                $this->replyWithMessage(['text' => 'Ваш аккаунт в Telegram уже привязан к учетной записи пользователя WorkFlow: ' . $telegramUser->user->email . ' с телефонным номером: ' . $telegramUser->user->phone]);
+                $this->replyWithMessage(['text' => 'Ваш аккаунт в Telegram уже привязан к учетной записи пользователя WorkFlow: ' . 
+                                                    $telegramUser->user->email . ' с телефонным номером: ' . $telegramUser->user->phone]);
             }
         }
         else {

@@ -45,18 +45,20 @@ class RegnumCommand extends Command
                 //$telegramUser = TelegramUser::create(json_decode($telegramMessage['from'], true));
                 $telegramUser = TelegramUser::create(array_merge($receivedUser, $userId));
                 if($telegramUser) {
-                    $this->replyWithMessage(['text' => 'Телефон: ' . $user->phone . ' успешно привязан к настройкам пользователя ' . $user->email . ' Аккайнт Телеграм: ' . $telegramUser->tlgrmuser]);
+                    $this->replyWithMessage(['text' => 'Телефон: ' . $user->phone . ' успешно привязан к настройкам пользователя системы WorkFlow: ' . $user->email]);
                 }
                 else {
                     $this->replyWithMessage(['text' => 'Извините, но в настоящее время сервис регистрации недоступен']);
                 }
             }
             else {
-                $this->replyWithMessage(['text' => 'К пользователю с телефонным номером ' . $receivedPhoneNum . ' . уже привязан аккаунт Telegram: ' . $user->telegramUser->first_name . ' ' . $user->telegramUser->last_name]);
+                $this->replyWithMessage(['text' => 'К пользователю с телефонным номером ' . $receivedPhoneNum . ' . уже привязан аккаунт Telegram: ' . 
+                                                    $user->telegramUser->first_name . ' ' . $user->telegramUser->last_name]);
             }
         }
         else {
-            $this->replyWithMessage(['text' => 'Вот телефонный номер, который Вы ввели: ' . $receivedPhoneNum . ' . Пользователь с таким телефонным номером отсутствует в базе нашей системы WorkFlow. Попробуйте еще раз ввести номер повнимательней']);
+            $this->replyWithMessage(['text' => 'Вот телефонный номер, который Вы ввели: ' . $receivedPhoneNum . 
+                                                ' . Пользователь с таким телефонным номером отсутствует в базе нашей системы WorkFlow. Попробуйте еще раз ввести номер повнимательней']);
         }
     }
 }

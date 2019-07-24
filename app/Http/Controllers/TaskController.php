@@ -7,8 +7,6 @@ use App\Models\User;
 use App\Models\Mission;
 
 use App\Services\TaskService;
-use App\Services\UserService;
-
 
 use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
@@ -22,13 +20,13 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, UserService $userService)
+    public function index(Request $request)
     {
         $currentUser = $request->user('api');
         
         return (new TaskCollection(Mission::with('tasks')->get()/*->load('comments')*/))
                 ->additional(['meta' => [
-                    'canTaskCreate' => $userService->canFirstCreate($currentUser)
+                    'canTaskCreate' => $currentUser->canFirstCreate()
                 ]]);
         //return response()->json(['isFirstStep' => $currentUser->hasSequences()]);
         //return response()->json(['isFirstStep' => Mission::missionsForUser($currentUser)]);
