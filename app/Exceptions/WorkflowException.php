@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use ErrorException;
 use Log;
 
 class WorkflowException extends Exception
@@ -14,6 +15,6 @@ class WorkflowException extends Exception
      */
     public function report(Exception $exception)
     {
-       Log::info('Ошибка!', ['Текст ошибки: ' => $exception->getMessage()]);
+        Log::info('Ошибка!', ['Текст ошибки: ' => $exception->getMessage()]);
     }
 }

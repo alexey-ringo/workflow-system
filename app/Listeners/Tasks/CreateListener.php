@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\User;
 use TelegramBot;
 use Exception;
+use ErrorException;
 use App\Exceptions\WorkflowException;
 use Log;
 
@@ -51,7 +52,13 @@ class CreateListener
                     ]);
 	            }
 	            catch(Exception $exception) {
-	                report($exception);
+	                if ($exception instanceof ErrorException) {
+                        $e = new WorkflowException;
+                        $e->report($exception);
+                    }
+                    else {
+	                    report($exception);
+                    }
 	                return false;
 	            }
 	        }
