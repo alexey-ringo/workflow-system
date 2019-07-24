@@ -82,12 +82,12 @@ class User extends Authenticatable
     
     public function canFirstCreate(): bool 
     {
-        $hasMissionsWithFirst = $this->with('groups.missions')
+        $hasFirstMission = $this->with('groups.missions')
                         ->whereHas('groups.missions', function($q) {
                                 $q->where('sequence', 1);
                         })->get();
         
-        return $hasMissionsWithFirst->isNotEmpty();
+        return $hasFirstMission->isNotEmpty();
     }
     
     public static function getUsersByMission(int $missionId): Collection 
@@ -100,5 +100,13 @@ class User extends Authenticatable
         return $usersByMission;
     }
     
-    
+    public function canThisMissionDo(int $missionId): bool 
+    {
+        $hasThisMission = $this->with('groups.missions')
+                        ->whereHas('groups.missions', function($q) use($missionId) {
+                                $q->where('missions.id', $missionId);
+                        })->get();
+        
+        return $hasThisMission->isNotEmpty();
+    }
 }

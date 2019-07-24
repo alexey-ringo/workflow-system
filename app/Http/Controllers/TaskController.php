@@ -24,10 +24,16 @@ class TaskController extends Controller
     {
         $currentUser = $request->user('api');
         
-        return (new TaskCollection(Mission::with('tasks')->get()/*->load('comments')*/))
-                ->additional(['meta' => [
-                    'canTaskCreate' => $currentUser->canFirstCreate()
-                ]]);
+        return (new TaskCollection(Mission::with('tasks', 'groups.users')
+                                        ->whereHas('groups.users', function($q) use($currentUser) {
+                                            $q->where('users.id', $currentUser->id);
+                                        }
+                                    )->get()/*->load('comments')*/))
+                                    ->additional(['meta' => 
+                                                        [
+                                                            'canTaskCreate' => $currentUser->canFirstCreate()
+                                                        ]
+                                                ]);
         //return response()->json(['isFirstStep' => $currentUser->hasSequences()]);
         //return response()->json(['isFirstStep' => Mission::missionsForUser($currentUser)]);
     }
