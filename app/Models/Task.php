@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\User;
 use App\Models\Mission;
+use App\Models\Comment;
 
 class Task extends Model
 {
@@ -24,7 +25,11 @@ class Task extends Model
     //return $this->belongsTo(Mission::class, 'id');
     return $this->belongsTo(Mission::class);
   }
+  
+  public function comments() {
+    return $this->hasMany(Comment::class);
+  }
     
-    //---------------------------------------------------------//
+  //---------------------------------------------------------//
     
 }

@@ -3930,35 +3930,73 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      task: {}
+      task: {},
+      comments: [],
+      comment: {},
+      visibleCommentCreate: false
     };
   },
-  created: function created() {
+  created: function created() {},
+  mounted: function mounted() {
     var _this = this;
 
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = "/api/tasks/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
+    var taskUri = "/api/tasks/".concat(this.$route.params.id);
+    this.axios.get(taskUri).then(function (response) {
       _this.task = response.data.data;
+
+      _this.getAllComments();
+    })["catch"](function (e) {
+      //console.log(e);
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
     });
-  },
-  mounted: function mounted() {//let uri = `/api/groups/${this.$route.params.id}`;
-    //this.axios.get(uri).then((response) => {
-    //  this.group = response.data.data;
-    //this.setMissionsChecked();
-    //});
   },
   methods: {
     updateTaskToNext: function updateTaskToNext() {
       var _this2 = this;
 
-      this.task.execMissionId = this.task.nextMissionId;
-      this.task.execMissionName = this.task.nextMissionName;
+      this.task.currentMissionId = this.task.nextMissionId;
       this.task.destination = 1;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
@@ -3999,8 +4037,7 @@ __webpack_require__.r(__webpack_exports__);
     updateTaskToPrev: function updateTaskToPrev() {
       var _this3 = this;
 
-      this.task.execMissionId = this.task.prevMissionId;
-      this.task.execMissionName = this.task.prevMissionName;
+      this.task.currentMissionId = this.task.prevMissionId;
       this.task.destination = 2;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
@@ -4041,8 +4078,7 @@ __webpack_require__.r(__webpack_exports__);
     updateTaskToClose: function updateTaskToClose() {
       var _this4 = this;
 
-      this.task.execMissionId = this.task.nextMissionId;
-      this.task.execMissionName = this.task.nextMissionName;
+      this.task.currentMissionId = this.task.nextMissionId;
       this.task.destination = 3;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
@@ -4079,7 +4115,88 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
       });
-    }
+    },
+    getAllComments: function getAllComments() {
+      var _this5 = this;
+
+      var commentsUri = "/api/comments?task=".concat(this.task.id);
+      this.axios.get(commentsUri).then(function (response) {
+        _this5.comments = response.data.data; //this.meta = response.data.meta;
+      });
+    },
+    createNewComment: function createNewComment() {
+      this.visibleCommentCreate = true;
+    },
+    storeNewComment: function storeNewComment(destination) {
+      var _this6 = this;
+
+      this.comment.taskId = this.task.id;
+      var uri = '/api/comments';
+      this.axios.post(uri, this.comment).then(function (response) {
+        if (response.data.data) {
+          switch (destination) {
+            case 1:
+              _this6.updateTaskToNext();
+
+              break;
+
+            case 2:
+              _this6.updateTaskToPrev();
+
+              break;
+
+            case 3:
+              _this6.updateTaskToClose();
+
+              break;
+
+            case 4:
+              //const id = this.task.id;
+              //this.$router.push({name: 'task-update', params: { id }});
+              _this6.closeNewComment();
+
+              _this6.getAllComments(); //Так не работает!
+              //this.$router.push({path: `/task/${this.task.id}`});
+              //Колхозное обновление страницы!
+              //location.reload();
+
+
+              break;
+
+            default:
+              _this6.closeNewComment();
+
+              break;
+          }
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this6.closeNewComment();
+        }
+      })["catch"](function (e) {
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this6.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Пользователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this6.$router.push({
+            name: 'tasks'
+          });
+        }
+      });
+    },
+    closeNewComment: function closeNewComment() {
+      this.visibleCommentCreate = false;
+      this.comment = {};
+    },
+    showComment: function showComment() {}
   },
   computed: {
     isSequenceLast: function isSequenceLast() {
@@ -4161,7 +4278,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       missions: [],
-      tasks: [],
+      //tasks: [],
       meta: []
     };
   },
@@ -44053,149 +44170,206 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "card card-info" }, [
     _c("div", { staticClass: "card-header" }, [
-      !_vm.isSequenceLast
-        ? _c("h3", { staticClass: "card-title" }, [_vm._v("Обработка заявки")])
-        : _vm._e(),
-      _vm._v(" "),
-      _vm.isSequenceLast
-        ? _c("h3", { staticClass: "card-title" }, [_vm._v("Завершение заявки")])
-        : _vm._e()
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-md-8" }, [
+          !_vm.isSequenceLast
+            ? _c("h3", { staticClass: "card-title" }, [
+                _vm._v("Обработка заявки № " + _vm._s(_vm.task.task))
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.isSequenceLast
+            ? _c("h3", { staticClass: "card-title" }, [
+                _vm._v("Завершение заявки № " + _vm._s(_vm.task.task))
+              ])
+            : _vm._e()
+        ])
+      ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "form-horizontal" }, [
       _c("div", { staticClass: "card-body" }, [
         _c("div", { staticClass: "form-group" }, [
-          _c(
-            "label",
-            {
-              staticClass: "col-sm-4 control-label",
-              attrs: { for: "inputTaskName" }
-            },
-            [_vm._v("Название заявки")]
-          ),
+          _c("label", { staticClass: "col-sm-4 control-label" }, [
+            _vm._v("Название заявки:")
+          ]),
           _vm._v(" "),
-          _c("div", { staticClass: "col-sm-10" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.task.title,
-                  expression: "task.title"
-                }
-              ],
-              staticClass: "form-control",
-              attrs: {
-                type: "text",
-                id: "inputTaskName",
-                disabled: "",
-                placeholder: "Название заявки"
-              },
-              domProps: { value: _vm.task.title },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.task, "title", $event.target.value)
-                }
-              }
-            })
-          ])
+          _c("label", [_vm._v(_vm._s(_vm.task.title))])
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "form-group" }, [
-          _c(
-            "label",
-            {
-              staticClass: "col-sm-4 control-label",
-              attrs: { for: "inputTaskDesc" }
-            },
-            [_vm._v("Краткое описание")]
-          ),
+          _c("label", { staticClass: "col-sm-4 control-label" }, [
+            _vm._v("Краткое описание:")
+          ]),
           _vm._v(" "),
-          _c("div", { staticClass: "col-sm-10" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.task.description,
-                  expression: "task.description"
-                }
-              ],
-              staticClass: "form-control",
-              attrs: {
-                type: "text",
-                id: "inputTaskDesc",
-                disabled: "",
-                placeholder: "Краткое описание"
-              },
-              domProps: { value: _vm.task.description },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+          _c("label", [_vm._v(_vm._s(_vm.task.description))])
+        ]),
+        _vm._v(" "),
+        _vm.visibleCommentCreate
+          ? _c("div", { staticClass: "form-group" }, [
+              _c("textarea", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.comment.comment,
+                    expression: "comment.comment"
                   }
-                  _vm.$set(_vm.task, "description", $event.target.value)
+                ],
+                staticClass: "form-control",
+                staticStyle: { height: "300px" },
+                attrs: { placeholder: "введите несколько строчек" },
+                domProps: { value: _vm.comment.comment },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.comment, "comment", $event.target.value)
+                  }
                 }
-              }
-            })
-          ])
-        ])
+              })
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        !_vm.visibleCommentCreate
+          ? _c("div", { staticClass: "table-responsive mailbox-messages" }, [
+              _c("table", { staticClass: "table table-hover table-striped" }, [
+                _c(
+                  "tbody",
+                  _vm._l(_vm.comments, function(commentItem) {
+                    return _c("tr", { key: commentItem.id }, [
+                      _c("td", { staticClass: "mailbox-date" }, [
+                        _vm._v("5 mins ago")
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "mailbox-name" }, [
+                        _c("a", { attrs: { href: "read-mail.html" } }, [
+                          _vm._v(_vm._s(commentItem.user_name))
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "mailbox-subject" }, [
+                        _c("b"),
+                        _vm._v(_vm._s(commentItem.comment))
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "mailbox-attachment" })
+                    ])
+                  }),
+                  0
+                )
+              ])
+            ])
+          : _vm._e()
       ]),
       _vm._v(" "),
-      _c(
-        "div",
-        { staticClass: "card-footer" },
-        [
-          !_vm.isSequenceFirst
-            ? _c(
+      _c("div", { staticClass: "card-footer" }, [
+        _vm.visibleCommentCreate
+          ? _c("div", [
+              !_vm.isSequenceFirst
+                ? _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      on: {
+                        click: function($event) {
+                          return _vm.storeNewComment(2)
+                        }
+                      }
+                    },
+                    [
+                      _vm._v("Назад в "),
+                      _c("b", [_vm._v(_vm._s(_vm.task.prevMissionName))])
+                    ]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              !_vm.isSequenceLast
+                ? _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      on: {
+                        click: function($event) {
+                          return _vm.storeNewComment(1)
+                        }
+                      }
+                    },
+                    [
+                      _vm._v("Вперед в "),
+                      _c("b", [_vm._v(_vm._s(_vm.task.nextMissionName))])
+                    ]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _c(
                 "button",
                 {
                   staticClass: "btn btn-primary",
-                  attrs: { name: "prev" },
-                  on: { click: _vm.updateTaskToPrev }
+                  on: {
+                    click: function($event) {
+                      return _vm.storeNewComment(4)
+                    }
+                  }
                 },
-                [_vm._v("Предидущая")]
-              )
-            : _vm._e(),
-          _vm._v(" "),
-          !_vm.isSequenceLast
-            ? _c(
-                "button",
+                [_vm._v("Просто комментарий")]
+              ),
+              _vm._v(" "),
+              _vm.isSequenceLast
+                ? _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      on: {
+                        click: function($event) {
+                          return _vm.storeNewComment(3)
+                        }
+                      }
+                    },
+                    [_vm._v("Закрыть заявку")]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _c(
+                "a",
                 {
-                  staticClass: "btn btn-primary",
-                  attrs: { name: "next" },
-                  on: { click: _vm.updateTaskToNext }
+                  staticClass: "btn btn-default float-right",
+                  attrs: { href: "#" },
+                  on: { click: _vm.closeNewComment }
                 },
-                [_vm._v("Следующая")]
+                [_vm._v("Отмена")]
               )
-            : _vm._e(),
-          _vm._v(" "),
-          _vm.isSequenceLast
-            ? _c(
-                "button",
-                {
-                  staticClass: "btn btn-primary",
-                  attrs: { name: "close" },
-                  on: { click: _vm.updateTaskToClose }
-                },
-                [_vm._v("Закрыть")]
-              )
-            : _vm._e(),
-          _vm._v(" "),
-          _c(
-            "router-link",
-            {
-              staticClass: "btn btn-default float-right",
-              attrs: { name: "exit", to: { name: "tasks" } }
-            },
-            [_vm._v("Отмена")]
-          )
-        ],
-        1
-      )
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        !_vm.visibleCommentCreate
+          ? _c(
+              "div",
+              [
+                _c(
+                  "router-link",
+                  {
+                    staticClass: "btn btn-default float-right",
+                    attrs: { name: "exit", to: { name: "tasks" } }
+                  },
+                  [_vm._v("Отмена")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-primary",
+                    attrs: { href: "#" },
+                    on: { click: _vm.createNewComment }
+                  },
+                  [_vm._v("Комментарий по задаче")]
+                )
+              ],
+              1
+            )
+          : _vm._e()
+      ])
     ])
   ])
 }
@@ -62128,6 +62302,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+ //import CommentDetails from './components/task/CommentDetails';
+//import CommentCreate from './components/task/CommentCreate';
 
 
  //Экспорт объекта VueRouter (который импортировали выше)
@@ -62147,12 +62323,7 @@ __webpack_require__.r(__webpack_exports__);
     path: '/',
     name: 'dashboard',
     component: _components_Dashboard__WEBPACK_IMPORTED_MODULE_1__["default"],
-    children: [// UserHome will be rendered inside User's <router-view>
-    // when /user/:id is matched
-    //{ path: '',  component: Adminlte },
-    // UserProfile will be rendered inside User's <router-view>
-    // when /user/:id/profile is matched
-    {
+    children: [{
       path: 'users',
       name: 'users',
       component: _components_user_Users__WEBPACK_IMPORTED_MODULE_4__["default"]
@@ -62217,13 +62388,18 @@ __webpack_require__.r(__webpack_exports__);
       name: 'tasks',
       component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_19__["default"]
     }, {
-      path: 'task/:id',
-      name: 'task-update',
-      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__["default"]
-    }, {
       path: 'task-new',
       name: 'task-create',
       component: _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__["default"]
+    }, {
+      path: 'task/:id',
+      name: 'task-update',
+      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__["default"] //children: [
+      //{ path: 'comments',  name: 'comments', component: Comments },
+      //{ path: 'comment/:id',  name: 'comment-details', component: CommentDetails },
+      //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
+      //]
+
     }, {
       path: 'bot-setting',
       name: 'bot-setting',

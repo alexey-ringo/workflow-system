@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comment;
 use Illuminate\Http\Request;
+use App\Models\Comment;
+use App\Models\Task;
+use App\Services\TaskService;
+use App\Http\Resources\CommentCollection;
 
 class CommentController extends Controller
 {
@@ -12,20 +15,14 @@ class CommentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $task = Task::find((int) $request->get('task'));
+       
+        return new CommentCollection(Comment::getAllCommentsForTask($task));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -33,9 +30,35 @@ class CommentController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, TaskService $taskService)
     {
-        //
+        $currentUser = $request->user('api');
+        if(!$currentUser) {
+            return response()->json(['data' => 0]);
+        }
+        
+        $currentTask = Task::find($request['taskId']);
+        if(!$currentTask) {
+            return response()->json(['data' => 0]);
+        }
+        
+        /*
+        $validator = $request->validate([
+            'slug' => 'required|string|max:255|unique:groups',
+            'name' => 'required|string|max:255|unique:groups',
+        ]);
+        */
+        $createdComment = $taskService->createComment(
+                                                    $currentTask, 
+                                                    $request['comment'], 
+                                                    $currentUser
+                                                    );
+        if($createdComment) {
+            return response()->json(['data' => 1]);
+        }
+        else {
+            return response()->json(['data' => 0]);
+        }
     }
 
     /**
@@ -49,16 +72,7 @@ class CommentController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Comment $comment)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.

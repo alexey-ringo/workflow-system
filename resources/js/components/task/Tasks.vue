@@ -58,7 +58,7 @@
         data: function () {
             return {
                 missions: [],
-                tasks: [],
+                //tasks: [],
                 meta: []
             }
         },

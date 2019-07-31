@@ -31,6 +31,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('/groups','GroupController');
     Route::apiResource('/missions','MissionController');
     Route::apiResource('/tasks','TaskController');
+    Route::apiResource('/comments','CommentController');
     //Route::get('/current-user', 'DashboardController@currentUser');
     //Route::apiResource('/users','UserController');
     

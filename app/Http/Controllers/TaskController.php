@@ -34,19 +34,8 @@ class TaskController extends Controller
                                                             'canTaskCreate' => $currentUser->canFirstCreate()
                                                         ]
                                                 ]);
-        //return response()->json(['isFirstStep' => $currentUser->hasSequences()]);
-        //return response()->json(['isFirstStep' => Mission::missionsForUser($currentUser)]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -57,7 +46,9 @@ class TaskController extends Controller
     public function store(Request $request, TaskService $taskService)
     {
         $currentUser = User::find($request->user('api')->id);
-        
+        if(!$currentUser) {
+            return response()->json(['data' => 0]);
+        }
         /*
         $validator = $request->validate([
             'slug' => 'required|string|max:255|unique:groups',
@@ -66,7 +57,12 @@ class TaskController extends Controller
         */
         $createdTask = $taskService->createNewTask($request['title'], $request['description'], $currentUser);
         
-        return new TaskResource($createdTask);
+        if($createdTask) {
+            return response()->json(['data' => 1]);
+        }
+        else {
+            return response()->json(['data' => 0]);
+        }
         
         
     }
@@ -86,21 +82,10 @@ class TaskController extends Controller
         $isSequenceFirst = $task->mission->isSequenceFirst();
         $isSequenceLast = $task->mission->isSequenceLast();
         
-        
         return new TaskCustomResource($task, $prevMissionId, $nextMissionId, $prevMissionName, $nextMissionName, $isSequenceFirst, $isSequenceLast);
         
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Task  $task
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Task $task)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
@@ -112,16 +97,27 @@ class TaskController extends Controller
     public function update(Request $request, Task $task, TaskService $taskService)
     {
         $currentUser = $request->user('api');
+        if(!$currentUser) {
+            return response()->json(['data' => 0]);
+        }
+        $currentMission = Mission::find($request['currentMissionId']);
+        if(!$currentMission) {
+            return response()->json(['data' => 0]);
+        }
        
         $updatedTask = $taskService->createNextSeqTask(
                                                         $task, 
                                                         $currentUser, 
-                                                        $request['execMissionId'], 
-                                                        $request['execMissionName'],
+                                                        $currentMission,
                                                         $request['destination']
                                                         );
         
-        return new TaskResource($updatedTask);
+        if($updatedTask) {
+            return response()->json(['data' => 1]);
+        }
+        else {
+            return response()->json(['data' => 0]);
+        }
     }
 
     /**

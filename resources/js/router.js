@@ -30,6 +30,9 @@ import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
 import TaskCreate from './components/task/TaskCreate';
 
+//import CommentDetails from './components/task/CommentDetails';
+//import CommentCreate from './components/task/CommentCreate';
+
 import BotSetting from './components/telegram/BotSetting';
 import BotStatus from './components/telegram/BotStatus';
 
@@ -59,57 +62,41 @@ export default new VueRouter({
             component : Dashboard,
             
             children: [
-            // UserHome will be rendered inside User's <router-view>
-            // when /user/:id is matched
-            //{ path: '',  component: Adminlte },
-				
-            // UserProfile will be rendered inside User's <router-view>
-            // when /user/:id/profile is matched
             
-            { path: 'users',  name: 'users', component: Users },
-            { path: 'user/:id',  name: 'user-update', component: UserUpdate },
-            { path: 'user-new',  name: 'user-create', component: UserCreate },
+                { path: 'users',  name: 'users', component: Users },
+                { path: 'user/:id',  name: 'user-update', component: UserUpdate },
+                { path: 'user-new',  name: 'user-create', component: UserCreate },
             
-            { path: 'roles',  name: 'roles', component: Roles },
-            { path: 'role/:id',  name: 'role-update', component: RoleUpdate },
-            { path: 'role-new',  name: 'role-create', component: RoleCreate },
+                { path: 'roles',  name: 'roles', component: Roles },
+                { path: 'role/:id',  name: 'role-update', component: RoleUpdate },
+                { path: 'role-new',  name: 'role-create', component: RoleCreate },
             
-            { path: 'permissions',  name: 'permissions', component: Permissions },
-            { path: 'permission/:id',  name: 'permission-update', component: PermissionUpdate },
-            { path: 'permission-new',  name: 'permission-create', component: PermissionCreate },
+                { path: 'permissions',  name: 'permissions', component: Permissions },
+                { path: 'permission/:id',  name: 'permission-update', component: PermissionUpdate },
+                { path: 'permission-new',  name: 'permission-create', component: PermissionCreate },
             
-            { path: 'groups',  name: 'groups', component: Groups },
-            { path: 'group/:id',  name: 'group-update', component: GroupUpdate },
-            { path: 'group-new',  name: 'group-create', component: GroupCreate },
-
+                { path: 'groups',  name: 'groups', component: Groups },
+                { path: 'group/:id',  name: 'group-update', component: GroupUpdate },
+                { path: 'group-new',  name: 'group-create', component: GroupCreate },
             
-            { path: 'missions',  name: 'missions', component: Missions },
-            { path: 'mission/:id',  name: 'mission-update', component: MissionUpdate },
-            { path: 'mission-new',  name: 'mission-create', component: MissionCreate },
+                { path: 'missions',  name: 'missions', component: Missions },
+                { path: 'mission/:id',  name: 'mission-update', component: MissionUpdate },
+                { path: 'mission-new',  name: 'mission-create', component: MissionCreate },
             
-            { path: 'tasks',  name: 'tasks', component: Tasks },
-            { path: 'task/:id',  name: 'task-update', component: TaskUpdate },
-            { path: 'task-new',  name: 'task-create', component: TaskCreate },
+                { path: 'tasks',  name: 'tasks', component: Tasks },
+                { path: 'task-new',  name: 'task-create', component: TaskCreate },
+                { path: 'task/:id',  name: 'task-update', component: TaskUpdate, 
+                    //children: [
+                        //{ path: 'comments',  name: 'comments', component: Comments },
+                        //{ path: 'comment/:id',  name: 'comment-details', component: CommentDetails },
+                        //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
+                    //]
+                },
             
-            { path: 'bot-setting',  name: 'bot-setting', component: BotSetting },
-            { path: 'bot-status',  name: 'bot-status', component: BotStatus },
-            
-            
-            // UserPosts will be rendered inside User's <router-view>
-            // when /user/:id/posts is matched
-            
-        //    { path: 'orders', name: 'adminorders', component: Orders },
-            
-            // UserPosts will be rendered inside User's <router-view>
-            // when /user/:id/posts is matched
-            
-        //    { path: 'purchases', name: 'adminpurchases', component: Purchases },
+                { path: 'bot-setting',  name: 'bot-setting', component: BotSetting },
+                { path: 'bot-status',  name: 'bot-status', component: BotStatus },
             ]
         },
-        
-        
-        
-        
     ],
     //Запись всех перемещений пользователя по переходам
     mode: 'history'
