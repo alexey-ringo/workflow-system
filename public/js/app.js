@@ -3785,6 +3785,72 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      comment: {}
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = "/api/comments/".concat(this.$route.params.commid);
+    this.axios.get(uri).then(function (response) {
+      _this.comment = response.data.data;
+    });
+  },
+  mounted: function mounted() {},
+  methods: {}
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/TaskCreate.vue?vue&type=script&lang=js&":
 /*!**************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/TaskCreate.vue?vue&type=script&lang=js& ***!
@@ -3891,6 +3957,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
 //
 //
 //
@@ -4196,7 +4264,15 @@ __webpack_require__.r(__webpack_exports__);
       this.visibleCommentCreate = false;
       this.comment = {};
     },
-    showComment: function showComment() {}
+    showComment: function showComment(commentId) {
+      console.log(commentId);
+      this.$router.push({
+        name: 'comment-details',
+        params: {
+          commid: commentId
+        }
+      }); //this.$router.push({path: `/comment/${commentId}`});
+    }
   },
   computed: {
     isSequenceLast: function isSequenceLast() {
@@ -44002,6 +44078,111 @@ render._withStripped = true
 
 /***/ }),
 
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852& ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c("div", { staticClass: "form-horizontal" }, [
+      _c("div", { staticClass: "card-body" }, [
+        _vm._m(1),
+        _vm._v(" "),
+        _c("div", { staticClass: "form-group" }, [
+          _c("textarea", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.comment.comment,
+                expression: "comment.comment"
+              }
+            ],
+            staticClass: "form-control",
+            staticStyle: { height: "300px" },
+            attrs: { readonly: "" },
+            domProps: { value: _vm.comment.comment },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.comment, "comment", $event.target.value)
+              }
+            }
+          })
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "card-footer" },
+        [
+          _c(
+            "router-link",
+            {
+              staticClass: "btn btn-default float-right",
+              attrs: {
+                name: "exit",
+                to: {
+                  name: "task-update",
+                  params: { id: this.comment.task_id }
+                }
+              }
+            },
+            [_vm._v("Отмена")]
+          )
+        ],
+        1
+      )
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [_vm._v("Обработка заявки")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c(
+        "label",
+        {
+          staticClass: "col-sm-4 control-label",
+          attrs: { for: "inputTaskName" }
+        },
+        [_vm._v("Название заявки")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-sm-10" })
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/TaskCreate.vue?vue&type=template&id=0a0874d0&":
 /*!******************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/TaskCreate.vue?vue&type=template&id=0a0874d0& ***!
@@ -44174,7 +44355,12 @@ var render = function() {
         _c("div", { staticClass: "col-md-8" }, [
           !_vm.isSequenceLast
             ? _c("h3", { staticClass: "card-title" }, [
-                _vm._v("Обработка заявки № " + _vm._s(_vm.task.task))
+                _vm._v("Обработка заявки № "),
+                _c("b", [_vm._v(_vm._s(_vm.task.task))]),
+                _vm._v(
+                  "\n                                                       в очереди: "
+                ),
+                _c("b", [_vm._v(_vm._s(_vm.task.sequenceName))])
               ])
             : _vm._e(),
           _vm._v(" "),
@@ -44237,25 +44423,37 @@ var render = function() {
               _c("table", { staticClass: "table table-hover table-striped" }, [
                 _c(
                   "tbody",
-                  _vm._l(_vm.comments, function(commentItem) {
-                    return _c("tr", { key: commentItem.id }, [
-                      _c("td", { staticClass: "mailbox-date" }, [
-                        _vm._v("5 mins ago")
-                      ]),
-                      _vm._v(" "),
-                      _c("td", { staticClass: "mailbox-name" }, [
-                        _c("a", { attrs: { href: "read-mail.html" } }, [
+                  _vm._l(_vm.comments, function(commentItem, commentId) {
+                    return _c(
+                      "tr",
+                      {
+                        key: commentItem.id,
+                        on: {
+                          dblclick: function($event) {
+                            return _vm.showComment(commentId)
+                          }
+                        }
+                      },
+                      [
+                        _c("td", { staticClass: "mailbox-date" }, [
+                          _vm._v("5 mins ago")
+                        ]),
+                        _vm._v(" "),
+                        _c("td", { staticClass: "mailbox-subject" }, [
+                          _vm._v(_vm._s(commentItem.task.mission_name))
+                        ]),
+                        _vm._v(" "),
+                        _c("td", { staticClass: "mailbox-name" }, [
                           _vm._v(_vm._s(commentItem.user_name))
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("td", { staticClass: "mailbox-subject" }, [
-                        _c("b"),
-                        _vm._v(_vm._s(commentItem.comment))
-                      ]),
-                      _vm._v(" "),
-                      _c("td", { staticClass: "mailbox-attachment" })
-                    ])
+                        ]),
+                        _vm._v(" "),
+                        _c("td", { staticClass: "mailbox-subject" }, [
+                          _vm._v(_vm._s(commentItem.comment))
+                        ]),
+                        _vm._v(" "),
+                        _c("td", { staticClass: "mailbox-attachment" })
+                      ]
+                    )
                   }),
                   0
                 )
@@ -61695,6 +61893,75 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/task/CommentDetails.vue":
+/*!*********************************************************!*\
+  !*** ./resources/js/components/task/CommentDetails.vue ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CommentDetails.vue?vue&type=template&id=28509852& */ "./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852&");
+/* harmony import */ var _CommentDetails_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CommentDetails.vue?vue&type=script&lang=js& */ "./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _CommentDetails_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/task/CommentDetails.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************!*\
+  !*** ./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_CommentDetails_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./CommentDetails.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CommentDetails.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_CommentDetails_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852& ***!
+  \****************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./CommentDetails.vue?vue&type=template&id=28509852& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CommentDetails.vue?vue&type=template&id=28509852&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CommentDetails_vue_vue_type_template_id_28509852___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/task/TaskCreate.vue":
 /*!*****************************************************!*\
   !*** ./resources/js/components/task/TaskCreate.vue ***!
@@ -62278,8 +62545,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
 /* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
 /* harmony import */ var _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/task/TaskCreate */ "./resources/js/components/task/TaskCreate.vue");
-/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
-/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
+/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
 
 
@@ -62302,8 +62570,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- //import CommentDetails from './components/task/CommentDetails';
-//import CommentCreate from './components/task/CommentCreate';
+
+ //import CommentCreate from './components/task/CommentCreate';
 
 
  //Экспорт объекта VueRouter (который импортировали выше)
@@ -62396,18 +62664,22 @@ __webpack_require__.r(__webpack_exports__);
       name: 'task-update',
       component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__["default"] //children: [
       //{ path: 'comments',  name: 'comments', component: Comments },
-      //{ path: 'comment/:id',  name: 'comment-details', component: CommentDetails },
+      //{ path: 'comment/:commid',  name: 'comment-details', component: CommentDetails }
       //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
       //]
 
     }, {
+      path: 'comment/:commid',
+      name: 'comment-details',
+      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_22__["default"]
+    }, {
       path: 'bot-setting',
       name: 'bot-setting',
-      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_22__["default"]
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_23__["default"]
     }, {
       path: 'bot-status',
       name: 'bot-status',
-      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_23__["default"]
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_24__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

@@ -26,13 +26,13 @@ class TaskCustomResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'task' => $this->task,
-            'title' => $this->title,
-            'description' => $this->description,
-            'sequence' => $this->sequence,
-            'sequenceName' => $this->mission_name,
-            'taskStatus' => $this->status,
+            'id' => $this->resource->id,
+            'task' => $this->resource->task,
+            'title' => $this->resource->title,
+            'description' => $this->resource->description,
+            'sequence' => $this->resource->sequence,
+            'sequenceName' => $this->resource->mission_name,
+            'taskStatus' => $this->resource->status,
             'prevMissionId' => $this->prevMissionId,
             'nextMissionId' => $this->nextMissionId,
             'prevMissionName' => $this->prevMissionName,

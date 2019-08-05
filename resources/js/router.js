@@ -30,7 +30,7 @@ import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
 import TaskCreate from './components/task/TaskCreate';
 
-//import CommentDetails from './components/task/CommentDetails';
+import CommentDetails from './components/task/CommentDetails';
 //import CommentCreate from './components/task/CommentCreate';
 
 import BotSetting from './components/telegram/BotSetting';
@@ -87,11 +87,13 @@ export default new VueRouter({
                 { path: 'task-new',  name: 'task-create', component: TaskCreate },
                 { path: 'task/:id',  name: 'task-update', component: TaskUpdate, 
                     //children: [
-                        //{ path: 'comments',  name: 'comments', component: Comments },
-                        //{ path: 'comment/:id',  name: 'comment-details', component: CommentDetails },
-                        //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
+                            //{ path: 'comments',  name: 'comments', component: Comments },
+                        //{ path: 'comment/:commid',  name: 'comment-details', component: CommentDetails }
+                            //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
                     //]
                 },
+                
+                { path: 'comment/:commid',  name: 'comment-details', component: CommentDetails },
             
                 { path: 'bot-setting',  name: 'bot-setting', component: BotSetting },
                 { path: 'bot-status',  name: 'bot-status', component: BotStatus },

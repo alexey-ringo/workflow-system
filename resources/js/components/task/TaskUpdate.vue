@@ -3,7 +3,8 @@
     <div class="card-header">
       <div class="row">
         <div class="col-md-8">
-          <h3 v-if="!isSequenceLast" class="card-title">Обработка заявки № {{task.task}}</h3>
+          <h3 v-if="!isSequenceLast" class="card-title">Обработка заявки № <b>{{task.task}}</b>
+                                                         в очереди: <b>{{task.sequenceName}}</b></h3>
           <h3 v-if="isSequenceLast" class="card-title">Завершение заявки № {{task.task}}</h3>
         </div>
       </div>
@@ -30,10 +31,11 @@
         <div class="table-responsive mailbox-messages" v-if="!visibleCommentCreate">
           <table class="table table-hover table-striped">
             <tbody>
-              <tr v-for="commentItem in comments" :key="commentItem.id">
+              <tr v-for="(commentItem, commentId) in comments" :key="commentItem.id" @dblclick="showComment(commentId)">
                 <td class="mailbox-date">5 mins ago</td>
-                <td class="mailbox-name"><a href="read-mail.html">{{commentItem.user_name}}</a></td>
-                <td class="mailbox-subject"><b></b>{{commentItem.comment}}</td>
+                <td class="mailbox-subject">{{commentItem.task.mission_name}}</td>
+                <td class="mailbox-name">{{commentItem.user_name}}</td>
+                <td class="mailbox-subject">{{commentItem.comment}}</td>
                 <td class="mailbox-attachment"></td>
               </tr>
             </tbody>
@@ -262,8 +264,10 @@
         this.visibleCommentCreate = false;
         this.comment = {};
       },
-      showComment() {
-        
+      showComment(commentId) {
+        console.log(commentId);
+        this.$router.push({name: 'comment-details', params: {commid: commentId} });
+        //this.$router.push({path: `/comment/${commentId}`});
       },
     },
     computed: {

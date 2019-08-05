@@ -14,7 +14,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Mission;
 
-class onUpdateEvent
+class onUpdateEvent/* implements ShouldBroadcast*/
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     
@@ -40,5 +40,6 @@ class onUpdateEvent
     public function broadcastOn()
     {
         return new PrivateChannel('channel-name');
+        //return ['new-action'];
     }
 }

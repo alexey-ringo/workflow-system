@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Task;
 use App\Services\TaskService;
 use App\Http\Resources\CommentCollection;
+use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
@@ -69,7 +70,11 @@ class CommentController extends Controller
      */
     public function show(Comment $comment)
     {
-        //
+        //В случае использования CustomCommentResource для передачи
+        //в компонент vue CommentDetails имени Mission
+        //$task = $comment->task;
+        //$mission = $task->mission;
+        return new CommentResource($comment);
     }
 
     
