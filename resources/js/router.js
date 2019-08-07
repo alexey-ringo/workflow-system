@@ -26,6 +26,22 @@ import Missions from './components/group/Missions';
 import MissionUpdate from './components/group/MissionUpdate';
 import MissionCreate from './components/group/MissionCreate';
 
+//import Contracts from './components/group/Contracts';
+//import ContractUpdate from './components/group/ContractUpdate';
+//import ContractCreate from './components/group/ContractCreate';
+
+//import Customers from './components/group/Customers';
+//import CustomerUpdate from './components/group/CustomerUpdate';
+//import CustomerCreate from './components/group/CustomerCreate';
+
+//import Prices from './components/group/Prices';
+//import PriceUpdate from './components/group/PriceUpdate';
+//import PriceCreate from './components/group/PriceCreate';
+
+import Routes from './components/group/Routes';
+import RouteUpdate from './components/group/RouteUpdate';
+import RouteCreate from './components/group/RouteCreate';
+
 import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
 import TaskCreate from './components/task/TaskCreate';
@@ -82,6 +98,22 @@ export default new VueRouter({
                 { path: 'missions',  name: 'missions', component: Missions },
                 { path: 'mission/:id',  name: 'mission-update', component: MissionUpdate },
                 { path: 'mission-new',  name: 'mission-create', component: MissionCreate },
+                
+                { path: 'routes',  name: 'routes', component: Routes },
+                { path: 'route/:id',  name: 'route-update', component: RouteUpdate },
+                { path: 'route-new',  name: 'route-create', component: RouteCreate },
+                
+            //    { path: 'customers',  name: 'customers', component: Customers },
+            //    { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
+            //    { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
+                
+            //    { path: 'contracts',  name: 'contracts', component: Contracts },
+            //    { path: 'contract/:id',  name: 'contract-update', component: ContractUpdate },
+            //    { path: 'contract-new',  name: 'contract-create', component: ContractCreate },
+                
+            //    { path: 'prices',  name: 'prices', component: Prices },
+            //    { path: 'price/:id',  name: 'price-update', component: PriceUpdate },
+            //    { path: 'price-new',  name: 'price-create', component: PriceCreate },
             
                 { path: 'tasks',  name: 'tasks', component: Tasks },
                 { path: 'task-new',  name: 'task-create', component: TaskCreate },

@@ -61,7 +61,7 @@ class User extends Authenticatable
       return $this->belongsToMany(Group::class,'group_user');
     }
     
-    public function Tasks() {
+    public function tasks() {
       return $this->hasMany(Task::class, 'user_id');
     }
     

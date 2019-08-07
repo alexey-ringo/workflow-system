@@ -20,7 +20,6 @@ class CreateCommentsTable extends Migration
             $table->bigInteger('task_id')->unsigned();
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->integer('comment_seq')->unsigned();
-            $table->integer('comment_seq')->unsigned();
             $table->text('comment');
             $table->bigInteger('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\Task;
+use App\Models\Route;
 
 class Mission extends Model
 {
@@ -17,7 +18,7 @@ class Mission extends Model
      */
     protected $table = 'missions';
     protected $fillable = [
-        'name', 'sequence', 'is_super, is_final'
+        'route_id', 'name', 'sequence', 'is_super', 'is_final'
     ];
     
     public function groups() {
@@ -26,6 +27,11 @@ class Mission extends Model
     
     public function tasks() {
         return $this->hasMany(Task::class,'mission_id');
+    }
+    
+    public function route() {
+        //return $this->belongsTo(Route::class, 'id');
+        return $this->belongsTo(Route::class);
     }
     
     /*

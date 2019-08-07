@@ -1,24 +1,22 @@
 <template>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Процессы обработки клиентских заявок</h3>
+            <h3 class="card-title">Процессы для рабочих групп</h3>
         </div>
         <!-- /.card-header -->
         <div class="card-body table-responsive p-0">
             <table class="table table-hover table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Маршрут</th>
                         <th>Процесс</th>
-                        <th>Очередность выполнения процесса в маршруте</th>
+                        <th>Очередь выполнения процесса</th>
                         <th>Процесс супервайзера</th>
-                        <th>Завершение процессов в маршруте</th>
+                        <th>Завершение очереди</th>
                         <th>Редактировать</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="mission in missions" :key="mission.id">
-                        <td>{{ mission.route.name }}</td>
                         <td>{{ mission.name  }}</td>
                         <td>{{ mission.sequence  }}</td>
                         <td>{{ mission.is_super  }}</td>
@@ -33,11 +31,10 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th>Маршрут</th>
                         <th>Процесс</th>
-                        <th>Очередность выполнения процесса в маршруте</th>
+                        <th>Очередь выполнения процесса</th>
                         <th>Процесс супервайзера</th>
-                        <th>Завершение процессов в маршруте</th>
+                        <th>Завершение очереди</th>
                         <th>Редактировать</th>
                     </tr>
                 </tfoot>
@@ -52,7 +49,7 @@
     export default {
         data: function () {
             return {
-                missions: []
+                routes: []
             }
         },
         mounted() {
@@ -61,10 +58,10 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/missions';
+            let uri = '/api/routes';
             this.axios.get(uri)
             	.then((response) => {
-                	this.missions = response.data.data;
+                	this.routes = response.data.data;
                 })
                 .catch(e => {
                 	//console.log(e);
@@ -86,7 +83,7 @@
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
-                            if(response.data.data) {
+                            if(response.data) {
                                 this.missions.splice(this.missions.indexOf(id), 1);
                             }
                             else {

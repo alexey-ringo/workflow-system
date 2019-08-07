@@ -16,7 +16,7 @@ class MissionController extends Controller
      */
     public function index()
     {
-        return new MissionCollection(Mission::all());
+        return new MissionCollection(Mission::with('route')->get());
     }
 
     /**
@@ -37,14 +37,17 @@ class MissionController extends Controller
      */
     public function store(Request $request)
     {
+        /*
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:missions',
             'sequence' => 'required|unique:missions',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
+        */
         
         $mission = Mission::create([
+            'route_id' => $request->get('route_id'),
             'name' => $request->get('name'),
             'sequence' => $request->get('sequence'),
             'is_super' => $request->get('is_super'),
@@ -86,14 +89,15 @@ class MissionController extends Controller
      */
     public function update(Request $request, Mission $mission)
     {
-        
+        /*
         $validator = $request->validate([
             'name' => 'required|string|max:255',
             'sequence' => 'required',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
-        
+        */
+        $mission->name = $request->get('route_id');
         $mission->name = $request->get('name');
         $mission->sequence = $request->get('sequence');
         $mission->is_super = $request->get('is_super');

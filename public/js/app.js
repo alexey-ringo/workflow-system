@@ -2355,6 +2355,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //import Products from './lteitems/Products.vue';
 //import Orders from './lteitems/Orders.vue';
 //import Purchases from './lteitems/Purchases.vue';
@@ -2926,13 +2944,25 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       mission: {},
-      sequenceNum: '',
+      routes: [],
       superChecked: false,
-      finalChecked: false
+      finalChecked: false,
+      selectRoute: false
     };
   },
 
@@ -2958,30 +2988,76 @@ __webpack_require__.r(__webpack_exports__);
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/missions';
+    var uri = '/api/routes';
     this.axios.get(uri).then(function (response) {
-      _this.missions = response.data.data;
+      _this.routes = response.data.data;
     })["catch"](function (e) {
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+        _this.$router.push({
+          name: 'missions'
+        });
+      }
     });
   },
   methods: {
     addMission: function addMission() {
       var _this2 = this;
 
-      this.mission.sequence = this.sequenceNum;
-      this.mission.is_super = this.superChecked;
-      this.mission.is_final = this.finalChecked;
+      if (this.superChecked) {
+        this.mission.is_super = 1;
+      } else {
+        this.mission.is_super = null;
+      }
+
+      if (this.finalChecked) {
+        this.mission.is_final = 1;
+      } else {
+        this.mission.is_final = null;
+      }
+
+      this.mission.route_id = this.selectRoute;
       var uri = '/api/missions';
       this.axios.post(uri, this.mission).then(function (response) {
-        if (response.data) {
+        if (response.data.data) {
+          //swal("Заказ", "Ваш заказ принят!", "success");
           _this2.$router.push({
             name: 'missions'
           });
-        } else {}
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this2.$router.push({
+            name: 'missions'
+          });
+        }
       })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this2.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this2.$router.push({
+            name: 'missions'
+          });
+        }
       });
     }
   }
@@ -3048,27 +3124,55 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       mission: {},
-      sequenceNum: '',
+      routes: [],
       superChecked: false,
-      finalChecked: false
+      finalChecked: false,
+      selectRoute: false
     };
   },
   created: function created() {
     var _this = this;
 
-    var uri = "/api/missions/".concat(this.$route.params.id);
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = '/api/routes';
     this.axios.get(uri).then(function (response) {
-      _this.mission = response.data.data;
+      _this.routes = response.data.data;
 
-      _this.setSequenceSelected();
+      _this.getMission();
+    })["catch"](function (e) {
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
 
-      _this.setSuperChecked();
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
 
-      _this.setFinalChecked();
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+        _this.$router.push({
+          name: 'missions'
+        });
+      }
     });
   },
   mounted: function mounted() {//let uri = `/api/missions/${this.$route.params.id}`;
@@ -3077,35 +3181,78 @@ __webpack_require__.r(__webpack_exports__);
     //});
   },
   methods: {
+    getMission: function getMission() {
+      var _this2 = this;
+
+      var uri = "/api/missions/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        _this2.mission = response.data.data;
+
+        _this2.setRouteSelected();
+
+        _this2.setSuperChecked();
+
+        _this2.setFinalChecked();
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    },
     updateMission: function updateMission()
     /*event*/
     {
-      var _this2 = this;
+      var _this3 = this;
 
-      this.mission.sequence = this.sequenceNum;
-      this.mission.is_super = this.superChecked;
-      this.mission.is_final = this.finalChecked;
-      console.log(this.mission);
+      if (this.superChecked) {
+        this.mission.is_super = 1;
+      } else {
+        this.mission.is_super = null;
+      }
+
+      if (this.finalChecked) {
+        this.mission.is_final = 1;
+      } else {
+        this.mission.is_final = null;
+      }
+
+      this.mission.route_id = this.selectRoute;
       var uri = "/api/missions/".concat(this.$route.params.id);
       this.axios.patch(uri, this.mission
       /*{}*/
       ).then(function (response) {
         if (response.data) {
           //this.$emit("changecartevent", 1);
-          _this2.$router.push({
+          _this3.$router.push({
             name: 'missions'
           });
         } else {
           swal("Сохранение изменений", "Что то пошло не так...", "error");
         }
       })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this3.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this3.$router.push({
+            name: 'missions'
+          });
+        }
       });
     },
-    setSequenceSelected: function setSequenceSelected() {
-      this.sequenceNum = this.mission.sequence;
+    setRouteSelected: function setRouteSelected() {
+      this.selectRoute = this.mission.route_id;
     },
+    //setSequenceSelected() {
+    //  this.sequenceNum = this.mission.sequence;
+    //},
     setSuperChecked: function setSuperChecked() {
       this.superChecked = this.mission.is_super;
     },
@@ -3173,6 +3320,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -3189,7 +3339,19 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.get(uri).then(function (response) {
       _this.missions = response.data.data;
     })["catch"](function (e) {
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      //console.log(e);
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
     });
   },
   methods: {
@@ -3200,8 +3362,408 @@ __webpack_require__.r(__webpack_exports__);
 
       if (confirm("Do you really want to delete it?")) {
         this.axios["delete"](uri).then(function (response) {
-          if (response.data) {
+          if (response.data.data) {
             _this2.missions.splice(_this2.missions.indexOf(id), 1);
+          } else {
+            swal("Удаление задачи", "Что то пошло не так...", "error");
+          }
+        })["catch"](function (e) {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        });
+      }
+    }
+  },
+  beforeRouteEnter: function beforeRouteEnter(to, from, next) {
+    if (!localStorage.getItem('jwt')) {
+      return next('login');
+    }
+
+    next();
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js&":
+/*!****************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js& ***!
+  \****************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      route: {},
+      routeStatus: false
+    };
+  },
+
+  /*
+  create() {
+  },
+  */
+  mounted: function mounted() {
+    var _this = this;
+
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = '/api/routes';
+    this.axios.get(uri).then(function (response) {
+      _this.routes = response.data.data;
+    })["catch"](function (e) {
+      swal('Ошибка', "Внутренняя ошибка сервера", "error");
+    });
+  },
+  methods: {
+    addRoute: function addRoute() {
+      var _this2 = this;
+
+      if (this.routeStatus) {
+        this.route.in_use = 1;
+      } else {
+        this.route.in_use = null;
+      }
+
+      var uri = '/api/routes';
+      this.axios.post(uri, this.route).then(function (response) {
+        if (response.data.data) {
+          //swal("Заказ", "Ваш заказ принят!", "success");
+          _this2.$router.push({
+            name: 'routes'
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+
+          _this2.$router.push({
+            name: 'routes'
+          });
+        }
+      })["catch"](function (e) {
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this2.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this2.$router.push({
+            name: 'routes'
+          });
+        }
+      });
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js&":
+/*!****************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js& ***!
+  \****************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      route: {},
+      routeStatus: false
+    };
+  },
+
+  /*
+  created() {
+    
+  },
+  */
+  mounted: function mounted() {
+    var _this = this;
+
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = "/api/routes/".concat(this.$route.params.id);
+    this.axios.get(uri).then(function (response) {
+      _this.route = response.data.data;
+
+      _this.setRouteStatus();
+    })["catch"](function (e) {
+      //console.log(e);
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
+    });
+  },
+  methods: {
+    updateRoute: function updateRoute()
+    /*event*/
+    {
+      var _this2 = this;
+
+      if (this.routeStatus) {
+        this.route.in_use = 1;
+      } else {
+        this.route.in_use = null;
+      }
+
+      var uri = "/api/routes/".concat(this.$route.params.id);
+      this.axios.patch(uri, this.route
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.data) {
+          //this.$emit("changecartevent", 1);
+          _this2.$router.push({
+            name: 'routes'
+          });
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        }
+      })["catch"](function (e) {
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this2.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this2.$router.push({
+            name: 'routes'
+          });
+        }
+      });
+    },
+    setRouteStatus: function setRouteStatus() {
+      this.routeStatus = this.route.in_use;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/Routes.vue?vue&type=script&lang=js&":
+/*!***********************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/Routes.vue?vue&type=script&lang=js& ***!
+  \***********************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      routes: []
+    };
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    var uri = '/api/routes';
+    this.axios.get(uri).then(function (response) {
+      _this.routes = response.data.data;
+    })["catch"](function (e) {
+      //console.log(e);
+      if (e == 'Error: Request failed with status code 401') {
+        if (localStorage.getItem('jwt')) {
+          localStorage.removeItem('jwt');
+
+          _this.$router.push({
+            name: 'login'
+          });
+        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+      } else {
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      }
+    });
+  },
+  methods: {
+    deleteRoute: function deleteRoute(id) {
+      var _this2 = this;
+
+      var uri = "/api/routes/".concat(id);
+
+      if (confirm("Do you really want to delete it?")) {
+        this.axios["delete"](uri).then(function (response) {
+          if (response.data.data) {
+            _this2.routes.splice(_this2.routes.indexOf(id), 1);
           } else {
             swal("Удаление задачи", "Что то пошло не так...", "error");
           }
@@ -40719,6 +41281,50 @@ var render = function() {
                           "router-link",
                           {
                             staticClass: "nav-link",
+                            attrs: { to: { name: "routes" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Все маршруты")])
+                          ]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "route-create" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Новый маршрут")])
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("li", { staticClass: "nav-item has-treeview" }, [
+                  _vm._m(10),
+                  _vm._v(" "),
+                  _c("ul", { staticClass: "nav nav-treeview" }, [
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
                             attrs: { to: { name: "bot-status" } }
                           },
                           [
@@ -40751,8 +41357,6 @@ var render = function() {
                   ])
                 ]),
                 _vm._v(" "),
-                _vm._m(10),
-                _vm._v(" "),
                 _vm._m(11),
                 _vm._v(" "),
                 _vm._m(12),
@@ -40761,9 +41365,9 @@ var render = function() {
                 _vm._v(" "),
                 _vm._m(14),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-header" }, [_vm._v("EXAMPLES")]),
-                _vm._v(" "),
                 _vm._m(15),
+                _vm._v(" "),
+                _c("li", { staticClass: "nav-header" }, [_vm._v("EXAMPLES")]),
                 _vm._v(" "),
                 _vm._m(16),
                 _vm._v(" "),
@@ -40771,19 +41375,21 @@ var render = function() {
                 _vm._v(" "),
                 _vm._m(18),
                 _vm._v(" "),
+                _vm._m(19),
+                _vm._v(" "),
                 _c("li", { staticClass: "nav-header" }, [
                   _vm._v("MISCELLANEOUS")
                 ]),
                 _vm._v(" "),
-                _vm._m(19),
+                _vm._m(20),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-header" }, [_vm._v("LABELS")]),
                 _vm._v(" "),
-                _vm._m(20),
-                _vm._v(" "),
                 _vm._m(21),
                 _vm._v(" "),
-                _vm._m(22)
+                _vm._m(22),
+                _vm._v(" "),
+                _vm._m(23)
               ]
             )
           ])
@@ -40792,7 +41398,7 @@ var render = function() {
     ),
     _vm._v(" "),
     _c("div", { staticClass: "content-wrapper" }, [
-      _vm._m(23),
+      _vm._m(24),
       _vm._v(" "),
       _c("section", { staticClass: "content" }, [
         _c("div", { staticClass: "row" }, [
@@ -40801,7 +41407,7 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _vm._m(24),
+    _vm._m(25),
     _vm._v(" "),
     _c("aside", { staticClass: "control-sidebar control-sidebar-dark" }, [
       _c(
@@ -41242,6 +41848,19 @@ var staticRenderFns = [
       _vm._v(" "),
       _c("p", [
         _vm._v("\n                Процессы\n                "),
+        _c("i", { staticClass: "right fa fa-angle-left" })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
+      _c("i", { staticClass: "nav-icon fa fa-dashboard" }),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n                Маршруты\n                "),
         _c("i", { staticClass: "right fa fa-angle-left" })
       ])
     ])
@@ -42549,14 +43168,61 @@ var render = function() {
       [
         _c("div", { staticClass: "card-body" }, [
           _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputMission" }
-              },
-              [_vm._v("Название процесса")]
-            ),
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Маршрут")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectRoute,
+                      expression: "selectRoute"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectRoute = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
+                },
+                _vm._l(_vm.routes, function(route) {
+                  return _c(
+                    "option",
+                    { key: route.id, domProps: { value: route.id } },
+                    [
+                      _vm._v(
+                        "\n              " +
+                          _vm._s(route.name) +
+                          "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Название процесса")
+            ]),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-10" }, [
               _c("input", {
@@ -42571,7 +43237,6 @@ var render = function() {
                 staticClass: "form-control",
                 attrs: {
                   type: "text",
-                  id: "inputMission",
                   required: "",
                   placeholder: "Название задачи"
                 },
@@ -42591,30 +43256,31 @@ var render = function() {
           _c("div", { staticClass: "row" }, [
             _c("div", { staticClass: "col-md-4" }, [
               _c("div", { staticClass: "form-group" }, [
+                _c("label", { staticClass: "control-label" }, [
+                  _vm._v("Очередь выполнения процесса")
+                ]),
+                _vm._v(" "),
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.sequenceNum,
-                      expression: "sequenceNum"
+                      value: _vm.mission.sequence,
+                      expression: "mission.sequence"
                     }
                   ],
-                  attrs: { type: "text", id: "sequenceBox" },
-                  domProps: { value: _vm.sequenceNum },
+                  staticClass: "form-control",
+                  attrs: { type: "text", required: "" },
+                  domProps: { value: _vm.mission.sequence },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
                         return
                       }
-                      _vm.sequenceNum = $event.target.value
+                      _vm.$set(_vm.mission, "sequence", $event.target.value)
                     }
                   }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "sequenceBox" } }, [
-                  _vm._v("Очередь выполнения процесса")
-                ])
+                })
               ])
             ]),
             _vm._v(" "),
@@ -42629,7 +43295,7 @@ var render = function() {
                       expression: "superChecked"
                     }
                   ],
-                  attrs: { type: "checkbox", id: "superCheckbox" },
+                  attrs: { type: "checkbox" },
                   domProps: {
                     checked: Array.isArray(_vm.superChecked)
                       ? _vm._i(_vm.superChecked, null) > -1
@@ -42658,9 +43324,7 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
-                _c("label", { attrs: { for: "checkbox" } }, [
-                  _vm._v("Процесс супервайзера")
-                ])
+                _c("label", [_vm._v("Процесс супервайзера")])
               ])
             ]),
             _vm._v(" "),
@@ -42675,7 +43339,7 @@ var render = function() {
                       expression: "finalChecked"
                     }
                   ],
-                  attrs: { type: "checkbox", id: "finalCheckbox" },
+                  attrs: { type: "checkbox" },
                   domProps: {
                     checked: Array.isArray(_vm.finalChecked)
                       ? _vm._i(_vm.finalChecked, null) > -1
@@ -42704,9 +43368,7 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
-                _c("label", { attrs: { for: "checkbox" } }, [
-                  _vm._v("Финальный процесс")
-                ])
+                _c("label", [_vm._v("Финальный процесс")])
               ])
             ])
           ])
@@ -42742,7 +43404,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Новый процесс для рабочих групп")
+        _vm._v("Новый процесс обработки клиентских заявок")
       ])
     ])
   }
@@ -42785,14 +43447,61 @@ var render = function() {
       [
         _c("div", { staticClass: "card-body" }, [
           _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputMission" }
-              },
-              [_vm._v("Название процесса")]
-            ),
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Маршрут")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectRoute,
+                      expression: "selectRoute"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectRoute = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
+                },
+                _vm._l(_vm.routes, function(route) {
+                  return _c(
+                    "option",
+                    { key: route.id, domProps: { value: route.id } },
+                    [
+                      _vm._v(
+                        "\n              " +
+                          _vm._s(route.name) +
+                          "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Название процесса")
+            ]),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-10" }, [
               _c("input", {
@@ -42807,7 +43516,6 @@ var render = function() {
                 staticClass: "form-control",
                 attrs: {
                   type: "text",
-                  id: "inputMission",
                   required: "",
                   placeholder: "Название задачи"
                 },
@@ -42827,30 +43535,31 @@ var render = function() {
           _c("div", { staticClass: "row" }, [
             _c("div", { staticClass: "col-md-4" }, [
               _c("div", { staticClass: "form-group" }, [
+                _c("label", { staticClass: "control-label" }, [
+                  _vm._v("Очередь выполнения процесса")
+                ]),
+                _vm._v(" "),
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.sequenceNum,
-                      expression: "sequenceNum"
+                      value: _vm.mission.sequence,
+                      expression: "mission.sequence"
                     }
                   ],
-                  attrs: { type: "text", id: "sequenceBox", disabled: "" },
-                  domProps: { value: _vm.sequenceNum },
+                  staticClass: "form-control",
+                  attrs: { type: "text", required: "" },
+                  domProps: { value: _vm.mission.sequence },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
                         return
                       }
-                      _vm.sequenceNum = $event.target.value
+                      _vm.$set(_vm.mission, "sequence", $event.target.value)
                     }
                   }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "sequenceBox" } }, [
-                  _vm._v("Очередь выполнения процесса")
-                ])
+                })
               ])
             ]),
             _vm._v(" "),
@@ -42865,7 +43574,7 @@ var render = function() {
                       expression: "superChecked"
                     }
                   ],
-                  attrs: { type: "checkbox", id: "superCheckbox" },
+                  attrs: { type: "checkbox" },
                   domProps: {
                     checked: Array.isArray(_vm.superChecked)
                       ? _vm._i(_vm.superChecked, null) > -1
@@ -42894,9 +43603,7 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
-                _c("label", { attrs: { for: "superCheckbox" } }, [
-                  _vm._v("Процесс супервайзера")
-                ])
+                _c("label", [_vm._v("Процесс супервайзера")])
               ])
             ]),
             _vm._v(" "),
@@ -42911,7 +43618,7 @@ var render = function() {
                       expression: "finalChecked"
                     }
                   ],
-                  attrs: { type: "checkbox", id: "finalCheckbox" },
+                  attrs: { type: "checkbox" },
                   domProps: {
                     checked: Array.isArray(_vm.finalChecked)
                       ? _vm._i(_vm.finalChecked, null) > -1
@@ -42940,9 +43647,7 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
-                _c("label", { attrs: { for: "finalCheckbox" } }, [
-                  _vm._v("Финальный процесс")
-                ])
+                _c("label", [_vm._v("Финальный процесс")])
               ])
             ])
           ])
@@ -42978,7 +43683,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Редактирование процесса для рабочих групп")
+        _vm._v("Редактирование процесса обработки клиентских заявок")
       ])
     ])
   }
@@ -43018,6 +43723,8 @@ var render = function() {
             "tbody",
             _vm._l(_vm.missions, function(mission) {
               return _c("tr", { key: mission.id }, [
+                _c("td", [_vm._v(_vm._s(mission.route.name))]),
+                _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(mission.name))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(mission.sequence))]),
@@ -43081,7 +43788,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Процессы для рабочих групп")
+        _vm._v("Процессы обработки клиентских заявок")
       ])
     ])
   },
@@ -43091,13 +43798,15 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", [
+        _c("th", [_vm._v("Маршрут")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Процесс")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Очередь выполнения процесса")]),
+        _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
         _vm._v(" "),
         _c("th", [_vm._v("Процесс супервайзера")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Завершение очереди")]),
+        _c("th", [_vm._v("Завершение процессов в маршруте")]),
         _vm._v(" "),
         _c("th", [_vm._v("Редактировать")])
       ])
@@ -43109,13 +43818,583 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("tfoot", [
       _c("tr", [
+        _c("th", [_vm._v("Маршрут")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Процесс")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Очередь выполнения процесса")]),
+        _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
         _vm._v(" "),
         _c("th", [_vm._v("Процесс супервайзера")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Завершение очереди")]),
+        _c("th", [_vm._v("Завершение процессов в маршруте")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Редактировать")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba&":
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba& ***!
+  \********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.addRoute($event)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Название маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.name,
+                    expression: "route.name"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  required: "",
+                  placeholder: "Название маршрута"
+                },
+                domProps: { value: _vm.route.name },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "name", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Идентификатор маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.value,
+                    expression: "route.value"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  required: "",
+                  placeholder: "id-маршрута"
+                },
+                domProps: { value: _vm.route.value },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "value", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Описание маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.description,
+                    expression: "route.description"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: { type: "text", placeholder: "Описание маршрута" },
+                domProps: { value: _vm.route.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-4" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.routeStatus,
+                    expression: "routeStatus"
+                  }
+                ],
+                attrs: { type: "checkbox" },
+                domProps: {
+                  checked: Array.isArray(_vm.routeStatus)
+                    ? _vm._i(_vm.routeStatus, null) > -1
+                    : _vm.routeStatus
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.routeStatus,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.routeStatus = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.routeStatus = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.routeStatus = $$c
+                    }
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c("label", { attrs: { for: "superCheckbox" } }, [
+                _vm._v("Маршрут используется")
+              ])
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "card-footer" },
+          [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Создать")
+            ]),
+            _vm._v(" "),
+            _c(
+              "router-link",
+              {
+                staticClass: "btn btn-default float-right",
+                attrs: { to: { name: "routes" } }
+              },
+              [_vm._v("Отмена")]
+            )
+          ],
+          1
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Новый маршрут для обработки клиентских заявок")
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2&":
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2& ***!
+  \********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.updateRoute($event)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Название маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.name,
+                    expression: "route.name"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  required: "",
+                  placeholder: "Название маршрута"
+                },
+                domProps: { value: _vm.route.name },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "name", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Идентификатор маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.value,
+                    expression: "route.value"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  required: "",
+                  placeholder: "id-маршрута"
+                },
+                domProps: { value: _vm.route.value },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "value", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Описание маршрута")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.route.description,
+                    expression: "route.description"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: { type: "text", placeholder: "Описание маршрута" },
+                domProps: { value: _vm.route.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.route, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-4" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.routeStatus,
+                    expression: "routeStatus"
+                  }
+                ],
+                attrs: { type: "checkbox" },
+                domProps: {
+                  checked: Array.isArray(_vm.routeStatus)
+                    ? _vm._i(_vm.routeStatus, null) > -1
+                    : _vm.routeStatus
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.routeStatus,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.routeStatus = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.routeStatus = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.routeStatus = $$c
+                    }
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c("label", [_vm._v("Маршрут используется")])
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "card-footer" },
+          [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Применить")
+            ]),
+            _vm._v(" "),
+            _c(
+              "router-link",
+              {
+                staticClass: "btn btn-default float-right",
+                attrs: { to: { name: "routes" } }
+              },
+              [_vm._v("Отмена")]
+            )
+          ],
+          1
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Редактирование маршрута для обработки клиентских заявок")
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876&":
+/*!***************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876& ***!
+  \***************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c("div", { staticClass: "card-body table-responsive p-0" }, [
+      _c(
+        "table",
+        { staticClass: "table table-hover table-bordered table-striped" },
+        [
+          _vm._m(1),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            _vm._l(_vm.routes, function(route) {
+              return _c("tr", { key: route.id }, [
+                _c("td", [_vm._v(_vm._s(route.name))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(route.value))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(route.description))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(route.in_use))]),
+                _vm._v(" "),
+                _c(
+                  "td",
+                  [
+                    _c(
+                      "router-link",
+                      {
+                        staticClass: "btn btn-xs btn-default",
+                        attrs: {
+                          to: { name: "route-update", params: { id: route.id } }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                            Edit\n                        "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-danger",
+                        on: {
+                          click: function($event) {
+                            $event.preventDefault()
+                            return _vm.deleteRoute(route.id)
+                          }
+                        }
+                      },
+                      [_vm._v("Удалить")]
+                    )
+                  ],
+                  1
+                )
+              ])
+            }),
+            0
+          ),
+          _vm._v(" "),
+          _vm._m(2)
+        ]
+      )
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Маршруты обработки заявок клиента")
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("Маршрут")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("id-маршрута")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Описание маршрута")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Редактировать")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tfoot", [
+      _c("tr", [
+        _c("th", [_vm._v("Маршрут")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("id-маршрута")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Описание маршрута")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
         _vm._v(" "),
         _c("th", [_vm._v("Редактировать")])
       ])
@@ -61479,6 +62758,213 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/group/RouteCreate.vue":
+/*!*******************************************************!*\
+  !*** ./resources/js/components/group/RouteCreate.vue ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./RouteCreate.vue?vue&type=template&id=2261d3ba& */ "./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba&");
+/* harmony import */ var _RouteCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./RouteCreate.vue?vue&type=script&lang=js& */ "./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _RouteCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/group/RouteCreate.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js&":
+/*!********************************************************************************!*\
+  !*** ./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js& ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./RouteCreate.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteCreate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba&":
+/*!**************************************************************************************!*\
+  !*** ./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba& ***!
+  \**************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./RouteCreate.vue?vue&type=template&id=2261d3ba& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteCreate.vue?vue&type=template&id=2261d3ba&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteCreate_vue_vue_type_template_id_2261d3ba___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/group/RouteUpdate.vue":
+/*!*******************************************************!*\
+  !*** ./resources/js/components/group/RouteUpdate.vue ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./RouteUpdate.vue?vue&type=template&id=81bc85f2& */ "./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2&");
+/* harmony import */ var _RouteUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./RouteUpdate.vue?vue&type=script&lang=js& */ "./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _RouteUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/group/RouteUpdate.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js&":
+/*!********************************************************************************!*\
+  !*** ./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js& ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./RouteUpdate.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteUpdate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2&":
+/*!**************************************************************************************!*\
+  !*** ./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2& ***!
+  \**************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./RouteUpdate.vue?vue&type=template&id=81bc85f2& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/RouteUpdate.vue?vue&type=template&id=81bc85f2&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_RouteUpdate_vue_vue_type_template_id_81bc85f2___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/group/Routes.vue":
+/*!**************************************************!*\
+  !*** ./resources/js/components/group/Routes.vue ***!
+  \**************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Routes.vue?vue&type=template&id=9519d876& */ "./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876&");
+/* harmony import */ var _Routes_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Routes.vue?vue&type=script&lang=js& */ "./resources/js/components/group/Routes.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _Routes_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/group/Routes.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/group/Routes.vue?vue&type=script&lang=js&":
+/*!***************************************************************************!*\
+  !*** ./resources/js/components/group/Routes.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Routes_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./Routes.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/Routes.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Routes_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876&":
+/*!*********************************************************************************!*\
+  !*** ./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876& ***!
+  \*********************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./Routes.vue?vue&type=template&id=9519d876& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/group/Routes.vue?vue&type=template&id=9519d876&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Routes_vue_vue_type_template_id_9519d876___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/permission/PermissionCreate.vue":
 /*!*****************************************************************!*\
   !*** ./resources/js/components/permission/PermissionCreate.vue ***!
@@ -62542,12 +64028,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_group_Missions__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./components/group/Missions */ "./resources/js/components/group/Missions.vue");
 /* harmony import */ var _components_group_MissionUpdate__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./components/group/MissionUpdate */ "./resources/js/components/group/MissionUpdate.vue");
 /* harmony import */ var _components_group_MissionCreate__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./components/group/MissionCreate */ "./resources/js/components/group/MissionCreate.vue");
-/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
-/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
-/* harmony import */ var _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/task/TaskCreate */ "./resources/js/components/task/TaskCreate.vue");
-/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
-/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
-/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
+/* harmony import */ var _components_group_Routes__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./components/group/Routes */ "./resources/js/components/group/Routes.vue");
+/* harmony import */ var _components_group_RouteUpdate__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./components/group/RouteUpdate */ "./resources/js/components/group/RouteUpdate.vue");
+/* harmony import */ var _components_group_RouteCreate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/group/RouteCreate */ "./resources/js/components/group/RouteCreate.vue");
+/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
+/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
+/* harmony import */ var _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/task/TaskCreate */ "./resources/js/components/task/TaskCreate.vue");
+/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
 
 
@@ -62564,6 +64053,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+ //import Contracts from './components/group/Contracts';
+//import ContractUpdate from './components/group/ContractUpdate';
+//import ContractCreate from './components/group/ContractCreate';
+//import Customers from './components/group/Customers';
+//import CustomerUpdate from './components/group/CustomerUpdate';
+//import CustomerCreate from './components/group/CustomerCreate';
+//import Prices from './components/group/Prices';
+//import PriceUpdate from './components/group/PriceUpdate';
+//import PriceCreate from './components/group/PriceCreate';
 
 
 
@@ -62652,17 +64153,38 @@ __webpack_require__.r(__webpack_exports__);
       name: 'mission-create',
       component: _components_group_MissionCreate__WEBPACK_IMPORTED_MODULE_18__["default"]
     }, {
+      path: 'routes',
+      name: 'routes',
+      component: _components_group_Routes__WEBPACK_IMPORTED_MODULE_19__["default"]
+    }, {
+      path: 'route/:id',
+      name: 'route-update',
+      component: _components_group_RouteUpdate__WEBPACK_IMPORTED_MODULE_20__["default"]
+    }, {
+      path: 'route-new',
+      name: 'route-create',
+      component: _components_group_RouteCreate__WEBPACK_IMPORTED_MODULE_21__["default"]
+    }, //    { path: 'customers',  name: 'customers', component: Customers },
+    //    { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
+    //    { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
+    //    { path: 'contracts',  name: 'contracts', component: Contracts },
+    //    { path: 'contract/:id',  name: 'contract-update', component: ContractUpdate },
+    //    { path: 'contract-new',  name: 'contract-create', component: ContractCreate },
+    //    { path: 'prices',  name: 'prices', component: Prices },
+    //    { path: 'price/:id',  name: 'price-update', component: PriceUpdate },
+    //    { path: 'price-new',  name: 'price-create', component: PriceCreate },
+    {
       path: 'tasks',
       name: 'tasks',
-      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_19__["default"]
+      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_22__["default"]
     }, {
       path: 'task-new',
       name: 'task-create',
-      component: _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_21__["default"]
+      component: _components_task_TaskCreate__WEBPACK_IMPORTED_MODULE_24__["default"]
     }, {
       path: 'task/:id',
       name: 'task-update',
-      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_20__["default"] //children: [
+      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_23__["default"] //children: [
       //{ path: 'comments',  name: 'comments', component: Comments },
       //{ path: 'comment/:commid',  name: 'comment-details', component: CommentDetails }
       //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
@@ -62671,15 +64193,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'comment/:commid',
       name: 'comment-details',
-      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_22__["default"]
+      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_25__["default"]
     }, {
       path: 'bot-setting',
       name: 'bot-setting',
-      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_23__["default"]
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_26__["default"]
     }, {
       path: 'bot-status',
       name: 'bot-status',
-      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_24__["default"]
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_27__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

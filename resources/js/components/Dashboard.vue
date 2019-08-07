@@ -264,6 +264,24 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
+                Маршруты
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'routes'}"><i class="fa fa-circle-o nav-icon"></i><p>Все маршруты</p></router-link>
+              </li>
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'route-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый маршрут</p></router-link>
+              </li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-dashboard"></i>
+              <p>
                 Telegram Bot
                 <i class="right fa fa-angle-left"></i>
               </p>

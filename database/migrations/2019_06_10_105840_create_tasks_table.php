@@ -23,6 +23,10 @@ class CreateTasksTable extends Migration
             $table->integer('status')->unsigned();
             $table->bigInteger('mission_id')->unsigned()->nullable();
             $table->foreign('mission_id')->references('id')->on('missions')->onDelete('set null');
+            $table->bigInteger('customer_id')->unsigned()->nullable();
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
+            $table->bigInteger('contract_id')->unsigned()->nullable();
+            $table->foreign('contract_id')->references('id')->on('contracts')->onDelete('set null');
             $table->bigInteger('creating_user_id')->unsigned()->nullable();
             $table->foreign('creating_user_id')->references('id')->on('users')->onDelete('set null');
             $table->bigInteger('closing_user_id')->unsigned()->nullable();
@@ -35,7 +39,7 @@ class CreateTasksTable extends Migration
             $table->date('deadline');
             $table->timestamps();
             
-            $table->unique(['task', 'task_seq'], 'task_task_seq_tasks_index');
+            $table->unique(['task', 'task_seq'], 'tasks_task_task_seq_index');
             //$table->primary(['id', 'task', 'sequence']);
         });
         
@@ -52,6 +56,8 @@ class CreateTasksTable extends Migration
         //DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         Schema::table('tasks', function (Blueprint $table) {
             $table->dropForeign('tasks_mission_id_foreign');
+            $table->dropForeign('tasks_customer_id_foreign');
+            $table->dropForeign('tasks_contract_id_foreign');
             $table->dropForeign('tasks_creating_user_id_foreign');
             $table->dropForeign('tasks_closing_user_id_foreign');
         });
