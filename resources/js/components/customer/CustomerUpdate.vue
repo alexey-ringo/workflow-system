@@ -1,46 +1,112 @@
 <template>
   <div class="card card-info">
     <div class="card-header">
-      <h3 class="card-title">Редактирование процесса для рабочих групп</h3>
+      <h3 class="card-title">Редактирование карточки клиента</h3>
     </div>
     <!-- /.card-header -->
     <!-- form start -->
-    <form class="form-horizontal" @submit.prevent="updateMission">
+    <form class="form-horizontal" @submit.prevent="updateCustomer">
       <div class="card-body">
         
         <div class="form-group">
-          <label for="inputMission" class="col-sm-4 control-label">Название процесса</label>
+          <label class="col-sm-4 control-label">Фамилия</label>
           <div class="col-sm-10">
-            <input type="text" v-model="mission.name" class="form-control" id="inputMission" required placeholder="Название задачи">
+            <input type="text" v-model="customer.surname" class="form-control" required disabled placeholder="Фамилия нового клиента">
           </div>
         </div>
-                  
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Имя</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="customer.name" class="form-control" required disabled placeholder="Имя нового клиента">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Отчество</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="customer.second_name" class="form-control" disabled placeholder="Отчество нового клиента">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Город</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="customer.city" class="form-control" required placeholder="Город">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Улица</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="customer.street" class="form-control" required placeholder="Улица">
+          </div>
+        </div>
+        
         <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              <input type="text" id="sequenceBox" v-model="sequenceNum" disabled>
-              <label for="sequenceBox">Очередь выполнения процесса</label>
+              <label class="col-sm-4 control-label">Дом</label>
+              <input type="text" v-model="customer.building" class="form-control" required>
             </div>
           </div>
           <div class="col-md-4">
             <div class="form-group">
-              <input type="checkbox" id="superCheckbox" v-model="superChecked">
-              <label for="superCheckbox">Процесс супервайзера</label>
+              <label class="col-sm-4 control-label">Квартира</label>
+              <input type="text" v-model="customer.flat" class="form-control" required>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="checkbox" id="finalCheckbox" v-model="finalChecked">
-              <label for="finalCheckbox">Финальный процесс</label>
-            </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Телефон</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="customer.phone" class="form-control" required placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
           </div>
+        </div>
+        
+        <div class="col-sm-4 table-responsive p-0">
+            <table class="table table-hover table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Телефон</th>
+                        <th>Редактировать</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="phoneItem in customer.phones" :key="phoneItem.id">
+                        <td>{{ phoneItem.phone  }}</td>
+                        <td>
+                            <router-link :to="{name: 'customer-update', params: {id: customer.id}}" class="btn btn-xs btn-default">
+                                Edit
+                            </router-link>
+                            <button class="btn btn-danger" @click.prevent = "deletePhone(phoneItem.id)">Удалить</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Телефон</th>
+                        <th>Редактировать</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Email</label>
+          <div class="col-sm-10">
+            <input type="email" v-model="customer.email" class="form-control" required placeholder="Email">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <textarea class="form-control" v-model="customer.description" placeholder="Комментарии по клиенту" style="height: 300px">
+                      
+          </textarea>
         </div>
         
       </div>
       <!-- /.card-body -->
       <div class="card-footer">
         <button class="btn btn-primary">Применить</button>
-        <router-link :to="{name: 'missions'}" class="btn btn-default float-right">Отмена</router-link>
+        <router-link :to="{name: 'customers'}" class="btn btn-default float-right">Отмена</router-link>
       </div>
       <!-- /.card-footer -->
     </form>
@@ -52,10 +118,8 @@
   export default {
     data(){
       return {
-        mission:{},
-        sequenceNum: '',
-        superChecked: false,
-        finalChecked: false
+        customer: {}
+        
       }
     },
     /*
@@ -69,12 +133,9 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = `/api/missions/${this.$route.params.id}`;
+      let uri = `/api/customers/${this.$route.params.id}`;
       this.axios.get(uri).then((response) => {
-        this.mission = response.data.data;
-        this.setSequenceSelected();
-        this.setSuperChecked();
-        this.setFinalChecked();
+        this.customer = response.data.data;
       })
       .catch(e => {
         //console.log(e);
@@ -91,20 +152,17 @@
       });
     },
     methods: {
-      updateMission(/*event*/){
-        this.mission.sequence = this.sequenceNum;
-        this.mission.is_super = this.superChecked;
-        this.mission.is_final = this.finalChecked;
-        console.log(this.mission);
-        let uri = `/api/missions/${this.$route.params.id}`;
-        this.axios.patch(uri, this.mission/*{}*/)
+      updateCustomer(/*event*/){
+        let uri = `/api/customers/${this.$route.params.id}`;
+        this.axios.patch(uri, this.customer/*{}*/)
           .then((response) => {
-            if(response.data) {
+            if(response.data.data) {
               //this.$emit("changecartevent", 1);
-              this.$router.push({name: 'missions'});
+              this.$router.push({name: 'customers'});
             }
             else {
             	swal("Сохранение изменений", "Что то пошло не так...", "error");
+            	this.$router.push({name: 'customers'});
             }
           })
           .catch(e => {
@@ -117,18 +175,15 @@
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
-              this.$router.push({name: 'routes'});
+              this.$router.push({name: 'customers'});
             }
           });
         },
-        setSequenceSelected() {
-          this.sequenceNum = this.mission.sequence;
-        },
-        setSuperChecked() {
-          this.superChecked = this.mission.is_super;
-        },
-        setFinalChecked() {
-          this.finalChecked = this.mission.is_final;
+        deletePhone(id) {
+          if(this.customer.phones.length == 1) {
+            swal("Ошибка удаления номера", "Клиента нельзя оставлять совсем без телефонных номеров!", "error");
+          }
+          
         },
       },
     }

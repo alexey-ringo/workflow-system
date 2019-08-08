@@ -19,7 +19,7 @@ class CreateCustomersTable extends Migration
             $table->string('second_name')->nullable();
             $table->string('surname');
             $table->string('region')->nullable();
-            $table->string('sity');
+            $table->string('city');
             $table->string('street');
             $table->string('building');
             $table->string('flat');

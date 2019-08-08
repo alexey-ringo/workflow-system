@@ -30,9 +30,9 @@ import MissionCreate from './components/group/MissionCreate';
 //import ContractUpdate from './components/group/ContractUpdate';
 //import ContractCreate from './components/group/ContractCreate';
 
-//import Customers from './components/group/Customers';
-//import CustomerUpdate from './components/group/CustomerUpdate';
-//import CustomerCreate from './components/group/CustomerCreate';
+import Customers from './components/customer/Customers';
+import CustomerUpdate from './components/customer/CustomerUpdate';
+import CustomerCreate from './components/customer/CustomerCreate';
 
 //import Prices from './components/group/Prices';
 //import PriceUpdate from './components/group/PriceUpdate';
@@ -103,9 +103,9 @@ export default new VueRouter({
                 { path: 'route/:id',  name: 'route-update', component: RouteUpdate },
                 { path: 'route-new',  name: 'route-create', component: RouteCreate },
                 
-            //    { path: 'customers',  name: 'customers', component: Customers },
-            //    { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
-            //    { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
+                { path: 'customers',  name: 'customers', component: Customers },
+                { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
+                { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
                 
             //    { path: 'contracts',  name: 'contracts', component: Contracts },
             //    { path: 'contract/:id',  name: 'contract-update', component: ContractUpdate },

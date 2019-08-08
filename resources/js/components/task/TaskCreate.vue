@@ -5,13 +5,35 @@
       <h3 class="card-title">Новая заявка</h3>
     </div>
     <!-- /.card-header -->
+    <div class="card-body">
+      <div class="form-group">
+        <label class="col-sm-4 control-label">Фамилия клиента</label>
+        <div class="col-sm-10">
+          <input type="text" v-model="task.title" class="form-control" required placeholder="Название заявки">
+        </div>
+      </div>
+        
+      <div class="form-group">
+        <label class="col-sm-4 control-label">Имя клиента</label>
+        <div class="col-sm-10">
+          <input type="text" v-model="task.title" class="form-control" required placeholder="Название заявки">
+        </div>
+      </div>
+        
+      <div class="form-group">
+        <label class="col-sm-4 control-label">Телефон клиента</label>
+        <div class="col-sm-10">
+          <input type="text" v-model="task.title" class="form-control" required placeholder="Название заявки">
+        </div>
+      </div>
+    </div>
     <!-- form start -->
     <form class="form-horizontal" @submit.prevent="createTask">
       <div class="card-body">
         <div class="form-group">
-          <label for="inputTaskName" class="col-sm-4 control-label">Название заявки</label>
+          <label class="col-sm-4 control-label">Название заявки</label>
           <div class="col-sm-10">
-            <input type="text" v-model="task.title" class="form-control" id="inputTaskName" required placeholder="Название заявки">
+            <input type="text" v-model="task.title" class="form-control" required placeholder="Название заявки">
           </div>
         </div>
                   
