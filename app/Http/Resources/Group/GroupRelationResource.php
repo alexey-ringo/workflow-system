@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Group;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Permission;
+use App\Models\Mission;
+use App\Http\Resources\Mission\MissionResource;
 
-class RoleRelationResource extends JsonResource
+class GroupRelationResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,9 +21,8 @@ class RoleRelationResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
-            //'permissions' => PermissionResource::collection($this->whenLoaded('permissions')),
-            'permissions' => PermissionResource::collection($this->permissions),
-            'all_permissions' => PermissionResource::collection(Permission::all())
+            'missions' => MissionResource::collection($this->missions),
+            'all_missions' => MissionResource::collection(Mission::all())
         ];
     }
 }

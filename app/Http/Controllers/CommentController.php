@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Comment;
 use App\Models\Task;
 use App\Services\TaskService;
-use App\Http\Resources\CommentCollection;
-use App\Http\Resources\CommentResource;
+use App\Http\Resources\Task\CommentCollection;
+use App\Http\Resources\Task\CommentResource;
 
 class CommentController extends Controller
 {

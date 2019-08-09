@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Route;
+use App\Models\Customer;
+use App\Models\Phone;
 use Illuminate\Http\Request;
-use App\Http\Resources\Route\RouteCollection;
-use App\Http\Resources\Route\RouteResource;
+use App\Http\Resources\Customer\PhoneCollection;
 
-class RouteController extends Controller
+
+class PhoneController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +17,7 @@ class RouteController extends Controller
      */
     public function index()
     {
-        return new RouteCollection(Route::all());
+        
     }
 
     
@@ -36,17 +37,18 @@ class RouteController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $route = Route::create([
-            'name' => $request->get('name'),
-            'value' => $request->get('value'),
-            'description' => $request->get('description'),
-            'in_use' => $request->get('in_use'),
-        ]);
         
-        if($route) {
+        $phone = Phone::create([
+            'customer_id' => $request->get('customer_id'),
+            'phone' => $request->get('phone'),
+        ]);
+        //Illuminate\Database\QueryException
+        
+        if($phone) {
             return response()->json(['data' => 1]);
         }
         else {
+            $this->destroy($customer);
             return response()->json(['data' => 0]);
         }  
     }
@@ -54,12 +56,14 @@ class RouteController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Route  $route
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Route $route/* int $id*/)
+    public function show(int $id)
     {
-        return new RouteResource($route);
+        $customer = Customer::find($id);
+        //return new PhoneCollection(Phone::where('customer_id', $customer->id)->get());
+        return new PhoneCollection($customer->phones);
     }
 
    
@@ -68,10 +72,10 @@ class RouteController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Route  $route
+     * @param  \App\Models\Phone  $phone
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Route $route)
+    public function update(Request $request, Phone $phone)
     {
         /*
         $validator = $request->validate([
@@ -81,31 +85,37 @@ class RouteController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $route->name = $request->get('name');
-        $route->value = $request->get('value');
-        $route->description = $request->get('description');
-        $route->in_use = $request->get('in_use');
-        $route->save();
+        $customer->surname = $request->get('surname');
+        $customer->name = $request->get('name');
+        $customer->second_name = $request->get('second_name');
+        $customer->city = $request->get('city');
+        $customer->region = $request->get('region');
+        $customer->street = $request->get('street');
+        $customer->building = $request->get('building');
+        $customer->flat = $request->get('flat');
+        $customer->description = $request->get('description');
+        $customer->save();
         
         //$mission->update($request->all());
         
-        if($route) {
+        if($customer) {
             return response()->json(['data' => 1]);
         }
         else {
             return response()->json(['data' => 0]);
-        }  
+        }
+        
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Route  $route
+     * @param  \App\Models\Phone  $phone
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Route $route)
+    public function destroy(Phone $phone)
     {
-        if($route->delete()) {
+        if($phone->delete()) {
             return response()->json(['data' => 1]);
         }
         else {

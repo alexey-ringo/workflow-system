@@ -2887,10 +2887,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      customer: {}
+      customer: {},
+      phones: [],
+      phone: {},
+      visibleAddPhone: false
     };
   },
 
@@ -2908,6 +2922,8 @@ __webpack_require__.r(__webpack_exports__);
     var uri = "/api/customers/".concat(this.$route.params.id);
     this.axios.get(uri).then(function (response) {
       _this.customer = response.data.data;
+
+      _this.getPhones();
     })["catch"](function (e) {
       //console.log(e);
       if (e == 'Error: Request failed with status code 401') {
@@ -2965,9 +2981,72 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
+    getPhones: function getPhones() {
+      var _this3 = this;
+
+      var uri = "/api/phones/".concat(this.customer.id);
+      this.axios.get(uri).then(function (response) {
+        _this3.phones = response.data.data;
+      })["catch"](function (e) {
+        //console.log(e);
+        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      });
+    },
+    showAddPhone: function showAddPhone() {
+      this.visibleAddPhone = true;
+    },
+    addPhone: function addPhone() {
+      var _this4 = this;
+
+      this.phone.customer_id = this.customer.id;
+      var uri = '/api/phones';
+      this.axios.post(uri, this.phone).then(function (response) {
+        if (response.data.data) {
+          _this4.getPhones();
+
+          _this4.phone = {};
+          _this4.visibleAddPhone = false;
+        } else {
+          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          _this4.phone = {};
+          _this4.visibleAddPhone = false;
+        }
+      })["catch"](function (e) {
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this4.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          _this4.phone = {};
+          _this4.visibleAddPhone = false;
+        }
+      });
+    },
     deletePhone: function deletePhone(id) {
-      if (this.customer.phones.length == 1) {
+      var _this5 = this;
+
+      if (this.phones.length == 1) {
         swal("Ошибка удаления номера", "Клиента нельзя оставлять совсем без телефонных номеров!", "error");
+      }
+
+      var uri = "/api/phones/".concat(id);
+
+      if (confirm("Do you really want to delete it?")) {
+        this.axios["delete"](uri).then(function (response) {
+          if (response.data.data) {
+            _this5.getPhones();
+          } else {
+            swal("Удаление задачи", "Что то пошло не так...", "error");
+          }
+        })["catch"](function (e) {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        });
       }
     }
   }
@@ -43872,38 +43951,69 @@ var render = function() {
             ])
           ]),
           _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "col-sm-4 control-label" }, [
-              _vm._v("Телефон")
-            ]),
+          _vm._m(1),
+          _vm._v(" "),
+          _c("div", { staticClass: "row" }, [
+            !_vm.visibleAddPhone
+              ? _c("div", { staticClass: "col-md-2" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-danger",
+                      attrs: { type: "button" },
+                      on: { click: _vm.showAddPhone }
+                    },
+                    [_vm._v("Добавить телефон")]
+                  )
+                ])
+              : _vm._e(),
             _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.customer.phone,
-                    expression: "customer.phone"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  required: "",
-                  placeholder: "В формате 7xxxxxxxxxx (10 знаков после семерки)"
-                },
-                domProps: { value: _vm.customer.phone },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.customer, "phone", $event.target.value)
-                  }
-                }
-              })
-            ])
+            _vm.visibleAddPhone
+              ? _c("div", { staticClass: "col-md-2" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      attrs: { type: "button" },
+                      on: { click: _vm.addPhone }
+                    },
+                    [_vm._v("Применить")]
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.visibleAddPhone
+              ? _c("div", { staticClass: "col-md-10" }, [
+                  _c("div", { staticClass: "form-group" }, [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.phone.phone,
+                          expression: "phone.phone"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      attrs: {
+                        type: "text",
+                        required: "",
+                        placeholder:
+                          "В формате 7xxxxxxxxxx (10 знаков после семерки)"
+                      },
+                      domProps: { value: _vm.phone.phone },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.$set(_vm.phone, "phone", $event.target.value)
+                        }
+                      }
+                    })
+                  ])
+                ])
+              : _vm._e()
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "col-sm-4 table-responsive p-0" }, [
@@ -43911,11 +44021,11 @@ var render = function() {
               "table",
               { staticClass: "table table-hover table-bordered table-striped" },
               [
-                _vm._m(1),
+                _vm._m(2),
                 _vm._v(" "),
                 _c(
                   "tbody",
-                  _vm._l(_vm.customer.phones, function(phoneItem) {
+                  _vm._l(_vm.phones, function(phoneItem) {
                     return _c("tr", { key: phoneItem.id }, [
                       _c("td", [_vm._v(_vm._s(phoneItem.phone))]),
                       _vm._v(" "),
@@ -43961,7 +44071,7 @@ var render = function() {
                   0
                 ),
                 _vm._v(" "),
-                _vm._m(2)
+                _vm._m(3)
               ]
             )
           ]),
@@ -44053,6 +44163,16 @@ var staticRenderFns = [
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [
         _vm._v("Редактирование карточки клиента")
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { staticClass: "col-sm-2 control-label" }, [
+        _vm._v("Телефон")
       ])
     ])
   },

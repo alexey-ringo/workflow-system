@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Permission;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class CommentCollection extends ResourceCollection
+class PermissionCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.

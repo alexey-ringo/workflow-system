@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\User;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
 use App\Models\Role;
 use App\Models\Group;
+use App\Http\Resources\Role\RoleResource;
+use App\Http\Resources\Group\GroupResource;
 
 class UserRelationResource extends JsonResource
 {

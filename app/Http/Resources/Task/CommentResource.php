@@ -1,13 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Task;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-use App\Models\Role;
-use App\Models\Group;
-
-class UserResource extends JsonResource
+class CommentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

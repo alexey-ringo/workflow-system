@@ -55,9 +55,20 @@
         </div>
         
         <div class="form-group">
-          <label class="col-sm-4 control-label">Телефон</label>
-          <div class="col-sm-10">
-            <input type="text" v-model="customer.phone" class="form-control" required placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
+          <label class="col-sm-2 control-label">Телефон</label>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-2" v-if="!visibleAddPhone">
+            <button type="button" class="btn btn-danger" @click="showAddPhone">Добавить телефон</button>
+          </div>
+          <div class="col-md-2" v-if="visibleAddPhone">
+            <button type="button" class="btn btn-primary" @click="addPhone">Применить</button>
+          </div>
+          <div class="col-md-10" v-if="visibleAddPhone">
+            <div class="form-group">
+              <input type="text" v-model="phone.phone" class="form-control" required placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
+            </div>
           </div>
         </div>
         
@@ -70,7 +81,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="phoneItem in customer.phones" :key="phoneItem.id">
+                    <tr v-for="phoneItem in phones" :key="phoneItem.id">
                         <td>{{ phoneItem.phone  }}</td>
                         <td>
                             <router-link :to="{name: 'customer-update', params: {id: customer.id}}" class="btn btn-xs btn-default">
@@ -118,8 +129,10 @@
   export default {
     data(){
       return {
-        customer: {}
-        
+        customer: {},
+        phones: [],
+        phone: {},
+        visibleAddPhone: false
       }
     },
     /*
@@ -136,6 +149,7 @@
       let uri = `/api/customers/${this.$route.params.id}`;
       this.axios.get(uri).then((response) => {
         this.customer = response.data.data;
+        this.getPhones();
       })
       .catch(e => {
         //console.log(e);
@@ -179,11 +193,68 @@
             }
           });
         },
+        getPhones() {
+          let uri = `/api/phones/${this.customer.id}`;
+          this.axios.get(uri).then((response) => {
+            this.phones = response.data.data;
+          })
+          .catch(e => {
+            //console.log(e);
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          });
+        },
+        showAddPhone() {
+          this.visibleAddPhone = true;
+        },
+        addPhone() {
+          this.phone.customer_id = this.customer.id;
+          let uri = '/api/phones';
+          this.axios.post(uri, this.phone).then((response) => {
+            if(response.data.data) {
+              this.getPhones();
+              this.phone = {};
+              this.visibleAddPhone = false;
+            }
+            else {
+              swal("Сохранение изменений", "Что то пошло не так...", "error");
+              this.phone = {};
+              this.visibleAddPhone = false;
+            }
+          })
+          .catch(e => {
+            if(e == 'Error: Request failed with status code 401') {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+                this.$router.push({name: 'login'});
+              }
+              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else {
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              this.phone = {};
+              this.visibleAddPhone = false;
+            }
+          });
+        },
         deletePhone(id) {
-          if(this.customer.phones.length == 1) {
+          if(this.phones.length == 1) {
             swal("Ошибка удаления номера", "Клиента нельзя оставлять совсем без телефонных номеров!", "error");
           }
-          
+          let uri = `/api/phones/${id}`;
+          if (confirm("Do you really want to delete it?")) {
+            this.axios.delete(uri)
+              .then((response) => {
+                if(response.data.data) {
+                  this.getPhones();
+                }
+                else {
+                  swal("Удаление задачи", "Что то пошло не так...", "error");
+                }
+              })
+              .catch(e => {
+                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              });
+            }
         },
       },
     }

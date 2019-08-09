@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use App\Http\Resources\PermissionCollection;
-use App\Http\Resources\PermissionResource;
+use App\Http\Resources\Permission\PermissionCollection;
+use App\Http\Resources\Permission\PermissionResource;
 
 class PermissionController extends Controller
 {

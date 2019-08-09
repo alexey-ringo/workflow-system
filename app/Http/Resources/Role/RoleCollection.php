@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Role;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use App\Models\Role;
@@ -15,7 +15,7 @@ class RoleCollection extends ResourceCollection
      * @return array
      */
      
-    public $collects = 'App\Http\Resources\RoleResource';
+    public $collects = 'App\Http\Resources\Role\RoleResource';
     
     public function toArray($request)
     {

@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Phone;
 use Illuminate\Http\Request;
-use App\Http\Resources\CustomerCollection;
-use App\Http\Resources\CustomerResource;
+use App\Http\Resources\Customer\CustomerCollection;
+use App\Http\Resources\Customer\CustomerResource;
+use App\Http\Resources\Customer\CustomerRelationResource;
 
 class CustomerController extends Controller
 {
@@ -37,7 +38,6 @@ class CustomerController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $phone;
         
         $customer = Customer::create([
             'surname' => $request->get('surname'),
@@ -79,7 +79,9 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer/* int $id*/)
     {
-        return new CustomerResource($customer->with('phones')->first());
+        //return new CustomerResource($customer->with('phones')->first());
+        //return new CustomerRelationResource($customer);
+        return new CustomerResource($customer);
     }
 
    

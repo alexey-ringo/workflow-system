@@ -9,9 +9,9 @@ use App\Models\Mission;
 use App\Services\TaskService;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\TaskResource;
-use App\Http\Resources\TaskCustomResource;
-use App\Http\Resources\TaskCollection;
+use App\Http\Resources\Task\TaskResource;
+use App\Http\Resources\Task\TaskCustomResource;
+use App\Http\Resources\Task\TaskCollection;
 
 class TaskController extends Controller
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Mission;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class RouteCollection extends ResourceCollection
+class MissionCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.

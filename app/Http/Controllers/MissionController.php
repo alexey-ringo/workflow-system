@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Mission;
 use Illuminate\Http\Request;
-use App\Http\Resources\MissionCollection;
-use App\Http\Resources\MissionResource;
+use App\Http\Resources\Mission\MissionCollection;
+use App\Http\Resources\Mission\MissionResource;
 
 class MissionController extends Controller
 {

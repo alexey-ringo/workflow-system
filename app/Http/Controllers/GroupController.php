@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use Illuminate\Http\Request;
-use App\Http\Resources\GroupResource;
-use App\Http\Resources\GroupRelationResource;
-use App\Http\Resources\GroupCollection;
+use App\Http\Resources\Group\GroupResource;
+use App\Http\Resources\Group\GroupRelationResource;
+use App\Http\Resources\Group\GroupCollection;
 
 class GroupController extends Controller
 {

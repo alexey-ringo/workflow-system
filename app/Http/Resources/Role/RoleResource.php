@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Role;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Permission;
 
-class MissionResource extends JsonResource
+class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

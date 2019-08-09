@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Route;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Permission;
 
-class CustomerResource extends JsonResource
+class RouteResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

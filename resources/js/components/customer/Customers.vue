@@ -106,7 +106,7 @@
                             swal('Ошибка', "Внутренняя ошибка сервера", "error");
                         });
                 }
-            }
+            },
         },
         beforeRouteEnter (to, from, next) { 
             if ( ! localStorage.getItem('jwt')) {
