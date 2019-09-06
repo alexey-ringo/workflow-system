@@ -55,8 +55,8 @@ class UserService
     
     public function canFirstCreate(User $user): bool 
     {
-        $hasMissionsWithFirst = $user->with('groups.missions')
-                        ->whereHas('groups.missions', function($q) {
+        $hasProcessesWithFirst = $user->with('groups.processes')
+                        ->whereHas('groups.processes', function($q) {
                                 $q->where('sequence', 1);
                         })->get();
         
@@ -64,17 +64,17 @@ class UserService
         //                        return $q->where(function($q));
         //                }]);
         
-        return $hasMissionsWithFirst->isNotEmpty();
+        return $hasProcessesWithFirst->isNotEmpty();
     }
     
-    public function getUsersByMission(int $missionId): Collection 
+    public function getUsersByProcess(int $processId): Collection 
     {
-        $usersByMission = User::with('groups.missions')
-                        ->whereHas('groups.missions', function($q) use($missionId) {
-                                $q->where('missions.id', $missionId);
+        $usersByProcess = User::with('groups.processes')
+                        ->whereHas('groups.processes', function($q) use($processId) {
+                                $q->where('processes.id', $processId);
                         })->get();
         
-        return $usersByMission;
+        return $usersByProcess;
     }
     
 }

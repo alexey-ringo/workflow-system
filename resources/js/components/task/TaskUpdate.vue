@@ -33,7 +33,7 @@
             <tbody>
               <tr v-for="(commentItem, commentId) in comments" :key="commentItem.id" @dblclick="showComment(commentId)">
                 <td class="mailbox-date">5 mins ago</td>
-                <td class="mailbox-subject">{{commentItem.task.mission_name}}</td>
+                <td class="mailbox-subject">{{commentItem.task.process_name}}</td>
                 <td class="mailbox-name">{{commentItem.user_name}}</td>
                 <td class="mailbox-subject">{{commentItem.comment}}</td>
                 <td class="mailbox-attachment"></td>
@@ -47,8 +47,8 @@
       <!-- /.card-body -->
       <div class="card-footer">
         <div v-if="visibleCommentCreate">
-          <button class="btn btn-primary" v-if="!isSequenceFirst" @click="storeNewComment(2)">Назад в <b>{{task.prevMissionName}}</b></button>
-          <button class="btn btn-primary" v-if="!isSequenceLast" @click="storeNewComment(1)">Вперед в <b>{{task.nextMissionName}}</b></button>
+          <button class="btn btn-primary" v-if="!isSequenceFirst" @click="storeNewComment(2)">Назад в <b>{{task.prevProcessName}}</b></button>
+          <button class="btn btn-primary" v-if="!isSequenceLast" @click="storeNewComment(1)">Вперед в <b>{{task.nextProcessName}}</b></button>
           <button class="btn btn-primary" @click="storeNewComment(4)">Просто комментарий</button>
           <button class="btn btn-primary" v-if="isSequenceLast" @click="storeNewComment(3)">Закрыть заявку</button>
           <a href="#" class="btn btn-default float-right" v-on:click="closeNewComment">Отмена</a>
@@ -68,7 +68,11 @@
   export default {
     data(){
       return {
-        task: {},
+        task: {
+          error: false,
+          message: ''
+        },
+        response: {},
         comments: [],
         comment: {},
         visibleCommentCreate: false
@@ -86,7 +90,13 @@
       let taskUri = `/api/tasks/${this.$route.params.id}`;
       this.axios.get(taskUri).then((response) => {
         this.task = response.data.data;
-        this.getAllComments();
+        if(!this.task.error) {
+          this.getAllComments();
+        }
+        else {
+          swal("Ошибка", "Для задачи № " + this.task + " '" + this.title + "' " + this.message, "error");
+          this.$router.push({name: 'tasks'});
+        }
       })
       .catch(e => {
         //console.log(e);
@@ -104,18 +114,19 @@
     },
     methods: {
       updateTaskToNext(){
-        this.task.currentMissionId = this.task.nextMissionId;
+        this.task.currentProcessId = this.task.nextProcessId;
         this.task.destination = 1;
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data.data) {
+            this.response = response.data.data;
+            if(!this.response.error) {
               //this.$emit("changecartevent", 1);
-              //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+              swal("Сохранение изменений", this.response.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-            	swal("Сохранение изменений", "Что то пошло не так...", "error");
+            	swal("Ошибка", this.response.message, "error");
             	this.$router.push({name: 'tasks'});
             }
           })
@@ -134,18 +145,19 @@
           });
       },
       updateTaskToPrev(){
-        this.task.currentMissionId = this.task.prevMissionId;
+        this.task.currentProcessId = this.task.prevProcessId;
         this.task.destination = 2;
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data.data) {
+            this.response = response.data.data;
+            if(!this.response.error) {
               //this.$emit("changecartevent", 1);
-              //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+              swal("Сохранение изменений", this.response.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-          	  swal("Сохранение изменений", "Что то пошло не так...", "error");
+          	  swal("Ошибка", this.response.message, "error");
           	  this.$router.push({name: 'tasks'});
             }
           })
@@ -164,18 +176,19 @@
           });
       },
       updateTaskToClose(){
-        this.task.currentMissionId = this.task.nextMissionId;
+        this.task.currentProcessId = this.task.nextProcessId;
         this.task.destination = 3;
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(response.data.data) {
+            this.response = response.data.data;
+            if(!this.response.error) {
               //this.$emit("changecartevent", 1);
-              //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+              swal("Сохранение изменений", this.response.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-          	  swal("Сохранение изменений", "Что то пошло не так...", "error");
+          	  swal("Ошибка", this.response.message, "error");
           	  this.$router.push({name: 'tasks'});
             }
           })
@@ -208,7 +221,8 @@
         this.comment.taskId = this.task.id;
         let uri = '/api/comments';
         this.axios.post(uri, this.comment).then((response) => {
-          if(response.data.data) {
+          this.response = response.data.data;
+          if(!this.response.error) {
             switch(destination) {
               case 1:
                 this.updateTaskToNext();
@@ -242,7 +256,7 @@
             }
           }
           else {
-            swal("Сохранение изменений", "Что то пошло не так...", "error");
+            swal("Ошибка", this.response.message, "error");
             this.closeNewComment();
           }
         })

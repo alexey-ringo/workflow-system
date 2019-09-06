@@ -18,33 +18,39 @@ import Permissions from './components/permission/Permissions';
 import PermissionUpdate from './components/permission/PermissionUpdate';
 import PermissionCreate from './components/permission/PermissionCreate';
 
-import Groups from './components/group/Groups';
-import GroupUpdate from './components/group/GroupUpdate';
-import GroupCreate from './components/group/GroupCreate';
+import Groups from './components/process/Groups';
+import GroupUpdate from './components/process/GroupUpdate';
+import GroupCreate from './components/process/GroupCreate';
 
-import Missions from './components/group/Missions';
-import MissionUpdate from './components/group/MissionUpdate';
-import MissionCreate from './components/group/MissionCreate';
+import Processes from './components/process/Processes';
+import ProcessUpdate from './components/process/ProcessUpdate';
+import ProcessCreate from './components/process/ProcessCreate';
 
-//import Contracts from './components/group/Contracts';
-//import ContractUpdate from './components/group/ContractUpdate';
-//import ContractCreate from './components/group/ContractCreate';
+import Contracts from './components/contract/Contracts';
+//import ContractUpdate from './components/contract/ContractUpdate';
+//import ContractCreate from './components/contract/ContractCreate';
 
 import Customers from './components/customer/Customers';
 import CustomerUpdate from './components/customer/CustomerUpdate';
 import CustomerCreate from './components/customer/CustomerCreate';
 
-//import Prices from './components/group/Prices';
-//import PriceUpdate from './components/group/PriceUpdate';
-//import PriceCreate from './components/group/PriceCreate';
+//import Prices from './components/price/Prices';
+//import PriceUpdate from './components/price/PriceUpdate';
+//import PriceCreate from './components/price/PriceCreate';
 
-import Routes from './components/group/Routes';
-import RouteUpdate from './components/group/RouteUpdate';
-import RouteCreate from './components/group/RouteCreate';
+import Routes from './components/process/Routes';
+import RouteUpdate from './components/process/RouteUpdate';
+import RouteCreate from './components/process/RouteCreate';
 
 import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
-import TaskCreate from './components/task/TaskCreate';
+//import TaskCreate from './components/task/TaskCreate';
+import SearchCustomer from './components/task/SearchCustomer';
+import ContractsForCustomer from './components/task/ContractsForCustomer';
+import CreateTaskForNewContract from './components/task/CreateTaskForNewContract';
+import CreateTaskForExistsContract from './components/task/CreateTaskForExistsContract';
+import CustomerNotFound from './components/task/CustomerNotFound';
+
 
 import CommentDetails from './components/task/CommentDetails';
 //import CommentCreate from './components/task/CommentCreate';
@@ -95,9 +101,9 @@ export default new VueRouter({
                 { path: 'group/:id',  name: 'group-update', component: GroupUpdate },
                 { path: 'group-new',  name: 'group-create', component: GroupCreate },
             
-                { path: 'missions',  name: 'missions', component: Missions },
-                { path: 'mission/:id',  name: 'mission-update', component: MissionUpdate },
-                { path: 'mission-new',  name: 'mission-create', component: MissionCreate },
+                { path: 'processes',  name: 'processes', component: Processes },
+                { path: 'process/:id',  name: 'process-update', component: ProcessUpdate },
+                { path: 'process-new',  name: 'process-create', component: ProcessCreate },
                 
                 { path: 'routes',  name: 'routes', component: Routes },
                 { path: 'route/:id',  name: 'route-update', component: RouteUpdate },
@@ -107,7 +113,7 @@ export default new VueRouter({
                 { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
                 { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
                 
-            //    { path: 'contracts',  name: 'contracts', component: Contracts },
+                { path: 'contracts',  name: 'contracts', component: Contracts },
             //    { path: 'contract/:id',  name: 'contract-update', component: ContractUpdate },
             //    { path: 'contract-new',  name: 'contract-create', component: ContractCreate },
                 
@@ -116,7 +122,39 @@ export default new VueRouter({
             //    { path: 'price-new',  name: 'price-create', component: PriceCreate },
             
                 { path: 'tasks',  name: 'tasks', component: Tasks },
-                { path: 'task-new',  name: 'task-create', component: TaskCreate },
+                { path: 'new',  name: 'search-customer', component: SearchCustomer, 
+                    children: [
+                        {
+                            path: 'customers/:customid',  
+                            name: 'contracts-for-customer', 
+                            component: ContractsForCustomer 
+                        },
+                        { 
+                            path: 'customer-notfound',  
+                            name: 'customer-not-found', 
+                            component: CustomerNotFound 
+                            
+                        },
+                        /*
+                        { 
+                            path: 'contracts/:contractid',  
+                            name: 'create-task-for-new-contract', 
+                            component: CreateTaskForNewContract, 
+                            props: false 
+                            
+                        },
+                        */
+                        { 
+                            path: 'contracts/:contractid',  
+                            name: 'create-task-for-exists-contract',
+                            component: CreateTaskForExistsContract, 
+                        //    props: true
+                            //components: { default: CreateTaskForNewContract, existsContract: CreateTaskForExistsContract },
+                            //props: {default: true, existsContract: false}
+                        },
+                        
+                    ]
+                },
                 { path: 'task/:id',  name: 'task-update', component: TaskUpdate, 
                     //children: [
                             //{ path: 'comments',  name: 'comments', component: Comments },

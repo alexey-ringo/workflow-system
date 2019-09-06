@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources\Mission;
+namespace App\Http\Resources\Process;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class MissionCollection extends ResourceCollection
+class ProcessCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.

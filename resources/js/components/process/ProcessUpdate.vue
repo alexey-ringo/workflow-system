@@ -1,15 +1,15 @@
 <template>
   <div class="card card-info">
     <div class="card-header">
-      <h3 class="card-title">Редактирование процесса обработки клиентских заявок</h3>
+      <h3 class="card-title">Редактирование процесса обработки обращений клиентов</h3>
     </div>
     <!-- /.card-header -->
     <!-- form start -->
-    <form class="form-horizontal" @submit.prevent="updateMission">
+    <form class="form-horizontal" @submit.prevent="updateProcess">
       <div class="card-body">
         
         <div class="form-group">
-          <label class="col-sm-4 control-label">Маршрут</label>
+          <label class="col-sm-4 control-label">Маршрут обращений</label>
           <div class="col-sm-10">
             <select v-model="selectRoute" required>
               <option v-for="route in routes" :value="route.id" :key="route.id">
@@ -22,7 +22,14 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название процесса</label>
           <div class="col-sm-10">
-            <input type="text" v-model="mission.name" class="form-control" required placeholder="Название задачи">
+            <input type="text" v-model="process.name" class="form-control" placeholder="Название процесса обработки обращения">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Уникальный slug процесса</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="process.slug" class="form-control" disabled placeholder="Уникальный slug процесса обработки обращения">
           </div>
         </div>
         
@@ -30,7 +37,7 @@
           <div class="col-md-4">
             <div class="form-group">
               <label class="control-label">Очередь выполнения процесса</label>
-              <input type="text" v-model="mission.sequence" class="form-control" required>
+              <input type="text" v-model="process.sequence" class="form-control" required>
             </div>
           </div>
           <div class="col-md-4">
@@ -51,7 +58,7 @@
       <!-- /.card-body -->
       <div class="card-footer">
         <button class="btn btn-primary">Применить</button>
-        <router-link :to="{name: 'missions'}" class="btn btn-default float-right">Отмена</router-link>
+        <router-link :to="{name: 'processes'}" class="btn btn-default float-right">Отмена</router-link>
       </div>
       <!-- /.card-footer -->
     </form>
@@ -63,11 +70,11 @@
   export default {
     data(){
       return {
-        mission:{},
+        process: {},
         routes: [],
+        selectRoute: null,
         superChecked: false,
         finalChecked: false,
-        selectRoute: false
       }
     },
     created() {
@@ -80,7 +87,7 @@
       this.axios.get(uri)
       	.then((response) => {
         	this.routes = response.data.data;
-        	this.getMission();
+        	this.getProcess();
         })
         .catch(e => {
         	if(e == 'Error: Request failed with status code 401') {
@@ -92,21 +99,21 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'missions'});
+            this.$router.push({name: 'processes'});
           }
         });
     },
     mounted() {
-      //let uri = `/api/missions/${this.$route.params.id}`;
+      //let uri = `/api/processes/${this.$route.params.id}`;
       //this.axios.get(uri).then((response) => {
-      //  this.mission = response.data.data;
+      //  this.process = response.data.data;
       //});
     },
     methods: {
-      getMission() {
-        let uri = `/api/missions/${this.$route.params.id}`;
+      getProcess() {
+        let uri = `/api/processes/${this.$route.params.id}`;
         this.axios.get(uri).then((response) => {
-          this.mission = response.data.data;
+          this.process = response.data.data;
           this.setRouteSelected();
           this.setSuperChecked();
           this.setFinalChecked();
@@ -117,29 +124,29 @@
           
         });
       },
-      updateMission(/*event*/){
+      updateProcess(/*event*/){
         if(this.superChecked) {
-          this.mission.is_super = 1;
+          this.process.is_super = 1;
         }
         else {
-          this.mission.is_super = null;
+          this.process.is_super = null;
         }
         
         if(this.finalChecked) {
-          this.mission.is_final = 1;
+          this.process.is_final = 1;
         }
         else {
-          this.mission.is_final = null;
+          this.process.is_final = null;
         }
         
-        this.mission.route_id = this.selectRoute;
+        this.process.route_id = this.selectRoute;
         
-        let uri = `/api/missions/${this.$route.params.id}`;
-        this.axios.patch(uri, this.mission/*{}*/)
+        let uri = `/api/processes/${this.$route.params.id}`;
+        this.axios.patch(uri, this.process/*{}*/)
           .then((response) => {
             if(response.data) {
               //this.$emit("changecartevent", 1);
-              this.$router.push({name: 'missions'});
+              this.$router.push({name: 'processes'});
             }
             else {
             	swal("Сохранение изменений", "Что то пошло не так...", "error");
@@ -155,21 +162,21 @@
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
-              this.$router.push({name: 'missions'});
+              this.$router.push({name: 'processes'});
             }
           });
         },
         setRouteSelected() {
-          this.selectRoute = this.mission.route_id;
+          this.selectRoute = this.process.route_id;
         },
         //setSequenceSelected() {
-        //  this.sequenceNum = this.mission.sequence;
+        //  this.sequenceNum = this.process.sequence;
         //},
         setSuperChecked() {
-          this.superChecked = this.mission.is_super;
+          this.superChecked = this.process.is_super;
         },
         setFinalChecked() {
-          this.finalChecked = this.mission.is_final;
+          this.finalChecked = this.process.is_final;
         },
       },
     }

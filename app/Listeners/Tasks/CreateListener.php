@@ -33,14 +33,14 @@ class CreateListener
      */
     public function handle(onCreateEvent $event)
     {
-        $sendText = 'В Вашу очередь "' . $event->task->mission_name . 
+        $sendText = 'В Вашу очередь "' . $event->task->process_name . 
                     '" поступила вновь созданная заявка № ' . $event->task->task . 
                     ' "' . $event->task->title . '" ' . 
 	                ' "' . $event->task->description . '". Заявка была создана пользователем ' . 
 	                $event->task->creating_user_name;
 	    
 	    
-	    $noticedUsers = User::getUsersByMission($event->task->mission_id);
+	    $noticedUsers = User::getUsersByProcess($event->task->process_id);
 	                   
 	    foreach($noticedUsers as $noticedUser) {
 	        if($noticedUser->telegramUser) {

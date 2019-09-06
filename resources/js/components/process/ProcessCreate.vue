@@ -6,7 +6,7 @@
     </div>
     <!-- /.card-header -->
     <!-- form start -->
-    <form class="form-horizontal" @submit.prevent="addMission">
+    <form class="form-horizontal" @submit.prevent="addProcess">
       <div class="card-body">
         
         <div class="form-group">
@@ -23,7 +23,14 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название процесса</label>
           <div class="col-sm-10">
-            <input type="text" v-model="mission.name" class="form-control" required placeholder="Название задачи">
+            <input type="text" v-model="process.name" class="form-control" required placeholder="Название процесса">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Уникальный slug процесса</label>
+          <div class="col-sm-10">
+            <input type="text" v-model="process.slug" class="form-control" required placeholder="Уникальный slug процесса">
           </div>
         </div>
         
@@ -31,7 +38,7 @@
           <div class="col-md-4">
             <div class="form-group">
               <label class="control-label">Очередь выполнения процесса</label>
-              <input type="text" v-model="mission.sequence" class="form-control" required>
+              <input type="text" v-model="process.sequence" class="form-control" required>
             </div>
           </div>
           <div class="col-md-4">
@@ -53,7 +60,7 @@
   
       <div class="card-footer">
         <button class="btn btn-primary">Создать</button>
-        <router-link :to="{name: 'missions'}" class="btn btn-default float-right">Отмена</router-link>
+        <router-link :to="{name: 'processes'}" class="btn btn-default float-right">Отмена</router-link>
       </div>
       <!-- /.card-footer -->
     </form>
@@ -65,7 +72,7 @@
   export default {
     data(){
       return {
-        mission: {},
+        process: {},
         routes: [],
         superChecked: false,
         finalChecked: false,
@@ -79,10 +86,10 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json';
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
       
-      let uri = '/api/missions';
+      let uri = '/api/processes';
       this.axios.get(uri)
       	.then((response) => {
-        	this.missions = response.data.data;
+        	this.processes = response.data.data;
         })
         .catch(e => {
         	swal('Ошибка', "Внутренняя ошибка сервера", "error");
@@ -110,37 +117,37 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'missions'});
+            this.$router.push({name: 'processes'});
           }
         });
     },
     methods: {
-      addMission(){
+      addProcess(){
         if(this.superChecked) {
-          this.mission.is_super = 1;
+          this.process.is_super = 1;
         }
         else {
-          this.mission.is_super = null;
+          this.process.is_super = null;
         }
         
         if(this.finalChecked) {
-          this.mission.is_final = 1;
+          this.process.is_final = 1;
         }
         else {
-          this.mission.is_final = null;
+          this.process.is_final = null;
         }
         
-        this.mission.route_id = this.selectRoute;
+        this.process.route_id = this.selectRoute;
         
-        let uri = '/api/missions';
-        this.axios.post(uri, this.mission).then((response) => {
+        let uri = '/api/processes';
+        this.axios.post(uri, this.process).then((response) => {
           if(response.data.data) {
             //swal("Заказ", "Ваш заказ принят!", "success");
-            this.$router.push({name: 'missions'});
+            this.$router.push({name: 'processes'});
           }
           else {
             swal("Сохранение изменений", "Что то пошло не так...", "error");
-            this.$router.push({name: 'missions'});
+            this.$router.push({name: 'processes'});
           }
         })
         .catch(e => {
@@ -153,7 +160,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'missions'});
+            this.$router.push({name: 'processes'});
           }
         });
       },

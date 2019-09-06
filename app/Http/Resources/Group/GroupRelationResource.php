@@ -3,8 +3,8 @@
 namespace App\Http\Resources\Group;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Mission;
-use App\Http\Resources\Mission\MissionResource;
+use App\Models\Process;
+use App\Http\Resources\Process\ProcessResource;
 
 class GroupRelationResource extends JsonResource
 {
@@ -21,8 +21,8 @@ class GroupRelationResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
-            'missions' => MissionResource::collection($this->missions),
-            'all_missions' => MissionResource::collection(Mission::all())
+            'processes' => ProcessResource::collection($this->processes),
+            'all_processes' => ProcessResource::collection(Process::all())
         ];
     }
 }

@@ -6,11 +6,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CommentCustomResource extends JsonResource
 {
-    public function __construct($resource, int $missionId, string $missionName)
+    public function __construct($resource, int $processId, string $processName)
     {
         $this->resource = $resource;
-        $this->missionId = $missionId;
-        $this->prevMissionId = $missionName;
+        $this->missionId = $processId;
+        $this->prevMissionId = $processName;
     }
     
     /**

@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\Customer;
-use App\Models\Phone;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
-use App\Http\Resources\Customer\CustomerCollection;
-use App\Http\Resources\Customer\CustomerResource;
-use App\Http\Resources\Customer\CustomerRelationResource;
+use App\Http\Resources\Contract\ContractCollection;
+use App\Http\Resources\Contract\ContractResource;
 
-class CustomerController extends Controller
+class ContractController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,7 +19,7 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        return new CustomerCollection(Customer::with('phones')->get());
+        return new ContractCollection(Contract::with('customer', 'price')->get());
     }
 
     
@@ -40,8 +39,10 @@ class CustomerController extends Controller
             'is_final' => 'required',
         ]);
         */
+        $customerId = $request->get('id');
+        $customer = Customer::find($customerId);
         
-        $customer = $customerService->createNewCustomer($request);
+        $newContract = $customerService->createNewContract($customer);
         
         /*
         if(!$customer) {
@@ -62,25 +63,26 @@ class CustomerController extends Controller
         }
         */
         
-        if($customer) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
+        //if($newContract) {
+        //    return response()->json(['data' => 1]);
+        //}
+        //else {
+        //    return response()->json(['data' => 0]);
+        //}
+        return new ContractResource($newContract);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Customer  $customer
+     * @param  \App\Models\Contract  $contract
      * @return \Illuminate\Http\Response
      */
-    public function show(Customer $customer/* int $id*/)
+    public function show(Contract $contract/* int $id*/)
     {
         //return new CustomerResource($customer->with('phones')->first());
         //return new CustomerRelationResource($customer);
-        return new CustomerResource($customer->with('phones', 'contracts')->first());
+        return new ContractResource($contract);
     }
 
    
@@ -130,9 +132,9 @@ class CustomerController extends Controller
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Customer $customer)
+    public function destroy(Contract $contract)
     {
-        if($customer->delete()) {
+        if($contract->delete()) {
             return response()->json(['data' => 1]);
         }
         else {

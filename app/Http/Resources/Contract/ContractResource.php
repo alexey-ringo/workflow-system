@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources\Mission;
+namespace App\Http\Resources\Contract;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class MissionResource extends JsonResource
+class ContractResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

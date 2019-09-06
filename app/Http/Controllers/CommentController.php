@@ -50,16 +50,15 @@ class CommentController extends Controller
         ]);
         */
         $createdComment = $taskService->createComment(
-                                                    $currentTask, 
-                                                    $request['comment'], 
+                                                    $request,
+                                                    $currentTask,
                                                     $currentUser
                                                     );
-        if($createdComment) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
+        return response()->json(['data' => [
+                                        'error' => $createdComment->getError(),
+                                        'task' => $createdComment->getTask(),
+                                        'message' => $createdComment->getMessage()
+                                    ]]);
     }
 
     /**
@@ -71,9 +70,9 @@ class CommentController extends Controller
     public function show(Comment $comment)
     {
         //В случае использования CustomCommentResource для передачи
-        //в компонент vue CommentDetails имени Mission
+        //в компонент vue CommentDetails имени Process
         //$task = $comment->task;
-        //$mission = $task->mission;
+        //$process = $task->process;
         return new CommentResource($comment);
     }
 

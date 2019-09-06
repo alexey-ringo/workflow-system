@@ -18,7 +18,7 @@
                     <tr v-for="group in groups" :key="group.id">
                         <td>{{ group.name  }}</td>
                         <td>{{ group.slug  }}</td>
-                        <td>{{ relatedMissions(group.missions) }}</td>
+                        <td>{{ relatedProcesses(group.processes) }}</td>
                         <td>
                             <router-link :to="{name: 'group-update', params: {id: group.id}}" class="btn btn-xs btn-default">
                                 Edit
@@ -83,12 +83,12 @@
                         });
                 }
             },
-            relatedMissions(relMission) {
-                let missions = '';
-    			for(let i = 0; i < relMission.length; i++) {
-    				missions += relMission[i].name + ', ';
+            relatedProcesses(relProcess) {
+                let processes = '';
+    			for(let i = 0; i < relProcess.length; i++) {
+    				processes += relProcess[i].name + ', ';
     			}
-				return missions;
+				return processes;
             }
         },
         beforeRouteEnter (to, from, next) { 

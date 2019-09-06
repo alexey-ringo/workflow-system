@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Mission;
+use App\Models\Process;
 
 use App\Services\TaskService;
 
@@ -24,7 +24,7 @@ class TaskController extends Controller
     {
         $currentUser = $request->user('api');
         
-        return (new TaskCollection(Mission::with('tasks', 'groups.users')
+        return (new TaskCollection(Process::with('tasks', 'groups.users')
                                         ->whereHas('groups.users', function($q) use($currentUser) {
                                             $q->where('users.id', $currentUser->id);
                                         }
@@ -49,22 +49,21 @@ class TaskController extends Controller
         if(!$currentUser) {
             return response()->json(['data' => 0]);
         }
+        
         /*
         $validator = $request->validate([
             'slug' => 'required|string|max:255|unique:groups',
             'name' => 'required|string|max:255|unique:groups',
         ]);
         */
-        $createdTask = $taskService->createNewTask($request['title'], $request['description'], $currentUser);
         
-        if($createdTask) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
+        $createdTask = $taskService->createFirstTask($request, $currentUser);
         
-        
+        return response()->json(['data' => [
+                                        'error' => $createdTask->getError(),
+                                        'task' => $createdTask->getTask(),
+                                        'message' => $createdTask->getMessage()
+                                    ]]);
     }
 
     /**
@@ -75,14 +74,36 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        $prevMissionId = $task->mission->prevMissionId();
-        $nextMissionId = $task->mission->nextMissionId();
-        $prevMissionName = $task->mission->prevMissionName();
-        $nextMissionName = $task->mission->nextMissionName();
-        $isSequenceFirst = $task->mission->isSequenceFirst();
-        $isSequenceLast = $task->mission->isSequenceLast();
+        $isSequenceFirst = $task->process->isSequenceFirst($task->route);
         
-        return new TaskCustomResource($task, $prevMissionId, $nextMissionId, $prevMissionName, $nextMissionName, $isSequenceFirst, $isSequenceLast);
+        $prevProcess = $task->process->getPrevProcess($task->route);
+        if(!$prevProcess) {
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'task' => $task->task,
+                                        'title' => $task->title,
+                                        'message' => 'отсутствует предидущий процесс'
+                                    ]]);
+        }
+      
+        $isSequenceLast = $task->process->isSequenceLast($task->route);
+        $nextProcess = $task->process->getNextProcess($task->route);
+        
+        if($isSequenceLast) {
+            return new TaskCustomResource($task, $prevProcess->id, $task->process_id, $prevProcess->name, $task->process_name, $isSequenceFirst, $isSequenceLast);
+        }
+        
+        if(!$nextProcess) {
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'task' => $task->task,
+                                        'title' => $task->title,
+                                        'message' => 'отсутствует следующий процесс'
+                                            ]]);
+        }
+        
+       
+        return new TaskCustomResource($task, $prevProcess->id, $nextProcess->id, $prevProcess->name, $nextProcess->name, $isSequenceFirst, $isSequenceLast);
         
     }
     
@@ -100,24 +121,23 @@ class TaskController extends Controller
         if(!$currentUser) {
             return response()->json(['data' => 0]);
         }
-        $currentMission = Mission::find($request['currentMissionId']);
-        if(!$currentMission) {
+        $currentProcess = Process::find($request['currentProcessId']);
+        if(!$currentProcess) {
             return response()->json(['data' => 0]);
         }
        
-        $updatedTask = $taskService->createNextSeqTask(
+        $updatedTask = $taskService->createNextTask(
+                                                        $request,
                                                         $task, 
                                                         $currentUser, 
-                                                        $currentMission,
-                                                        $request['destination']
+                                                        $currentProcess
                                                         );
-        
-        if($updatedTask) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
+        return response()->json(['data' => [
+                                        'error' => $updatedTask->getError(),
+                                        'task' => $updatedTask->getTask(),
+                                        'message' => $updatedTask->getMessage()
+                                    ]]);
+       
     }
 
     /**

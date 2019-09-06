@@ -30,13 +30,13 @@ class CloseListener
     {
         Log::info('Close task', [
                                             'TaskNum' => $event->task,
-                                            'LastSeq' => $event->sequence,
+                                            'LastSeq' => $event->task_sequence,
                                             'Title' => $event->title,
                                             'Description' => $event->description,
                                             'ClosingUserId' => $event->user_id,
                                             'ClosingUserName' => $event->user_name,
-                                            'LastMissionId' => $event->mission_id,
-                                            'LastMissionId' => $event->mission_name,
+                                            'LastProcessId' => $event->process_id,
+                                            'LastProcessName' => $event->process_name,
                                             'Deadline' => $event->deadline
                                             ]);
     }

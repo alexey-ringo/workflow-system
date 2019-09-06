@@ -6,13 +6,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TaskCustomResource extends JsonResource
 {
-    public function __construct($resource, int $prevMissionId, int $nextMissionId, string $prevMissionName, string $nextMissionName, bool $isSequenceFirst, bool $isSequenceLast)
+    public function __construct(
+                                $resource, 
+                                int $prevProcessId, 
+                                int $nextProcessId, 
+                                string $prevProcessName, 
+                                string $nextProcessName, 
+                                bool $isSequenceFirst, 
+                                bool $isSequenceLast
+                                )
     {
         $this->resource = $resource;
-        $this->prevMissionName = $prevMissionName;
-        $this->nextMissionName = $nextMissionName;
-        $this->prevMissionId = $prevMissionId;
-        $this->nextMissionId = $nextMissionId;
+        $this->prevProcessName = $prevProcessName;
+        $this->nextProcessName = $nextProcessName;
+        $this->prevProcessId = $prevProcessId;
+        $this->nextProcessId = $nextProcessId;
         $this->isSequenceFirst = $isSequenceFirst;
         $this->isSequenceLast = $isSequenceLast;
     }
@@ -30,15 +38,15 @@ class TaskCustomResource extends JsonResource
             'task' => $this->resource->task,
             'title' => $this->resource->title,
             'description' => $this->resource->description,
-            'sequence' => $this->resource->sequence,
-            'sequenceName' => $this->resource->mission_name,
+            'sequence' => $this->resource->process_sequence,
+            'sequenceName' => $this->resource->process_name,
             'taskStatus' => $this->resource->status,
-            'prevMissionId' => $this->prevMissionId,
-            'nextMissionId' => $this->nextMissionId,
-            'prevMissionName' => $this->prevMissionName,
-            'nextMissionName' => $this->nextMissionName,
+            'prevProcessId' => $this->prevProcessId,
+            'nextProcessId' => $this->nextProcessId,
+            'prevProcessName' => $this->prevProcessName,
+            'nextProcessName' => $this->nextProcessName,
             'isSequenceFirst' => $this->isSequenceFirst,
-            'isSequenceLast' => $this->isSequenceLast
+            'isSequenceLast' => $this->isSequenceLast,
             ];
     }
 }

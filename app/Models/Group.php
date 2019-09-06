@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Mission;
+use App\Models\Process;
 use App\Models\User;
 
 class Group extends Model
@@ -18,8 +18,8 @@ class Group extends Model
         'name', 'slug',
     ];
     
-    public function missions() {
-        return $this->belongsToMany(Mission::class,'group_mission');
+    public function processes() {
+        return $this->belongsToMany(Process::class,'group_process');
     }
     
     public function users() {

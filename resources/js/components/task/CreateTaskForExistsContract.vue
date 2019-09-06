@@ -2,61 +2,13 @@
   <!-- Horizontal Form -->
   <div class="card card-info">
     <div class="card-header">
-      <h3 class="card-title">Новая заявка</h3>
+      <h3 class="card-title">Задача для сущ. контракта</h3>
     </div>
     <!-- /.card-header -->
     
-    <div class="card-body">
-      <div class="form-group">
-        <label class="col-sm-4 control-label">Фамилия клиента</label>
-        <div class="col-sm-10">
-          <input type="text" v-model="keywordsSurname" class="form-control" placeholder="Фамилия клиента">
-          <ul v-if="resultsSurname.length > 0">
-            <li v-for="result in resultsSurname" :key="result.id" v-text="result.surname"></li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="col-sm-4 control-label">Телефон клиента</label>
-        <div class="col-sm-10">
-          <input type="text" v-model="keywordsPhone" class="form-control" placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
-          <ul v-if="!isEmptyObject(customerByPhone)">
-            <li>ФИО клиента:
-              <ul>
-                <li>Фамилия: <b>{{ customerByPhone.surname }}</b></li>
-                <li>Имя: <b>{{ customerByPhone.name }}</b></li>
-                <li>Отчество: <b>{{ customerByPhone.second_name }}</b></li>
-              </ul>
-            </li>
-            <li>Адрес клиента:
-              <ul>
-                <li>Город: <b>{{ customerByPhone.city }}</b></li>
-                <li>Улица: <b>{{ customerByPhone.street }}</b></li>
-                <li>Дом: <b>{{ customerByPhone.building }}</b></li>
-                <li>Квартира: <b>{{ customerByPhone.flat }}</b></li>
-              </ul>
-            </li>
-            <li>Телефоны клиента:
-              <ul>
-                <li v-for="phoneItem in customerByPhone.phones" :key="phoneItem.id" v-text="phoneItem.phone"></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-      
-    </div>
-    <!-- /.card-body -->
     
-    <div v-if="phoneNotFound" class="card-footer">
-      <div>
-        <label class="col-sm-12 control-label">Клиент с номером {{ keywordsPhone }} не найден!</label>
-      </div>
-      <router-link :to="{name: 'customer-create'}" class="btn btn-primary">Создать нового клиента?</router-link>
-      <button class="btn btn-primary">Создать нового клиента?</button>
-      <button class="btn btn-default float-right" @click="setDefault">Отмена</button>
-    </div>
+    
+    
     
     
     <!-- form start -->
@@ -134,7 +86,6 @@
     data(){
       return {
         task: {},
-        response: {},
         routesForCurrentCustomers: [],
         selectRoute: null,
         keywordsPhone: null,
@@ -189,15 +140,13 @@
         this.task.route = route;
         
         this.axios.post(uri, this.task).then((response) => {
-          this.response = response.data.data;
-          if(!this.response.error) {
-            //this.$emit("changecartevent", 1);
-            swal("Сохранение изменений", this.response.message, "success");
+          if(response.data.data) {
+            //swal("Заказ", "Ваш заказ принят!", "success");
             this.$router.push({name: 'tasks'});
           }
           else {
-          	swal("Ошибка", this.response.message, "error");
-          	this.$router.push({name: 'tasks'});
+            swal("Сохранение изменений", "Что то пошло не так...", "error");
+            this.$router.push({name: 'tasks'});
           }
         })
         .catch(e => {

@@ -12,11 +12,11 @@ class Contract extends Model
 {
     protected $table = 'contracts';
     protected $fillable = [
-        'iteration', 'production', 'customer_id', 'price_id', 'is_final'
+        /*'iteration', 'production', */'contract_num', 'customer_id', 'price_id', 'is_final'
     ];
     
     public function task() {
-      return $this->hasOne(Task::class, 'task_id', 'id');
+      return $this->hasMany(Task::class, 'task_id', 'id');
     }
     
     public function customer() {

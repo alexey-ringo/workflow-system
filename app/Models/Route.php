@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Route;
+use App\Models\Process;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +14,7 @@ class Route extends Model
         'name', 'value', 'description', 'in_use'
     ];
     
-    public function mission() {
-      return $this->hasOne(Route::class, 'route_id', 'id');
+    public function processes() {
+      return $this->hasMany(Process::class, 'route_id', 'id');
     }
 }

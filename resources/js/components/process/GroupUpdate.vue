@@ -23,12 +23,12 @@
                   
         <div class="form-group">
           <div class="col-sm-offset-2 col-sm-10">
-            <div class="form-check" v-for="mission in group.all_missions" :key="mission.id">
+            <div class="form-check" v-for="process in group.all_processes" :key="process.id">
               <input type="checkbox" class="form-check-input"
-                     v-bind:value="mission.id"
-                     v-model="missionsChecked"
+                     v-bind:value="process.id"
+                     v-model="processesChecked"
                      >
-              <label class="form-check-label" for="missionCheckBox">{{ mission.name }}</label>
+              <label class="form-check-label" for="processCheckBox">{{ process.name }}</label>
             </div>
           </div>
         </div>
@@ -49,26 +49,26 @@
     data(){
       return {
         group:{},
-        missionsChecked: []
+        processesChecked: []
       }
     },
     created() {
       let uri = `/api/groups/${this.$route.params.id}`;
       this.axios.get(uri).then((response) => {
         this.group = response.data.data;
-        this.setMissionsChecked();
+        this.setProcessesChecked();
       });
     },
     mounted() {
       //let uri = `/api/groups/${this.$route.params.id}`;
       //this.axios.get(uri).then((response) => {
       //  this.group = response.data.data;
-      //this.setMissionsChecked();
+      //this.setProcessesChecked();
       //});
     },
     methods: {
       updateGroup(/*event*/){
-        this.group.missions = this.missionsChecked;
+        this.group.processes = this.processesChecked;
         let uri = `/api/groups/${this.$route.params.id}`;
         this.axios.patch(uri, this.group/*{}*/)
           .then((response) => {
@@ -86,9 +86,9 @@
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
           });
         },
-        setMissionsChecked() {
-          for(let i = 0; i < this.group.missions.length; i++) {
-            Vue.set(this.missionsChecked, i, this.group.missions[i].id);
+        setProcessesChecked() {
+          for(let i = 0; i < this.group.processes.length; i++) {
+            Vue.set(this.processesChecked, i, this.group.processes[i].id);
     			}
         },
       },

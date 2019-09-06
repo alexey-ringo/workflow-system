@@ -18,7 +18,7 @@ class GroupController extends Controller
     public function index()
     {
         //return new GroupCollection(Group::all());
-        return GroupResource::collection(Group::with('missions')->get());
+        return GroupResource::collection(Group::with('processes')->get());
         //return GroupResource::collection(Group::all());
     }
 
@@ -52,9 +52,9 @@ class GroupController extends Controller
             'name' => $request->get('name')
         ]);
         
-        //Проверка на наличие полученного от формы значения поля с name="missions"
-        if($request->input('missions')) :
-            $group->missions()->attach($request->input('missions'));
+        //Проверка на наличие полученного от формы значения поля с name="processes"
+        if($request->input('processes')) :
+            $group->processes()->attach($request->input('processes'));
         endif;
         
         return new GroupResource($group);
@@ -102,10 +102,10 @@ class GroupController extends Controller
         $group->save();
         
         //Если список разрешений операций пуст - отсоединяем
-        $group->missions()->detach();
+        $group->processes()->detach();
         //Проверка на наличие полученного от формы значения поля с name="roles"
-        if($request->input('missions')) :
-            $group->missions()->attach($request->input('missions'));
+        if($request->input('processes')) :
+            $group->processes()->attach($request->input('processes'));
         endif;
         
         return new GroupResource($group);
@@ -119,7 +119,7 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        $group->missions()->detach();
+        $group->processes()->detach();
         $group->delete();
         
         return new GroupCollection(Group::all());

@@ -31,8 +31,8 @@ class PhoneController extends Controller
     {
         /*
         $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:missions',
-            'sequence' => 'required|unique:missions',
+            'name' => 'required|string|max:255|unique:processes',
+            'sequence' => 'required|unique:processes',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
@@ -85,25 +85,16 @@ class PhoneController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $customer->surname = $request->get('surname');
-        $customer->name = $request->get('name');
-        $customer->second_name = $request->get('second_name');
-        $customer->city = $request->get('city');
-        $customer->region = $request->get('region');
-        $customer->street = $request->get('street');
-        $customer->building = $request->get('building');
-        $customer->flat = $request->get('flat');
-        $customer->description = $request->get('description');
+        $phone->phone = $request->get('phone');
         $customer->save();
         
-        //$mission->update($request->all());
-        
-        if($customer) {
+        if($phone) {
             return response()->json(['data' => 1]);
         }
         else {
+            $this->destroy($customer);
             return response()->json(['data' => 0]);
-        }
+        }  
         
     }
 

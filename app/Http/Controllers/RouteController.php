@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Route;
+use App\Models\Process;
 use Illuminate\Http\Request;
 use App\Http\Resources\Route\RouteCollection;
 use App\Http\Resources\Route\RouteResource;
@@ -14,9 +15,14 @@ class RouteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(bool $filter = false)
     {
-        return new RouteCollection(Route::all());
+        if($filter) {
+            return new RouteCollection(Route::where('value', '>', 1)->get());
+        }
+        else {
+            return new RouteCollection(Route::all());
+        }
     }
 
     
@@ -30,8 +36,8 @@ class RouteController extends Controller
     {
         /*
         $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:missions',
-            'sequence' => 'required|unique:missions',
+            'name' => 'required|string|max:255|unique:processes',
+            'sequence' => 'required|unique:processes',
             'is_super' => 'required',
             'is_final' => 'required',
         ]);
@@ -87,7 +93,7 @@ class RouteController extends Controller
         $route->in_use = $request->get('in_use');
         $route->save();
         
-        //$mission->update($request->all());
+        //$process->update($request->all());
         
         if($route) {
             return response()->json(['data' => 1]);
@@ -105,6 +111,12 @@ class RouteController extends Controller
      */
     public function destroy(Route $route)
     {
+        $processes = Process::where('route_id', $route->id)->get();
+        
+        foreach($processes as $processItem) {
+            $processItem->groups()->detach();
+        }
+        
         if($route->delete()) {
             return response()->json(['data' => 1]);
         }

@@ -17,17 +17,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="mission in missions" :key="mission.id">
-                        <td>{{ mission.route.name }}</td>
-                        <td>{{ mission.name  }}</td>
-                        <td>{{ mission.sequence  }}</td>
-                        <td>{{ mission.is_super  }}</td>
-                        <td>{{ mission.is_final  }}</td>
+                    <tr v-for="process in processes" :key="process.id">
+                        <td>{{ process.route.name }}</td>
+                        <td>{{ process.name  }}</td>
+                        <td>{{ process.sequence  }}</td>
+                        <td>{{ process.is_super  }}</td>
+                        <td>{{ process.is_final  }}</td>
                         <td>
-                            <router-link :to="{name: 'mission-update', params: {id: mission.id}}" class="btn btn-xs btn-default">
+                            <router-link :to="{name: 'process-update', params: {id: process.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
-                            <button class="btn btn-danger" @click.prevent = "deleteMission(mission.id)">Удалить</button>
+                            <button class="btn btn-danger" @click.prevent = "deleteProcess(process.id)">Удалить</button>
                         </td>
                     </tr>
                 </tbody>
@@ -52,7 +52,7 @@
     export default {
         data: function () {
             return {
-                missions: []
+                processes: []
             }
         },
         mounted() {
@@ -61,10 +61,10 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/missions';
+            let uri = '/api/processes';
             this.axios.get(uri)
             	.then((response) => {
-                	this.missions = response.data.data;
+                	this.processes = response.data.data;
                 })
                 .catch(e => {
                 	//console.log(e);
@@ -81,13 +81,13 @@
                 });
         },
         methods: {
-            deleteMission(id) {
-                let uri = `/api/missions/${id}`;
+            deleteProcess(id) {
+                let uri = `/api/processes/${id}`;
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
                             if(response.data.data) {
-                                this.missions.splice(this.missions.indexOf(id), 1);
+                                this.processes.splice(this.processes.indexOf(id), 1);
                             }
                             else {
                                 swal("Удаление задачи", "Что то пошло не так...", "error");

@@ -35,23 +35,23 @@ class UpdateListener
     {
         $sendText;
         
-        if($event->newTask->sequence > $event->task->sequence) {
-            $sendText = 'В Вашу очередь "' . $event->newTask->mission_name . 
+        if($event->newTask->task_sequence > $event->task->task_sequence) {
+            $sendText = 'В Вашу очередь "' . $event->newTask->process_name . 
                     '" поступила новая заявка № ' . $event->newTask->task . 
                     ' "' . $event->newTask->title . '" ' . 
-	                ' "' . $event->newTask->description . '". Заявка была передана из очереди "' .
-	                $event->task->mission_name . '" пользователем ' . $event->task->closing_user_name;
+	                ' "' . $event->newTask->description . '". Заявка была передана из процесса "' .
+	                $event->task->process_name . '" пользователем ' . $event->task->closing_user_name;
         }
         else {
-            $sendText = 'В Вашу очередь "' . $event->newTask->mission_name . 
+            $sendText = 'В Вашу очередь "' . $event->newTask->process_name . 
                     '" была возвращена обратно заявка № ' . $event->newTask->task . 
                     ' "' . $event->newTask->title . '" ' . 
 	                ' "' . $event->newTask->description . '". Заявка была возвращена из очереди "' .
-	                $event->task->mission_name . '" пользователем ' . $event->task->closing_user_name;
+	                $event->task->process_name . '" пользователем ' . $event->task->closing_user_name;
         }
 	    
 	    
-	    $noticedUsers = User::getUsersByMission($event->newTask->mission_id);
+	    $noticedUsers = User::getUsersByProcess($event->newTask->process_id);
 	                   
 	    foreach($noticedUsers as $noticedUser) {
 	        if($noticedUser->telegramUser) {

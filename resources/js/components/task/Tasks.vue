@@ -3,19 +3,19 @@
         <div class="card-header">
             <div class="row">
                 <div class="col-md-8">
-                    <h3 class="card-title">Рабочие группы участников БП</h3>
+                    <h3 class="card-title">Обращения клиентов</h3>
                 </div>
                 <div class="col-md-4">
                     <router-link :to="{name: 'task-create'}" class="btn btn-xs btn-default" v-if="visibleCreate">
-                                Новая заявка
+                                Новое обращение
                             </router-link>
                 </div>
             </div>
         </div>
         <!-- /.card-header -->
         <div class="card-body table-responsive p-0">
-            <table class="table table-hover table-bordered table-striped" v-for="mission in missions" :key="mission.id">
-                <caption class="table-caption-top">Очередь: {{ mission.name  }}</caption>
+            <table class="table table-hover table-bordered table-striped" v-for="process in processes" :key="process.id">
+                <caption class="table-caption-top">Процесс: {{ process.name  }}</caption>
                 <thead>
                     <tr>
                         <th>Номер заявки</th>
@@ -29,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="task in mission.tasks" :key="task.id">
+                    <tr v-for="task in process.tasks" :key="process.id">
                         <td v-if="task.status">{{ task.task  }}</td>
                         <td v-if="task.status">{{ task.sequence  }}</td>
                         <td v-if="task.status">{{ task.task_seq  }}</td>
@@ -57,7 +57,7 @@
     export default {
         data: function () {
             return {
-                missions: [],
+                processes: [],
                 //tasks: [],
                 meta: []
             }
@@ -71,7 +71,7 @@
             let uri = '/api/tasks';
             this.axios.get(uri)
             	.then((response) => {
-            	    this.missions = response.data.data;
+            	    this.processes = response.data.data;
                 	//this.tasks = response.data.data;
                 	this.meta = response.data.meta;
                 })

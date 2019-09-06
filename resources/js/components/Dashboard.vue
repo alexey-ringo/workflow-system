@@ -151,6 +151,25 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-dashboard"></i>
+              <p>
+                Прием обращений
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'search-customer'}"><i class="fa fa-circle-o nav-icon"></i><p>Поиск по клиенту</p></router-link>
+              </li>
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'search-customer'}"><i class="fa fa-circle-o nav-icon"></i><p>Поиск по договору</p></router-link>
+              </li>
+            </ul>
+          </li>     
+          
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
@@ -162,9 +181,6 @@
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'tasks'}"><i class="fa fa-circle-o nav-icon"></i><p>Мои задачи</p></router-link>
-              </li>
-              <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'task-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая задача</p></router-link>
               </li>
             </ul>
           </li>
@@ -179,10 +195,25 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'customers'}"><i class="fa fa-circle-o nav-icon"></i><p>Все пользователи</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'customers'}"><i class="fa fa-circle-o nav-icon"></i><p>Все клиенты</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'customer-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый пользователь</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'customer-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый клиент</p></router-link>
+              </li>
+            </ul>
+          </li>
+          
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-dashboard"></i>
+              <p>
+                Контракты
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'contracts'}"><i class="fa fa-circle-o nav-icon"></i><p>Все контракты</p></router-link>
               </li>
             </ul>
           </li>
@@ -270,10 +301,10 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'missions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все процессы</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'processes'}"><i class="fa fa-circle-o nav-icon"></i><p>Все процессы</p></router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'mission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый процесс</p></router-link>
+                <router-link class="nav-link" :to="{ name: 'process-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый процесс</p></router-link>
               </li>
             </ul>
           </li>

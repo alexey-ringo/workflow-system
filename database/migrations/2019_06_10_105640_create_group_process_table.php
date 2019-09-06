@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGroupMissionTable extends Migration
+class CreateGroupProcessTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,13 @@ class CreateGroupMissionTable extends Migration
      */
     public function up()
     {
-        Schema::create('group_mission', function (Blueprint $table) {
+        Schema::create('group_process', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('group_id')->unsigned()->default(1);
             $table->foreign('group_id')->references('id')->on('groups');
             
-            $table->bigInteger('mission_id')->unsigned()->default(1);
-            $table->foreign('mission_id')->references('id')->on('missions');
+            $table->bigInteger('process_id')->unsigned()->default(1);
+            $table->foreign('process_id')->references('id')->on('processes');
             $table->timestamps();
         });
     }
@@ -31,10 +31,10 @@ class CreateGroupMissionTable extends Migration
      */
     public function down()
     {
-        Schema::table('group_mission', function (Blueprint $table) {
-            $table->dropForeign('group_mission_group_id_foreign');
-            $table->dropForeign('group_mission_mission_id_foreign');
+        Schema::table('group_process', function (Blueprint $table) {
+            $table->dropForeign('group_process_group_id_foreign');
+            $table->dropForeign('group_process_process_id_foreign');
         });
-        Schema::dropIfExists('group_mission');
+        Schema::dropIfExists('group_process');
     }
 }

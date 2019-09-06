@@ -16,22 +16,24 @@ class CreateTasksTable extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('task')->unsigned()->index();
-            $table->integer('task_seq')->unsigned();
-            $table->integer('sequence')->unsigned();
-            $table->string('title');
-            $table->text('description');
+            $table->integer('task_sequence')->unsigned();
+            $table->integer('route')->unsigned();
+            $table->integer('process_sequence')->unsigned();
+            $table->string('title')->nullable();
+            $table->text('description')->nullable();
             $table->integer('status')->unsigned();
-            $table->bigInteger('mission_id')->unsigned()->nullable();
-            $table->foreign('mission_id')->references('id')->on('missions')->onDelete('set null');
-            $table->bigInteger('customer_id')->unsigned()->nullable();
-            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
-            $table->bigInteger('contract_id')->unsigned()->nullable();
-            $table->foreign('contract_id')->references('id')->on('contracts')->onDelete('set null');
+            $table->bigInteger('process_id')->unsigned()->nullable();
+            $table->foreign('process_id')->references('id')->on('processes')->onDelete('set null');
+            //$table->bigInteger('customer_id')->unsigned();
+            //$table->foreign('customer_id')->references('id')->on('customers');
+            $table->bigInteger('contract_id')->unsigned();
+            $table->foreign('contract_id')->references('id')->on('contracts');
             $table->bigInteger('creating_user_id')->unsigned()->nullable();
             $table->foreign('creating_user_id')->references('id')->on('users')->onDelete('set null');
             $table->bigInteger('closing_user_id')->unsigned()->nullable();
             $table->foreign('closing_user_id')->references('id')->on('users')->onDelete('set null');
-            $table->string('mission_name');
+            $table->string('process_name');
+            $table->string('process_slug');
             $table->string('creating_user_name');
             $table->string('creating_user_email');
             $table->string('closing_user_name')->nullable();
@@ -39,7 +41,7 @@ class CreateTasksTable extends Migration
             $table->date('deadline');
             $table->timestamps();
             
-            $table->unique(['task', 'task_seq'], 'tasks_task_task_seq_index');
+            $table->unique(['task', 'task_sequence'], 'tasks_task_task_seq_index');
             //$table->primary(['id', 'task', 'sequence']);
         });
         
@@ -55,8 +57,8 @@ class CreateTasksTable extends Migration
     {
         //DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropForeign('tasks_mission_id_foreign');
-            $table->dropForeign('tasks_customer_id_foreign');
+            $table->dropForeign('tasks_process_id_foreign');
+            //$table->dropForeign('tasks_customer_id_foreign');
             $table->dropForeign('tasks_contract_id_foreign');
             $table->dropForeign('tasks_creating_user_id_foreign');
             $table->dropForeign('tasks_closing_user_id_foreign');

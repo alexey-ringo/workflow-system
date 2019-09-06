@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events\Tasks;
+namespace App\Events\Customer;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
@@ -10,24 +10,23 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-use App\Models\Task;
-use App\Models\User;
-use App\Models\Process;
+use App\Models\Customer;
+use App\Models\Phone;
 
 class onCreateEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     
-    public $task;
+    public $customer;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Task $task)
+    public function __construct(Customer $customer)
     {
-        $this->task = $task;
+        $this->customer = $customer;
     }
 
     /**

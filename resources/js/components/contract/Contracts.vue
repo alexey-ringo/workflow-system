@@ -1,41 +1,36 @@
 <template>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Процессы для рабочих групп</h3>
+            <h3 class="card-title">Контракты</h3>
         </div>
         <!-- /.card-header -->
         <div class="card-body table-responsive p-0">
             <table class="table table-hover table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Процесс</th>
-                        <th>Очередь выполнения процесса</th>
-                        <th>Процесс супервайзера</th>
-                        <th>Завершение очереди</th>
-                        <th>Редактировать</th>
+                        <th>Контракт</th>
+                        <th>Клиент</th>
+                        <th>Прайс</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="mission in missions" :key="mission.id">
-                        <td>{{ mission.name  }}</td>
-                        <td>{{ mission.sequence  }}</td>
-                        <td>{{ mission.is_super  }}</td>
-                        <td>{{ mission.is_final  }}</td>
+                    <tr v-for="contract in contracts" :key="contract.id">
+                        <td>{{ contract.contract_num  }}</td>
+                        <td>{{ contract.customer.name + ' ' +  contract.customer.surname }}</td>
+                        <td>{{ contract.price  }}</td>
                         <td>
-                            <router-link :to="{name: 'mission-update', params: {id: mission.id}}" class="btn btn-xs btn-default">
+                            <router-link :to="{name: 'contract-update', params: {id: contract.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
-                            <button class="btn btn-danger" @click.prevent = "deleteMission(mission.id)">Удалить</button>
+                            <button class="btn btn-danger" @click.prevent = "deleteContract(contract.id)">Удалить</button>
                         </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th>Процесс</th>
-                        <th>Очередь выполнения процесса</th>
-                        <th>Процесс супервайзера</th>
-                        <th>Завершение очереди</th>
-                        <th>Редактировать</th>
+                        <th>Контракт</th>
+                        <th>Клиент</th>
+                        <th>Прайс</th>
                     </tr>
                 </tfoot>
             </table>
@@ -49,7 +44,7 @@
     export default {
         data: function () {
             return {
-                routes: []
+                contracts: []
             }
         },
         mounted() {
@@ -58,10 +53,10 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/routes';
+            let uri = '/api/contracts';
             this.axios.get(uri)
             	.then((response) => {
-                	this.routes = response.data.data;
+                	this.contracts = response.data.data;
                 })
                 .catch(e => {
                 	//console.log(e);
@@ -78,16 +73,16 @@
                 });
         },
         methods: {
-            deleteMission(id) {
-                let uri = `/api/missions/${id}`;
+            deleteContract(id) {
+                let uri = `/api/contracts/${id}`;
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
                             if(response.data) {
-                                this.missions.splice(this.missions.indexOf(id), 1);
+                                this.contracts.splice(this.contracts.indexOf(id), 1);
                             }
                             else {
-                                swal("Удаление задачи", "Что то пошло не так...", "error");
+                                swal("Удаление контракта", "Что то пошло не так...", "error");
                             }
                         })
                         .catch(e => {

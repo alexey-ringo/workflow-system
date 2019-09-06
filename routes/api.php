@@ -25,11 +25,13 @@ Route::post('login', 'AuthController@login');
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/logout', 'AuthController@logout');
     Route::get('/logged-user', 'DashboardController@loggedUser');
+    Route::get('/search-phone', 'SearchController@searchPhone');
+    Route::get('/search-surname', 'SearchController@searchSurname');
     Route::apiResource('/users','UserController');
     Route::apiResource('/roles','RoleController');
     Route::apiResource('/permissions','PermissionController');
     Route::apiResource('/groups','GroupController');
-    Route::apiResource('/missions','MissionController');
+    Route::apiResource('/processes','ProcessController');
     Route::apiResource('/tasks','TaskController');
     Route::apiResource('/comments','CommentController');
     Route::apiResource('/routes','RouteController');
