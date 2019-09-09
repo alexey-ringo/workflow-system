@@ -5301,6 +5301,10 @@ __webpack_require__.r(__webpack_exports__);
       var uri = "/api/customers/".concat(this.$route.params.customid);
       this.axios.get(uri).then(function (response) {
         _this.customer = response.data.data;
+
+        if (_this.isEmptyObject(_this.customer)) {
+          swal('Ошибка', 'Клиент с id "' + _this.$route.params.customid + '" не найден!', 'error'); //this.$router.push({name: 'search-customer'});
+        }
       })["catch"](function (e) {
         //console.log(e);
         if (e == 'Error: Request failed with status code 401') {
@@ -5313,7 +5317,7 @@ __webpack_require__.r(__webpack_exports__);
           } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
 
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
         }
       });
     },
@@ -5326,13 +5330,11 @@ __webpack_require__.r(__webpack_exports__);
       var uri = '/api/contracts';
       this.axios.post(uri, this.customer).then(function (response) {
         if (response.data.data.id) {
-          //this.$router.push({name: 'create-task-for-exists-contract', params: {contractid: response.data.data.id}, props: true});
-          //this.visibleTaskForNewContract = true;
           _this2.task.contract_id = response.data.data.id;
 
           _this2.createTaskForNewContract();
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error"); //this.$router.push({name: 'customers'});
+          swal("Создание нового контракта", "Нет ответа от сервера при создании нового контракта", "error"); //this.$router.push({name: 'customers'});
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -5374,6 +5376,12 @@ __webpack_require__.r(__webpack_exports__);
       this.task.route = 1;
       this.axios.post(uri, this.task).then(function (response) {
         _this4.response = response.data.data;
+
+        if (!_this4.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
+
+          _this4.deleteContract(_this4.task.contract_id);
+        }
 
         if (!_this4.response.error) {
           _this4.setDefault();
@@ -5484,110 +5492,65 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       task: {},
-      routesForCurrentCustomers: [],
-      selectRoute: null,
-      keywordsPhone: null,
-      keywordsSurname: null,
-      customerByPhone: {},
-      resultsSurname: [],
-      phoneNotFound: false,
-      defaultInputs: true
+      contract: {},
+      response: {},
+      routes: [],
+      selectRoute: null
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routesForCurrentCustomers = response.data.data;
-    })["catch"](function (e) {
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this.$router.push({
-          name: 'tasks'
-        });
-      }
-    });
-  },
-  watch: {
-    keywordsPhone: function keywordsPhone(after, before) {
-      if (this.keywordsPhone.length === 11) {
-        this.fetchPhone();
-      }
-    },
-    keywordsSurname: function keywordsSurname(after, before) {
-      this.fetchSurname();
-    }
+    this.getRoutes();
+    this.getContract();
   },
   methods: {
-    createTask: function createTask(route) {
+    getRoutes: function getRoutes() {
+      var _this = this;
+
+      var uri = '/api/routes?filter=1';
+      this.axios.get(uri).then(function (response) {
+        _this.routes = response.data.data;
+      })["catch"](function (e) {
+        if (e == 'Error: Request failed with status code 401') {
+          if (localStorage.getItem('jwt')) {
+            localStorage.removeItem('jwt');
+
+            _this.$router.push({
+              name: 'login'
+            });
+          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'search-customer'
+          });
+        }
+      });
+    },
+    getContract: function getContract() {
       var _this2 = this;
 
-      var uri = '/api/tasks'; //if(this.phoneNotFound == true) {
-      //  this.task.route = 2;
-      //}
+      var uri = "/api/contracts/".concat(this.$route.params.contractid);
+      this.axios.get(uri).then(function (response) {
+        _this2.contract = response.data.data;
 
-      this.task.route = route;
-      this.axios.post(uri, this.task).then(function (response) {
-        if (response.data.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
-          _this2.$router.push({
-            name: 'tasks'
-          });
-        } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        if (_this2.isEmptyObject(_this2.contract)) {
+          swal('Ошибка', 'Контракт № "' + _this2.$route.params.contractid + '" не найден!', 'error');
 
           _this2.$router.push({
-            name: 'tasks'
+            name: 'search-customer'
           });
         }
       })["catch"](function (e) {
+        //console.log(e);
         if (e == 'Error: Request failed with status code 401') {
           if (localStorage.getItem('jwt')) {
             localStorage.removeItem('jwt');
@@ -5599,262 +5562,47 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-          _this2.$router.push({
-            name: 'tasks'
-          });
         }
       });
     },
-    fetchPhone: function fetchPhone() {
+    createTask: function createTask(route) {
       var _this3 = this;
 
-      //this.axios.get('/api/search-phone', { params: { keywords: this.keywords } })
-      //  .then(response => this.results = reponse.data)
-      //  .catch(error => {});
-      var uri = '/api/search-phone';
-      this.axios.get(uri, {
-        params: {
-          keywords: this.keywordsPhone
-        }
-      }).then(function (response) {
-        if (response.data.data) {
-          _this3.customerByPhone = response.data.data;
-          _this3.phoneNotFound = false;
-          _this3.defaultInputs = false;
-        } else {
-          _this3.customerByPhone = {};
-          _this3.phoneNotFound = true;
-          _this3.defaultInputs = false;
-        }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      });
-    },
-    fetchSurname: function fetchSurname() {
-      var _this4 = this;
-
-      //this.axios.get('/api/search-phone', { params: { keywords: this.keywords } })
-      //  .then(response => this.results = reponse.data)
-      //  .catch(error => {});
-      var uri = '/api/search-surname';
-      this.axios.get(uri, {
-        params: {
-          keywords: this.keywordsSurname
-        }
-      }).then(function (response) {
-        _this4.resultsSurname = response.data.data;
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      });
-    },
-    isEmptyObject: function isEmptyObject(obj) {
-      for (var i in obj) {
-        if (obj.hasOwnProperty(i)) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    setDefault: function setDefault() {
-      this.task = {};
-      this.keywordsPhone = null;
-      this.keywordsSurname = null;
-      this.customerByPhone = {};
-      this.resultsSurname = [];
-      this.phoneNotFound = false;
-      this.defaultInputs = true;
-    },
-    isRouteForCurrentCustomer: function isRouteForCurrentCustomer(routeVal) {
-      if (routeVal == 1) {
-        return false;
-      } else {
-        return true;
-      }
-    }
-  },
-  computed: {
-    isEmptyCustomerByPhone: function isEmptyCustomerByPhone() {
-      for (var i in this.customerByPhone) {
-        if (this.customerByPhone.hasOwnProperty(i)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-  }
-});
-
-/***/ }),
-
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js&":
-/*!****************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js& ***!
-  \****************************************************************************************************************************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-/* harmony default export */ __webpack_exports__["default"] = ({
-  data: function data() {
-    return {
-      task: {},
-      routesForCurrentCustomers: [],
-      selectRoute: null,
-      keywordsPhone: null,
-      keywordsSurname: null,
-      customerByPhone: {},
-      resultsSurname: [],
-      phoneNotFound: false,
-      defaultInputs: true
-    };
-  },
-  mounted: function mounted() {
-    var _this = this;
-
-    var token = localStorage.getItem('jwt');
-    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
-    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routesForCurrentCustomers = response.data.data;
-    })["catch"](function (e) {
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this.$router.push({
-          name: 'tasks'
-        });
-      }
-    });
-  },
-  watch: {
-    keywordsPhone: function keywordsPhone(after, before) {
-      if (this.keywordsPhone.length === 11) {
-        this.fetchPhone();
-      }
-    },
-    keywordsSurname: function keywordsSurname(after, before) {
-      this.fetchSurname();
-    }
-  },
-  methods: {
-    createTask: function createTask(route) {
-      var _this2 = this;
-
-      var uri = '/api/tasks'; //if(this.phoneNotFound == true) {
-      //  this.task.route = 2;
-      //}
-
+      var uri = '/api/tasks';
       this.task.route = route;
+      this.task.contract_id = this.contract.id;
       this.axios.post(uri, this.task).then(function (response) {
-        if (response.data.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
-          _this2.$router.push({
-            name: 'tasks'
+        _this3.response = response.data.data;
+
+        if (!_this3.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Нет ответа от сервера при создании задачи", "error");
+
+          _this3.$router.push({
+            name: 'contracts-for-customer',
+            params: {
+              customid: _this3.contract.customer.id
+            }
+          });
+        }
+
+        if (!_this3.response.error) {
+          //this.$emit("changecartevent", 1);
+          swal("Сохранение изменений", _this3.response.message, "success");
+
+          _this3.$router.push({
+            name: 'contracts-for-customer',
+            params: {
+              customid: _this3.contract.customer.id
+            }
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", _this3.response.message, "error");
 
-          _this2.$router.push({
-            name: 'tasks'
+          _this3.$router.push({
+            name: 'contracts-for-customer',
+            params: {
+              customid: _this3.contract.customer.id
+            }
           });
         }
       })["catch"](function (e) {
@@ -5862,7 +5610,7 @@ __webpack_require__.r(__webpack_exports__);
           if (localStorage.getItem('jwt')) {
             localStorage.removeItem('jwt');
 
-            _this2.$router.push({
+            _this3.$router.push({
               name: 'login'
             });
           } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
@@ -5870,86 +5618,18 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
 
-          _this2.$router.push({
-            name: 'tasks'
+          _this3.$router.push({
+            name: 'contracts-for-customer',
+            params: {
+              customid: _this3.contract.customer.id
+            }
           });
         }
-      });
-    },
-    fetchPhone: function fetchPhone() {
-      var _this3 = this;
-
-      //this.axios.get('/api/search-phone', { params: { keywords: this.keywords } })
-      //  .then(response => this.results = reponse.data)
-      //  .catch(error => {});
-      var uri = '/api/search-phone';
-      this.axios.get(uri, {
-        params: {
-          keywords: this.keywordsPhone
-        }
-      }).then(function (response) {
-        if (response.data.data) {
-          _this3.customerByPhone = response.data.data;
-          _this3.phoneNotFound = false;
-          _this3.defaultInputs = false;
-        } else {
-          _this3.customerByPhone = {};
-          _this3.phoneNotFound = true;
-          _this3.defaultInputs = false;
-        }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      });
-    },
-    fetchSurname: function fetchSurname() {
-      var _this4 = this;
-
-      //this.axios.get('/api/search-phone', { params: { keywords: this.keywords } })
-      //  .then(response => this.results = reponse.data)
-      //  .catch(error => {});
-      var uri = '/api/search-surname';
-      this.axios.get(uri, {
-        params: {
-          keywords: this.keywordsSurname
-        }
-      }).then(function (response) {
-        _this4.resultsSurname = response.data.data;
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
       });
     },
     isEmptyObject: function isEmptyObject(obj) {
       for (var i in obj) {
         if (obj.hasOwnProperty(i)) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    setDefault: function setDefault() {
-      this.task = {};
-      this.keywordsPhone = null;
-      this.keywordsSurname = null;
-      this.customerByPhone = {};
-      this.resultsSurname = [];
-      this.phoneNotFound = false;
-      this.defaultInputs = true;
-    },
-    isRouteForCurrentCustomer: function isRouteForCurrentCustomer(routeVal) {
-      if (routeVal == 1) {
-        return false;
-      } else {
-        return true;
-      }
-    }
-  },
-  computed: {
-    isEmptyCustomerByPhone: function isEmptyCustomerByPhone() {
-      for (var i in this.customerByPhone) {
-        if (this.customerByPhone.hasOwnProperty(i)) {
           return false;
         }
       }
@@ -6289,9 +5969,17 @@ __webpack_require__.r(__webpack_exports__);
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var taskUri = "/api/tasks/".concat(this.$route.params.id);
-    this.axios.get(taskUri).then(function (response) {
+    var uri = "/api/tasks/".concat(this.$route.params.id);
+    this.axios.get(uri).then(function (response) {
       _this.task = response.data.data;
+
+      if (!_this.task.hasOwnProperty('error')) {
+        swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
+
+        _this.$router.push({
+          name: 'tasks'
+        });
+      }
 
       if (!_this.task.error) {
         _this.getAllComments();
@@ -6329,6 +6017,14 @@ __webpack_require__.r(__webpack_exports__);
       /*{}*/
       ).then(function (response) {
         _this2.response = response.data.data;
+
+        if (!_this2.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+
+          _this2.$router.push({
+            name: 'tasks'
+          });
+        }
 
         if (!_this2.response.error) {
           //this.$emit("changecartevent", 1);
@@ -6374,6 +6070,14 @@ __webpack_require__.r(__webpack_exports__);
       ).then(function (response) {
         _this3.response = response.data.data;
 
+        if (!_this3.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
+        }
+
         if (!_this3.response.error) {
           //this.$emit("changecartevent", 1);
           swal("Сохранение изменений", _this3.response.message, "success");
@@ -6417,6 +6121,14 @@ __webpack_require__.r(__webpack_exports__);
       /*{}*/
       ).then(function (response) {
         _this4.response = response.data.data;
+
+        if (!_this4.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+
+          _this4.$router.push({
+            name: 'tasks'
+          });
+        }
 
         if (!_this4.response.error) {
           //this.$emit("changecartevent", 1);
@@ -48675,9 +48387,8 @@ var render = function() {
                                     staticClass: "btn btn-xs btn-default",
                                     attrs: {
                                       to: {
-                                        name: "create-task-for-new-contract",
-                                        params: { contractid: contractItem.id },
-                                        props: false
+                                        name: "create-task-for-exists-contract",
+                                        params: { contractid: contractItem.id }
                                       }
                                     }
                                   },
@@ -48812,188 +48523,148 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "card card-info" }, [
-    _vm._m(0),
+    _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v(
+          "Задача для сущ. контракта № " +
+            _vm._s(_vm.contract.contract_num) +
+            " у клиента " +
+            _vm._s(_vm.contract.customer.name) +
+            " " +
+            _vm._s(_vm.contract.customer.surname)
+        )
+      ])
+    ]),
     _vm._v(" "),
-    !_vm.isEmptyObject(_vm.customerByPhone)
-      ? _c(
-          "form",
-          {
-            staticClass: "form-horizontal",
-            on: {
-              submit: function($event) {
-                $event.preventDefault()
-                return _vm.createTask(_vm.selectRoute)
-              }
-            }
-          },
-          [
-            _c("div", { staticClass: "card-body" }, [
-              _c("div", { staticClass: "form-group" }, [
-                _c("label", { staticClass: "col-sm-4 control-label" }, [
-                  _vm._v("Обращение по существующему клиенту: "),
-                  _c("b", [_vm._v(_vm._s(_vm.customerByPhone.surname))])
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "form-group" }, [
-                _c("label", { staticClass: "col-sm-4 control-label" }, [
-                  _vm._v("Тематика обращения по существующему клиенту")
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-sm-10" }, [
-                  _c(
-                    "select",
-                    {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.selectRoute,
-                          expression: "selectRoute"
-                        }
-                      ],
-                      attrs: { required: "" },
-                      on: {
-                        change: function($event) {
-                          var $$selectedVal = Array.prototype.filter
-                            .call($event.target.options, function(o) {
-                              return o.selected
-                            })
-                            .map(function(o) {
-                              var val = "_value" in o ? o._value : o.value
-                              return val
-                            })
-                          _vm.selectRoute = $event.target.multiple
-                            ? $$selectedVal
-                            : $$selectedVal[0]
-                        }
-                      }
-                    },
-                    _vm._l(_vm.routesForCurrentCustomers, function(routeItem) {
-                      return _c(
-                        "option",
-                        {
-                          key: routeItem.id,
-                          domProps: { value: routeItem.value }
-                        },
-                        [
-                          _vm._v(
-                            "\n              " +
-                              _vm._s(routeItem.name) +
-                              "\n            "
-                          )
-                        ]
-                      )
-                    }),
-                    0
-                  )
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "col-sm-4 table-responsive p-0" }, [
-                _c(
-                  "table",
-                  {
-                    staticClass:
-                      "table table-hover table-bordered table-striped"
-                  },
-                  [
-                    _vm._m(1),
-                    _vm._v(" "),
-                    _c(
-                      "tbody",
-                      _vm._l(_vm.customerByPhone.contracts, function(
-                        contractItem
-                      ) {
-                        return _c("tr", { key: contractItem.id }, [
-                          _c("td", [_vm._v(_vm._s(contractItem.contract_num))]),
-                          _vm._v(" "),
-                          _c("td", [
-                            _vm._v(
-                              "\n                          \n                              Edit\n                          \n                      "
-                            )
-                          ])
-                        ])
-                      }),
-                      0
-                    ),
-                    _vm._v(" "),
-                    _vm._m(2)
-                  ]
-                )
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "form-group" }, [
-                _c(
-                  "label",
-                  {
-                    staticClass: "col-sm-4 control-label",
-                    attrs: { for: "inputTaskDesc" }
-                  },
-                  [_vm._v("Краткое описание")]
-                ),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-sm-10" }, [
-                  _c("input", {
-                    directives: [
-                      {
-                        name: "model",
-                        rawName: "v-model",
-                        value: _vm.task.description,
-                        expression: "task.description"
-                      }
-                    ],
-                    staticClass: "form-control",
-                    attrs: { type: "text", placeholder: "Краткое описание" },
-                    domProps: { value: _vm.task.description },
-                    on: {
-                      input: function($event) {
-                        if ($event.target.composing) {
-                          return
-                        }
-                        _vm.$set(_vm.task, "description", $event.target.value)
-                      }
-                    }
-                  })
-                ])
-              ])
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.createTask(_vm.selectRoute)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _vm._m(0),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Тематика обращения по существующему клиенту")
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "card-footer" }, [
-              _c("button", { staticClass: "btn btn-primary" }, [
-                _vm._v("Создать")
-              ]),
-              _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
               _c(
-                "button",
+                "select",
                 {
-                  staticClass: "btn btn-default float-right",
-                  on: { click: _vm.setDefault }
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectRoute,
+                      expression: "selectRoute"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectRoute = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
                 },
-                [_vm._v("Отмена")]
+                _vm._l(_vm.routes, function(routeItem) {
+                  return _c(
+                    "option",
+                    { key: routeItem.id, domProps: { value: routeItem.value } },
+                    [
+                      _vm._v(
+                        "\n              " +
+                          _vm._s(routeItem.name) +
+                          "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
               )
             ])
-          ]
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.defaultInputs
-      ? _c(
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTaskDesc" }
+              },
+              [_vm._v("Краткое описание")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.task.description,
+                    expression: "task.description"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: { type: "text", placeholder: "Краткое описание" },
+                domProps: { value: _vm.task.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.task, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
           "div",
           { staticClass: "card-footer" },
           [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Создать")
+            ]),
+            _vm._v(" "),
             _c(
               "router-link",
               {
                 staticClass: "btn btn-default float-right",
-                attrs: { to: { name: "tasks" } }
+                attrs: {
+                  to: {
+                    name: "contracts-for-customer",
+                    params: { customid: _vm.contract.customer.id }
+                  }
+                }
               },
               [_vm._v("Отмена")]
             )
           ],
           1
         )
-      : _vm._e()
+      ]
+    )
   ])
 }
 var staticRenderFns = [
@@ -49001,275 +48672,10 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "card-header" }, [
-      _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Задача для сущ. контракта")
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("thead", [
-      _c("tr", [
-        _c("th", [_vm._v("Контракты")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Обращение")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("tfoot", [
-      _c("tr", [
-        _c("th", [_vm._v("Телефон")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Редактировать")])
-      ])
-    ])
-  }
-]
-render._withStripped = true
-
-
-
-/***/ }),
-
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679&":
-/*!********************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679& ***!
-  \********************************************************************************************************************************************************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card card-info" }, [
-    _vm._m(0),
-    _vm._v(" "),
-    !_vm.isEmptyObject(_vm.customerByPhone)
-      ? _c(
-          "form",
-          {
-            staticClass: "form-horizontal",
-            on: {
-              submit: function($event) {
-                $event.preventDefault()
-                return _vm.createTask(_vm.selectRoute)
-              }
-            }
-          },
-          [
-            _c("div", { staticClass: "card-body" }, [
-              _c("div", { staticClass: "form-group" }, [
-                _c("label", { staticClass: "col-sm-4 control-label" }, [
-                  _vm._v("Обращение по существующему клиенту: "),
-                  _c("b", [_vm._v(_vm._s(_vm.customerByPhone.surname))])
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "form-group" }, [
-                _c("label", { staticClass: "col-sm-4 control-label" }, [
-                  _vm._v("Тематика обращения по существующему клиенту")
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-sm-10" }, [
-                  _c(
-                    "select",
-                    {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.selectRoute,
-                          expression: "selectRoute"
-                        }
-                      ],
-                      attrs: { required: "" },
-                      on: {
-                        change: function($event) {
-                          var $$selectedVal = Array.prototype.filter
-                            .call($event.target.options, function(o) {
-                              return o.selected
-                            })
-                            .map(function(o) {
-                              var val = "_value" in o ? o._value : o.value
-                              return val
-                            })
-                          _vm.selectRoute = $event.target.multiple
-                            ? $$selectedVal
-                            : $$selectedVal[0]
-                        }
-                      }
-                    },
-                    _vm._l(_vm.routesForCurrentCustomers, function(routeItem) {
-                      return _c(
-                        "option",
-                        {
-                          key: routeItem.id,
-                          domProps: { value: routeItem.value }
-                        },
-                        [
-                          _vm._v(
-                            "\n              " +
-                              _vm._s(routeItem.name) +
-                              "\n            "
-                          )
-                        ]
-                      )
-                    }),
-                    0
-                  )
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "col-sm-4 table-responsive p-0" }, [
-                _c(
-                  "table",
-                  {
-                    staticClass:
-                      "table table-hover table-bordered table-striped"
-                  },
-                  [
-                    _vm._m(1),
-                    _vm._v(" "),
-                    _c(
-                      "tbody",
-                      _vm._l(_vm.customerByPhone.contracts, function(
-                        contractItem
-                      ) {
-                        return _c("tr", { key: contractItem.id }, [
-                          _c("td", [_vm._v(_vm._s(contractItem.contract_num))]),
-                          _vm._v(" "),
-                          _c("td", [
-                            _vm._v(
-                              "\n                          \n                              Edit\n                          \n                      "
-                            )
-                          ])
-                        ])
-                      }),
-                      0
-                    ),
-                    _vm._v(" "),
-                    _vm._m(2)
-                  ]
-                )
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "form-group" }, [
-                _c(
-                  "label",
-                  {
-                    staticClass: "col-sm-4 control-label",
-                    attrs: { for: "inputTaskDesc" }
-                  },
-                  [_vm._v("Краткое описание")]
-                ),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-sm-10" }, [
-                  _c("input", {
-                    directives: [
-                      {
-                        name: "model",
-                        rawName: "v-model",
-                        value: _vm.task.description,
-                        expression: "task.description"
-                      }
-                    ],
-                    staticClass: "form-control",
-                    attrs: { type: "text", placeholder: "Краткое описание" },
-                    domProps: { value: _vm.task.description },
-                    on: {
-                      input: function($event) {
-                        if ($event.target.composing) {
-                          return
-                        }
-                        _vm.$set(_vm.task, "description", $event.target.value)
-                      }
-                    }
-                  })
-                ])
-              ])
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "card-footer" }, [
-              _c("button", { staticClass: "btn btn-primary" }, [
-                _vm._v("Создать")
-              ]),
-              _vm._v(" "),
-              _c(
-                "button",
-                {
-                  staticClass: "btn btn-default float-right",
-                  on: { click: _vm.setDefault }
-                },
-                [_vm._v("Отмена")]
-              )
-            ])
-          ]
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.defaultInputs
-      ? _c(
-          "div",
-          { staticClass: "card-footer" },
-          [
-            _c(
-              "router-link",
-              {
-                staticClass: "btn btn-default float-right",
-                attrs: { to: { name: "tasks" } }
-              },
-              [_vm._v("Отмена")]
-            )
-          ],
-          1
-        )
-      : _vm._e()
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "card-header" }, [
-      _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Задача для нового контракта")
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("thead", [
-      _c("tr", [
-        _c("th", [_vm._v("Контракты")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Обращение")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("tfoot", [
-      _c("tr", [
-        _c("th", [_vm._v("Телефон")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("Редактировать")])
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { staticClass: "col-sm-4 control-label" }, [
+        _vm._v("Обращение по существующему клиенту: "),
+        _c("b")
       ])
     ])
   }
@@ -67702,75 +67108,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/components/task/CreateTaskForNewContract.vue":
-/*!*******************************************************************!*\
-  !*** ./resources/js/components/task/CreateTaskForNewContract.vue ***!
-  \*******************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679& */ "./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679&");
-/* harmony import */ var _CreateTaskForNewContract_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CreateTaskForNewContract.vue?vue&type=script&lang=js& */ "./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
-
-
-
-
-
-/* normalize component */
-
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _CreateTaskForNewContract_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
-  false,
-  null,
-  null,
-  null
-  
-)
-
-/* hot reload */
-if (false) { var api; }
-component.options.__file = "resources/js/components/task/CreateTaskForNewContract.vue"
-/* harmony default export */ __webpack_exports__["default"] = (component.exports);
-
-/***/ }),
-
-/***/ "./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js&":
-/*!********************************************************************************************!*\
-  !*** ./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js& ***!
-  \********************************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_CreateTaskForNewContract_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./CreateTaskForNewContract.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_CreateTaskForNewContract_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
-
-/***/ }),
-
-/***/ "./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679&":
-/*!**************************************************************************************************!*\
-  !*** ./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679& ***!
-  \**************************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/task/CreateTaskForNewContract.vue?vue&type=template&id=7d9a4679&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__["render"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreateTaskForNewContract_vue_vue_type_template_id_7d9a4679___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
-
-
-
-/***/ }),
-
 /***/ "./resources/js/components/task/CustomerNotFound.vue":
 /*!***********************************************************!*\
   !*** ./resources/js/components/task/CustomerNotFound.vue ***!
@@ -68431,12 +67768,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
 /* harmony import */ var _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/task/SearchCustomer */ "./resources/js/components/task/SearchCustomer.vue");
 /* harmony import */ var _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/task/ContractsForCustomer */ "./resources/js/components/task/ContractsForCustomer.vue");
-/* harmony import */ var _components_task_CreateTaskForNewContract__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/CreateTaskForNewContract */ "./resources/js/components/task/CreateTaskForNewContract.vue");
-/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
-/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
-/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
-/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
-/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
+/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
+/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
+/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
 
 
@@ -68469,8 +67805,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
- //import TaskCreate from './components/task/TaskCreate';
 
 
 
@@ -68605,25 +67939,12 @@ __webpack_require__.r(__webpack_exports__);
       }, {
         path: 'customer-notfound',
         name: 'customer-not-found',
-        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_32__["default"]
-      },
-      /*
-      { 
-          path: 'contracts/:contractid',  
-          name: 'create-task-for-new-contract', 
-          component: CreateTaskForNewContract, 
-          props: false 
-          
-      },
-      */
-      {
-        path: 'contracts/:contractid',
-        name: 'create-task-for-exists-contract',
-        component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_31__["default"] //    props: true
-        //components: { default: CreateTaskForNewContract, existsContract: CreateTaskForExistsContract },
-        //props: {default: true, existsContract: false}
-
+        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_31__["default"]
       }]
+    }, {
+      path: 'new/contracts/:contractid',
+      name: 'create-task-for-exists-contract',
+      component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_30__["default"]
     }, {
       path: 'task/:id',
       name: 'task-update',
@@ -68636,15 +67957,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'comment/:commid',
       name: 'comment-details',
-      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_33__["default"]
+      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_32__["default"]
     }, {
       path: 'bot-setting',
       name: 'bot-setting',
-      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_34__["default"]
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_33__["default"]
     }, {
       path: 'bot-status',
       name: 'bot-status',
-      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_35__["default"]
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_34__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

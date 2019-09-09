@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Phone;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Customer\CustomerRelationResource;
+use App\Http\Resources\Customer\CustomerCustomResource;
 
 class CustomerController extends Controller
 {
@@ -76,11 +76,21 @@ class CustomerController extends Controller
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function show(Customer $customer/* int $id*/)
+    public function show(/*Customer $customer*/int $id)
     {
-        //return new CustomerResource($customer->with('phones')->first());
+        $customer = Customer::find($id);
+        if($customer) {
+            $contracts = $customer->contracts()->get();
+            $phones = $customer->phones()->get();
+            return new CustomerCustomResource($customer, $phones, $contracts);
+        }
+        else {
+            return new CustomerResource($customer);
+        }
+        
         //return new CustomerRelationResource($customer);
-        return new CustomerResource($customer->with('phones', 'contracts')->first());
+        
+        //return new CustomerResource($customer->with('phones', 'contracts')->first());
     }
 
    

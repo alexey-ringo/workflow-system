@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Services\CustomerService;
 use App\Http\Resources\Contract\ContractCollection;
 use App\Http\Resources\Contract\ContractResource;
+use App\Http\Resources\Contract\ContractRelationResource;
 
 class ContractController extends Controller
 {
@@ -78,11 +79,15 @@ class ContractController extends Controller
      * @param  \App\Models\Contract  $contract
      * @return \Illuminate\Http\Response
      */
-    public function show(Contract $contract/* int $id*/)
+    public function show(/*Contract $contract*/int $id)
     {
-        //return new CustomerResource($customer->with('phones')->first());
-        //return new CustomerRelationResource($customer);
-        return new ContractResource($contract);
+        $contract = Contract::find($id);
+        if($contract) {
+            return new ContractRelationResource($contract);
+        }
+        else {
+            return new ContractResource($contract);
+        }
     }
 
    

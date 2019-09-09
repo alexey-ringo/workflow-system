@@ -3,8 +3,9 @@
 namespace App\Http\Resources\Customer;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Phone;
 use App\Http\Resources\Customer\PhoneResource;
+use App\Http\Resources\Contract\ContractResource;
+
 class CustomerRelationResource extends JsonResource
 {
     /**
@@ -28,7 +29,8 @@ class CustomerRelationResource extends JsonResource
             'flat' => $this->flat,
             'email' => $this->email,
             'description' => $this->description,
-            'phones' => PhoneResource::collection($this->phones)
+            'phones' => PhoneResource::collection($this->phones),
+            'contracts' => ContractResource::collection($this->contracts)
         ];
     }
 }

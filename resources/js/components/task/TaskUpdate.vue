@@ -87,9 +87,13 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let taskUri = `/api/tasks/${this.$route.params.id}`;
-      this.axios.get(taskUri).then((response) => {
+      let uri = `/api/tasks/${this.$route.params.id}`;
+      this.axios.get(uri).then((response) => {
         this.task = response.data.data;
+        if(!this.task.hasOwnProperty('error')) {
+         swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
+         this.$router.push({name: 'tasks'});
+        }
         if(!this.task.error) {
           this.getAllComments();
         }
@@ -120,6 +124,10 @@
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
             this.response = response.data.data;
+            if(!this.response.hasOwnProperty('error')) {
+              swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+          	  this.$router.push({name: 'tasks'});
+            }
             if(!this.response.error) {
               //this.$emit("changecartevent", 1);
               swal("Сохранение изменений", this.response.message, "success");
@@ -151,6 +159,10 @@
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
             this.response = response.data.data;
+            if(!this.response.hasOwnProperty('error')) {
+              swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+          	  this.$router.push({name: 'tasks'});
+            }
             if(!this.response.error) {
               //this.$emit("changecartevent", 1);
               swal("Сохранение изменений", this.response.message, "success");
@@ -182,6 +194,10 @@
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
             this.response = response.data.data;
+            if(!this.response.hasOwnProperty('error')) {
+              swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+          	  this.$router.push({name: 'tasks'});
+            }
             if(!this.response.error) {
               //this.$emit("changecartevent", 1);
               swal("Сохранение изменений", this.response.message, "success");

@@ -49,7 +49,7 @@
                     <tr v-for="contractItem in customer.contracts" :key="contractItem.id">
                         <td>{{ contractItem.contract_num  }}</td>
                         <td>
-                          <router-link :to="{name: 'create-task-for-new-contract', params: {contractid: contractItem.id}, props: false }" class="btn btn-xs btn-default">
+                          <router-link :to="{name: 'create-task-for-exists-contract', params: {contractid: contractItem.id}}" class="btn btn-xs btn-default">
                                 Создать обращение
                           </router-link>
                         </td>
@@ -120,22 +120,26 @@
       },
       getCustomer() {
         let uri = `/api/customers/${this.$route.params.customid}`;
-      this.axios.get(uri).then((response) => {
-        this.customer = response.data.data;
-      })
-      .catch(e => {
-        //console.log(e);
-        if(e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-            this.$router.push({name: 'login'});
+        this.axios.get(uri).then((response) => {
+          this.customer = response.data.data;
+          if(this.isEmptyObject(this.customer)) {
+            swal('Ошибка', 'Клиент с id "' + this.$route.params.customid + '" не найден!', 'error');
+            //this.$router.push({name: 'search-customer'});
           }
-          //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-        }
-        else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-        }
-      });
+        })
+        .catch(e => {
+          //console.log(e);
+          if(e == 'Error: Request failed with status code 401') {
+            if (localStorage.getItem('jwt')) {
+              localStorage.removeItem('jwt');
+              this.$router.push({name: 'login'});
+            }
+            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
+          }
+        });
       },
       addContract() {
         this.visibleTaskForNewContract = true;
@@ -144,13 +148,11 @@
         let uri = '/api/contracts';
         this.axios.post(uri, this.customer).then((response) => {
           if(response.data.data.id) {
-            //this.$router.push({name: 'create-task-for-exists-contract', params: {contractid: response.data.data.id}, props: true});
-            //this.visibleTaskForNewContract = true;
             this.task.contract_id = response.data.data.id;
             this.createTaskForNewContract();
           }
           else {
-            swal("Сохранение изменений", "Что то пошло не так...", "error");
+            swal("Создание нового контракта", "Нет ответа от сервера при создании нового контракта", "error");
             //this.$router.push({name: 'customers'});
           }
         })
@@ -191,6 +193,10 @@
         
         this.axios.post(uri, this.task).then((response) => {
           this.response = response.data.data;
+          if(!this.response.hasOwnProperty('error')) {
+              swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
+          	  this.deleteContract(this.task.contract_id);
+            }
           if(!this.response.error) {
             this.setDefault();
             swal("Сохранение изменений", this.response.message, "success");

@@ -15,9 +15,9 @@ class RouteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(bool $filter = false)
+    public function index(Request $request)
     {
-        if($filter) {
+        if($request->has('filter')) {
             return new RouteCollection(Route::where('value', '>', 1)->get());
         }
         else {

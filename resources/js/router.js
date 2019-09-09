@@ -44,10 +44,8 @@ import RouteCreate from './components/process/RouteCreate';
 
 import Tasks from './components/task/Tasks';
 import TaskUpdate from './components/task/TaskUpdate';
-//import TaskCreate from './components/task/TaskCreate';
 import SearchCustomer from './components/task/SearchCustomer';
 import ContractsForCustomer from './components/task/ContractsForCustomer';
-import CreateTaskForNewContract from './components/task/CreateTaskForNewContract';
 import CreateTaskForExistsContract from './components/task/CreateTaskForExistsContract';
 import CustomerNotFound from './components/task/CustomerNotFound';
 
@@ -135,26 +133,15 @@ export default new VueRouter({
                             component: CustomerNotFound 
                             
                         },
-                        /*
-                        { 
-                            path: 'contracts/:contractid',  
-                            name: 'create-task-for-new-contract', 
-                            component: CreateTaskForNewContract, 
-                            props: false 
-                            
-                        },
-                        */
-                        { 
-                            path: 'contracts/:contractid',  
-                            name: 'create-task-for-exists-contract',
-                            component: CreateTaskForExistsContract, 
-                        //    props: true
-                            //components: { default: CreateTaskForNewContract, existsContract: CreateTaskForExistsContract },
-                            //props: {default: true, existsContract: false}
-                        },
+                        //{ 
+                        //    path: 'contracts/:contractid',  
+                        //    name: 'create-task-for-exists-contract',
+                        //    component: CreateTaskForExistsContract, 
+                        //},
                         
                     ]
                 },
+                { path: 'new/contracts/:contractid',  name: 'create-task-for-exists-contract', component: CreateTaskForExistsContract },
                 { path: 'task/:id',  name: 'task-update', component: TaskUpdate, 
                     //children: [
                             //{ path: 'comments',  name: 'comments', component: Comments },
