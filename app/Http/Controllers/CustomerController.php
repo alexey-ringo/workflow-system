@@ -40,34 +40,14 @@ class CustomerController extends Controller
             'is_final' => 'required',
         ]);
         */
+        /** @var App\Services\CustomerResponse $createdcustomer */
+        $createdCustomer = $customerService->createNewCustomer($request);
         
-        $customer = $customerService->createNewCustomer($request);
-        
-        /*
-        if(!$customer) {
-            return response()->json(['data' => 0]);
-        }
-        
-        $phone = Phone::create([
-            'customer_id' => $customer->id,
-            'phone' => $request->get('phone'),
-                ]);
-        
-        if($phone) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            $this->destroy($customer);
-            return response()->json(['data' => 0]);
-        }
-        */
-        
-        if($customer) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
+        return response()->json(['data' => [
+                                        'error' => $createdCustomer->getError(),
+                                        'customer' => $createdCustomer->getCustomer(),
+                                        'message' => $createdCustomer->getMessage()
+                                    ]]);
     }
 
     /**

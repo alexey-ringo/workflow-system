@@ -2844,10 +2844,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      customer: {}
+      customer: {},
+      customerResponse: {},
+      optionLeavePage: false
     };
   },
 
@@ -2864,23 +2867,63 @@ __webpack_require__.r(__webpack_exports__);
     addCustomer: function addCustomer() {
       var _this = this;
 
-      //this.route.sequence = this.sequenceNum;
-      //this.mission.is_super = this.superChecked;
-      //this.mission.is_final = this.finalChecked;
       var uri = '/api/customers';
       this.axios.post(uri, this.customer).then(function (response) {
-        if (response.data.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
-          _this.$router.push({
-            name: 'customers'
-          });
-        } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+        }
+
+        _this.customerResponse = response.data.data;
+
+        if (!_this.customerResponse.hasOwnProperty('error')) {
+          swal("Ошибка", "Неверный формат ответа сервера при создании нового клиента", "error");
 
           _this.$router.push({
-            name: 'customers'
+            name: 'tasks'
           });
         }
+
+        if (!_this.customerResponse.error) {
+          //this.$emit("changecartevent", 1);
+          swal("Сохранение изменений", _this.customerResponse.message, "success");
+
+          if (_this.optionLeavePage) {
+            _this.$router.push({
+              name: 'contracts-for-customer',
+              params: {
+                customid: _this.customerResponse.customer.id
+              }
+            });
+          } else {
+            _this.$router.push({
+              name: 'customers'
+            });
+          }
+        } else {
+          swal("Ошибка", _this.customerResponse.message, "error");
+
+          _this.$router.push({
+            name: 'tasks'
+          });
+        } //if(response.data.data.id) {
+        //  swal("Заказ", 'Новый клиент "' + this.customer.surname + ' ' + this.customer.name + '" успешно создан', "success");
+        //  if(this.optionLeavePage) {
+        //    this.$router.push({name: 'contracts-for-customer', params: {customid: this.customer.id}});
+        //  }
+        //  else {
+        //    this.$router.push({name: 'customers'});
+        //  }
+        //}
+        //else {
+        //  swal("Сохранение изменений", "Что то пошло не так...", "error");
+        //  if(this.optionLeavePage) {
+        //    this.$router.push({name: 'search-customer'});
+        //  }
+        //  else {
+        //    this.$router.push({name: 'customers'});
+        //  }
+        //}
+
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
           if (localStorage.getItem('jwt')) {
@@ -2894,11 +2937,27 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
 
-          _this.$router.push({
-            name: 'customers'
-          });
+          if (_this.optionLeavePage) {
+            _this.$router.push({
+              name: 'search-customer'
+            });
+          } else {
+            _this.$router.push({
+              name: 'customers'
+            });
+          }
         }
       });
+    }
+  },
+  beforeRouteEnter: function beforeRouteEnter(to, from, next) {
+    if (from.name == 'customer-not-found') {
+      next(function (vm) {
+        // экземпляр компонента доступен как `vm`
+        vm.optionLeavePage = true;
+      });
+    } else {
+      next();
     }
   }
 });
@@ -5278,6 +5337,7 @@ __webpack_require__.r(__webpack_exports__);
       customer: {},
       task: {},
       response: {},
+      contractResponse: {},
       visibleTaskForNewContract: false
     };
   },
@@ -5303,7 +5363,11 @@ __webpack_require__.r(__webpack_exports__);
         _this.customer = response.data.data;
 
         if (_this.isEmptyObject(_this.customer)) {
-          swal('Ошибка', 'Клиент с id "' + _this.$route.params.customid + '" не найден!', 'error'); //this.$router.push({name: 'search-customer'});
+          swal('Ошибка', 'Клиент с id "' + _this.$route.params.customid + '" не найден!', 'error');
+
+          _this.$router.push({
+            name: 'search-customer'
+          });
         }
       })["catch"](function (e) {
         //console.log(e);
@@ -5318,6 +5382,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
+
+          _this.$router.push({
+            name: 'search-customer'
+          });
         }
       });
     },
@@ -5329,12 +5397,22 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/contracts';
       this.axios.post(uri, this.customer).then(function (response) {
-        if (response.data.data.id) {
-          _this2.task.contract_id = response.data.data.id;
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
+        }
+
+        _this2.contractResponse = response.data.data;
+
+        if (!_this2.contractResponse.hasOwnProperty('error')) {
+          swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+        }
+
+        if (!_this2.contractResponse.error) {
+          _this2.task.contract_id = _this2.contractResponse.contract.id;
 
           _this2.createTaskForNewContract();
         } else {
-          swal("Создание нового контракта", "Нет ответа от сервера при создании нового контракта", "error"); //this.$router.push({name: 'customers'});
+          swal("Ошибка", _this2.contractResponse.message, "error");
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -5375,10 +5453,16 @@ __webpack_require__.r(__webpack_exports__);
       var uri = '/api/tasks';
       this.task.route = 1;
       this.axios.post(uri, this.task).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
+
+          _this4.deleteContract(_this4.task.contract_id);
+        }
+
         _this4.response = response.data.data;
 
         if (!_this4.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
+          swal("Ошибка", "Неверный формат ответа сервера при создании новой задачи", "error");
 
           _this4.deleteContract(_this4.task.contract_id);
         }
@@ -5515,6 +5599,14 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/routes?filter=1';
       this.axios.get(uri).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при чтении маршрутов", "error");
+
+          _this.$router.push({
+            name: 'search-customer'
+          });
+        }
+
         _this.routes = response.data.data;
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -5540,6 +5632,14 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = "/api/contracts/".concat(this.$route.params.contractid);
       this.axios.get(uri).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при доступе к контракту клиента", "error");
+
+          _this2.$router.push({
+            name: 'search-customer'
+          });
+        }
+
         _this2.contract = response.data.data;
 
         if (_this2.isEmptyObject(_this2.contract)) {
@@ -5562,6 +5662,10 @@ __webpack_require__.r(__webpack_exports__);
 
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this2.$router.push({
+            name: 'search-customer'
+          });
         }
       });
     },
@@ -5572,10 +5676,18 @@ __webpack_require__.r(__webpack_exports__);
       this.task.route = route;
       this.task.contract_id = this.contract.id;
       this.axios.post(uri, this.task).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+
+          _this3.$router.push({
+            name: 'contracts-for-customer'
+          });
+        }
+
         _this3.response = response.data.data;
 
         if (!_this3.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Нет ответа от сервера при создании задачи", "error");
+          swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -5675,6 +5787,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {};
@@ -5695,6 +5809,10 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
 //
 //
 //
@@ -5762,6 +5880,10 @@ __webpack_require__.r(__webpack_exports__);
     },
     keywordsSurname: function keywordsSurname(after, before) {
       this.fetchSurname();
+
+      if (this.keywordsSurname.length === 3) {
+        this.fetchSurname();
+      }
     }
   },
   methods: {
@@ -5828,7 +5950,11 @@ __webpack_require__.r(__webpack_exports__);
           keywords: this.keywordsSurname
         }
       }).then(function (response) {
-        _this2.resultsSurname = response.data.data;
+        if (response.data.data) {
+          _this2.resultsSurname = response.data.data;
+        } else {
+          _this2.resultsSurname = [];
+        }
       })["catch"](function (e) {
         //console.log(e);
         swal('Ошибка', "Внутренняя ошибка сервера", "error");
@@ -5971,9 +6097,7 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     var uri = "/api/tasks/".concat(this.$route.params.id);
     this.axios.get(uri).then(function (response) {
-      _this.task = response.data.data;
-
-      if (!_this.task.hasOwnProperty('error')) {
+      if (!response.data.data) {
         swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
 
         _this.$router.push({
@@ -5981,7 +6105,9 @@ __webpack_require__.r(__webpack_exports__);
         });
       }
 
-      if (!_this.task.error) {
+      _this.task = response.data.data;
+
+      if (!_this.task.hasOwnProperty('error')) {
         _this.getAllComments();
       } else {
         swal("Ошибка", "Для задачи № " + _this.task + " '" + _this.title + "' " + _this.message, "error");
@@ -6003,6 +6129,10 @@ __webpack_require__.r(__webpack_exports__);
 
       } else {
         swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+        _this.$router.push({
+          name: 'tasks'
+        });
       }
     });
   },
@@ -6016,10 +6146,18 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+
+          _this2.$router.push({
+            name: 'tasks'
+          });
+        }
+
         _this2.response = response.data.data;
 
         if (!_this2.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+          swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
 
           _this2.$router.push({
             name: 'tasks'
@@ -6068,10 +6206,18 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
+        }
+
         _this3.response = response.data.data;
 
         if (!_this3.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+          swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
 
           _this3.$router.push({
             name: 'tasks'
@@ -6120,10 +6266,18 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+
+          _this4.$router.push({
+            name: 'tasks'
+          });
+        }
+
         _this4.response = response.data.data;
 
         if (!_this4.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+          swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
 
           _this4.$router.push({
             name: 'tasks'
@@ -6168,6 +6322,10 @@ __webpack_require__.r(__webpack_exports__);
 
       var commentsUri = "/api/comments?task=".concat(this.task.id);
       this.axios.get(commentsUri).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при доступе к комментариям", "error");
+        }
+
         _this5.comments = response.data.data; //this.meta = response.data.meta;
       });
     },
@@ -6180,7 +6338,23 @@ __webpack_require__.r(__webpack_exports__);
       this.comment.taskId = this.task.id;
       var uri = '/api/comments';
       this.axios.post(uri, this.comment).then(function (response) {
+        if (!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
+
+          _this6.$router.push({
+            name: 'tasks'
+          });
+        }
+
         _this6.response = response.data.data;
+
+        if (!_this6.response.hasOwnProperty('error')) {
+          swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
+
+          _this6.$router.push({
+            name: 'tasks'
+          });
+        }
 
         if (!_this6.response.error) {
           switch (destination) {
@@ -44670,14 +44844,27 @@ var render = function() {
               _vm._v("Создать")
             ]),
             _vm._v(" "),
-            _c(
-              "router-link",
-              {
-                staticClass: "btn btn-default float-right",
-                attrs: { to: { name: "customers" } }
-              },
-              [_vm._v("Отмена")]
-            )
+            !_vm.optionLeavePage
+              ? _c(
+                  "router-link",
+                  {
+                    staticClass: "btn btn-default float-right",
+                    attrs: { to: { name: "customers" } }
+                  },
+                  [_vm._v("Отмена")]
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.optionLeavePage
+              ? _c(
+                  "router-link",
+                  {
+                    staticClass: "btn btn-default float-right",
+                    attrs: { to: { name: "search-customer" } }
+                  },
+                  [_vm._v("Вернуться")]
+                )
+              : _vm._e()
           ],
           1
         )
@@ -48701,19 +48888,33 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "card-body" },
+      [
+        _c(
+          "router-link",
+          {
+            staticClass: "btn btn-primary",
+            attrs: { to: { name: "customer-create" } }
+          },
+          [_vm._v("Создать нового клиента")]
+        )
+      ],
+      1
+    )
+  ])
 }
 var staticRenderFns = [
   function() {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "card card-info" }, [
-      _c("div", { staticClass: "card-header" }, [
-        _c("h3", { staticClass: "card-title" }, [_vm._v("Клиент не найден")])
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "card-body" })
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [_vm._v("Клиент не найден")])
     ])
   }
 ]
@@ -48777,10 +48978,43 @@ var render = function() {
               ? _c(
                   "ul",
                   _vm._l(_vm.resultsSurname, function(result) {
-                    return _c("li", {
-                      key: result.id,
-                      domProps: { textContent: _vm._s(result.surname) }
-                    })
+                    return _c(
+                      "li",
+                      { key: result.id },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            attrs: {
+                              to: {
+                                name: "contracts-for-customer",
+                                params: { customid: result.id }
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n              " +
+                                _vm._s(
+                                  result.surname +
+                                    " " +
+                                    result.name +
+                                    " город: " +
+                                    result.city +
+                                    " ул. " +
+                                    result.street +
+                                    " дом " +
+                                    result.building +
+                                    " кв. " +
+                                    result.flat
+                                ) +
+                                "\n            "
+                            )
+                          ]
+                        )
+                      ],
+                      1
+                    )
                   }),
                   0
                 )
@@ -48885,7 +49119,7 @@ var render = function() {
                 _vm._v("Обработка заявки № "),
                 _c("b", [_vm._v(_vm._s(_vm.task.task))]),
                 _vm._v(
-                  "\n                                                       в очереди: "
+                  "\n                                                       в процессе: "
                 ),
                 _c("b", [_vm._v(_vm._s(_vm.task.sequenceName))])
               ])

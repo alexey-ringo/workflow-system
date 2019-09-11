@@ -8,6 +8,8 @@
     
     <div class="card-body">
       
+      <router-link :to="{name: 'customer-create'}" class="btn btn-primary">Создать нового клиента</router-link>
+      
     </div>
     <!-- /.card-body -->
     

@@ -12,7 +12,11 @@
         <div class="col-sm-10">
           <input type="text" v-model="keywordsSurname" class="form-control" placeholder="Фамилия клиента">
           <ul v-if="resultsSurname.length > 0">
-            <li v-for="result in resultsSurname" :key="result.id" v-text="result.surname"></li>
+            <li v-for="result in resultsSurname" :key="result.id">
+              <router-link :to="{name: 'contracts-for-customer', params: {customid: result.id}}">
+                {{ result.surname + ' ' + result.name + ' город: ' + result.city + ' ул. ' + result.street + ' дом ' + result.building + ' кв. ' + result.flat }}
+              </router-link>
+            </li>
           </ul>
         </div>
       </div>
@@ -68,6 +72,9 @@
       },
       keywordsSurname(after, before) {
         this.fetchSurname();
+        if(this.keywordsSurname.length === 3) {
+          this.fetchSurname();
+        }
       }
     },
     methods: {
@@ -113,12 +120,17 @@
         let uri = '/api/search-surname';
           this.axios.get(uri, { params: { keywords: this.keywordsSurname }})
           	.then((response) => {
-              	this.resultsSurname = response.data.data;
-              })
-              .catch(e => {
-              	//console.log(e);
-              	swal('Ошибка', "Внутренняя ошибка сервера", "error");
-              });
+              if(response.data.data) {
+                this.resultsSurname = response.data.data;
+              }
+              else {
+                this.resultsSurname = [];
+              }
+            })
+            .catch(e => {
+            	//console.log(e);
+            	swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            });
         
       },
       isEmptyObject(obj) {

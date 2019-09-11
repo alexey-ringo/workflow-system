@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-md-8">
           <h3 v-if="!isSequenceLast" class="card-title">Обработка заявки № <b>{{task.task}}</b>
-                                                         в очереди: <b>{{task.sequenceName}}</b></h3>
+                                                         в процессе: <b>{{task.sequenceName}}</b></h3>
           <h3 v-if="isSequenceLast" class="card-title">Завершение заявки № {{task.task}}</h3>
         </div>
       </div>
@@ -89,12 +89,12 @@
       
       let uri = `/api/tasks/${this.$route.params.id}`;
       this.axios.get(uri).then((response) => {
+        if(!response.data.data) {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
+          this.$router.push({name: 'tasks'});
+        }
         this.task = response.data.data;
         if(!this.task.hasOwnProperty('error')) {
-         swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
-         this.$router.push({name: 'tasks'});
-        }
-        if(!this.task.error) {
           this.getAllComments();
         }
         else {
@@ -113,6 +113,7 @@
         }
         else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          this.$router.push({name: 'tasks'});
         }
       });
     },
@@ -123,9 +124,13 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
+            if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+              this.$router.push({name: 'tasks'});
+            }
             this.response = response.data.data;
             if(!this.response.hasOwnProperty('error')) {
-              swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
+              swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
           	  this.$router.push({name: 'tasks'});
             }
             if(!this.response.error) {
@@ -158,9 +163,13 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
+            if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+              this.$router.push({name: 'tasks'});
+            }
             this.response = response.data.data;
             if(!this.response.hasOwnProperty('error')) {
-              swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
+              swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
           	  this.$router.push({name: 'tasks'});
             }
             if(!this.response.error) {
@@ -193,9 +202,13 @@
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
+            if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+              this.$router.push({name: 'tasks'});
+            }
             this.response = response.data.data;
             if(!this.response.hasOwnProperty('error')) {
-              swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+              swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
           	  this.$router.push({name: 'tasks'});
             }
             if(!this.response.error) {
@@ -226,6 +239,9 @@
         let commentsUri = `/api/comments?task=${this.task.id}`;
         this.axios.get(commentsUri)
       	  .then((response) => {
+      	    if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при доступе к комментариям", "error");
+            }
             this.comments = response.data.data;
         	  //this.meta = response.data.meta;
         });
@@ -237,7 +253,15 @@
         this.comment.taskId = this.task.id;
         let uri = '/api/comments';
         this.axios.post(uri, this.comment).then((response) => {
+          if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
+              this.$router.push({name: 'tasks'});
+            }
           this.response = response.data.data;
+          if(!this.response.hasOwnProperty('error')) {
+            swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
+            this.$router.push({name: 'tasks'});
+          }
           if(!this.response.error) {
             switch(destination) {
               case 1:

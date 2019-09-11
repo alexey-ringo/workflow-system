@@ -76,6 +76,10 @@
         let uri = '/api/routes?filter=1';
         this.axios.get(uri)
       	  .then((response) => {
+      	    if(!response.data.data) {
+              swal("Ошибка", "Нет ответа от сервера при чтении маршрутов", "error");
+              this.$router.push({name: 'search-customer'});
+            }
         	  this.routes = response.data.data;
           })
           .catch(e => {
@@ -95,6 +99,10 @@
       getContract() {
         let uri = `/api/contracts/${this.$route.params.contractid}`;
         this.axios.get(uri).then((response) => {
+          if(!response.data.data) {
+            swal("Ошибка", "Нет ответа от сервера при доступе к контракту клиента", "error");
+            this.$router.push({name: 'search-customer'});
+          }
           this.contract = response.data.data;
           if(this.isEmptyObject(this.contract)) {
             swal('Ошибка', 'Контракт № "' + this.$route.params.contractid + '" не найден!', 'error');
@@ -112,6 +120,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            this.$router.push({name: 'search-customer'});
           }
         });
       },
@@ -120,9 +129,13 @@
         this.task.route = route;
         this.task.contract_id = this.contract.id;
         this.axios.post(uri, this.task).then((response) => {
+          if(!response.data.data) {
+            swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
+            this.$router.push({name: 'contracts-for-customer'});
+          }
           this.response = response.data.data;
           if(!this.response.hasOwnProperty('error')) {
-            swal("Ошибка", "Нет ответа от сервера при создании задачи", "error");
+            swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
           	this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
           if(!this.response.error) {

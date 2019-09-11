@@ -99,6 +99,7 @@
         customer: {},
         task: {},
         response: {},
+        contractResponse: {},
         visibleTaskForNewContract: false
       }
     },
@@ -124,7 +125,7 @@
           this.customer = response.data.data;
           if(this.isEmptyObject(this.customer)) {
             swal('Ошибка', 'Клиент с id "' + this.$route.params.customid + '" не найден!', 'error');
-            //this.$router.push({name: 'search-customer'});
+            this.$router.push({name: 'search-customer'});
           }
         })
         .catch(e => {
@@ -138,6 +139,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
+            this.$router.push({name: 'search-customer'});
           }
         });
       },
@@ -147,13 +149,19 @@
       createContract() {
         let uri = '/api/contracts';
         this.axios.post(uri, this.customer).then((response) => {
-          if(response.data.data.id) {
-            this.task.contract_id = response.data.data.id;
+          if(!response.data.data) {
+            swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
+          }
+          this.contractResponse = response.data.data;
+          if(!this.contractResponse.hasOwnProperty('error')) {
+            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+          }
+          if(!this.contractResponse.error) {
+            this.task.contract_id = this.contractResponse.contract.id;
             this.createTaskForNewContract();
           }
           else {
-            swal("Создание нового контракта", "Нет ответа от сервера при создании нового контракта", "error");
-            //this.$router.push({name: 'customers'});
+            swal("Ошибка", this.contractResponse.message, "error");
           }
         })
         .catch(e => {
@@ -192,11 +200,15 @@
         this.task.route = 1;
         
         this.axios.post(uri, this.task).then((response) => {
+          if(!response.data.data) {
+            swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
+            this.deleteContract(this.task.contract_id);
+          }
           this.response = response.data.data;
           if(!this.response.hasOwnProperty('error')) {
-              swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
-          	  this.deleteContract(this.task.contract_id);
-            }
+            swal("Ошибка", "Неверный формат ответа сервера при создании новой задачи", "error");
+            this.deleteContract(this.task.contract_id);
+          }
           if(!this.response.error) {
             this.setDefault();
             swal("Сохранение изменений", this.response.message, "success");

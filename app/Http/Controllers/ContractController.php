@@ -40,37 +40,23 @@ class ContractController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $customerId = $request->get('id');
-        $customer = Customer::find($customerId);
         
-        $newContract = $customerService->createNewContract($customer);
-        
-        /*
-        if(!$customer) {
-            return response()->json(['data' => 0]);
-        }
-        
-        $phone = Phone::create([
-            'customer_id' => $customer->id,
-            'phone' => $request->get('phone'),
-                ]);
-        
-        if($phone) {
-            return response()->json(['data' => 1]);
+        $customer = Customer::find($request->get('id'));
+        if($customer) {
+            $newContract = $customerService->createNewContract($customer);
+            return response()->json(['data' => [
+                                        'error' => $newContract->getError(),
+                                        'contract' => $newContract->getContract(),
+                                        'message' => $newContract->getMessage()
+                                    ]]);
         }
         else {
-            $this->destroy($customer);
-            return response()->json(['data' => 0]);
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'contract' => null,
+                                        'message' => 'Клиент для создания нового контракта не найден'
+                                    ]]);
         }
-        */
-        
-        //if($newContract) {
-        //    return response()->json(['data' => 1]);
-        //}
-        //else {
-        //    return response()->json(['data' => 0]);
-        //}
-        return new ContractResource($newContract);
     }
 
     /**

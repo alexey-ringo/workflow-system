@@ -1,11 +1,14 @@
 <?php
-
 namespace App\Services;
 
 use Illuminate\Http\Request;
 use App\Models\Phone;
 use App\Models\Customer;
 use App\Models\Contract;
+use App\Models\User;
+
+use App\Services\CustomerResponse;
+use App\Services\ContractResponse;
 
 use Event;
 use App\Events\Customer\onCreateEvent as onCustomerCreateEvent;
@@ -18,10 +21,9 @@ use Exception;
 use ErrorException;
 use App\Exceptions\WorkflowException;
 
-
 class CustomerService
 {
-    public function createNewCustomer(Request $request): ?Customer
+    public function createNewCustomer(Request $request): CustomerResponse
     {
         $customer = Customer::create([
             'surname' => $request->get('surname'),
@@ -39,7 +41,8 @@ class CustomerService
         //Illuminate\Database\QueryException
         
         if(!$customer) {
-            return null;
+            $message = 'Ошибка при создании нового клиента';
+            return new CustomerResponse($message);
         }
         //Нужны информативные ответы
         
@@ -49,30 +52,32 @@ class CustomerService
                 ]);
         
         if(!$phone) {
-            //$this->destroy($customer);
-            $customer->destroy();
-            return null;
+            $message = 'Ошибка при добавлении телефонов для клиента ' . $customer->name > ' ' . $customer->surname;
+            $customer->delete();
+            return new CustomerResponse($message);
         }
-        //Нужны информативные ответы
-        
         
         Event::dispatch(new onCustomerCreateEvent($customer));
         
-        $contract = $this->createNewContract($customer);
-        if(!$contract) {
+        /** @var App\Services\ContractResponse $newContract */
+        $newContract = $this->createNewContract($customer);
+        if($newContract->getError()) {
             $customer->delete();
-            return null;
+            $message = 'Ошибка при автоматическом создании контракта для клиента ' . $customer->getCustomerName() . ' ' . $customer->getCustomerSurname();
+            return new CustomerResponse($message);
         }
         
-        return $customer;
+        $message = 'Новый клиент ' . $customer->name . ' ' . $customer->surname . ' успешно создан и ему автоматически добавлен новый контракт № ' . $newContract->getContractNum();
+        return new CustomerResponse($message, $customer);
     }
     
     
-    public function createNewContract(Customer $customer): ?Contract
+    public function createNewContract(Customer $customer): ContractResponse
     {
         $contractNum = $this->createContractNum();
         if(!$contractNum) {
-            return null;
+            $message = 'Ошибка при создании нового контракта для клиента ' . $customer->name . ' ' . $customer->surname . ' - ошибка выделения номера для нового контракта';
+            return new ContractResponse($message);
         }
         $contract = Contract::create([
             'contract_num' => $contractNum,
@@ -80,10 +85,15 @@ class CustomerService
         ]);
         //Нужно поймать исключение
         //Illuminate\Database\QueryException
+        if(!$contract) {
+            $message = 'Ошибка при создании нового контракта для клиента ' . $customer->name . ' ' . $customer->surname;
+            return new ContractResponse($message);
+        }
         
         Event::dispatch(new onContractCreateEvent($contract));
         
-        return $contract;
+        $message = 'Успешно создан новый контракт № ' . $contract->contract_num . ' для клиента ' . $customer->name . ' ' . $customer->surname;
+        return new ContractResponse($message, $contract);
     }
     
     
@@ -105,9 +115,5 @@ class CustomerService
             
 	        return null;
 	    }
-        
     }
-    
-    
-    
 }

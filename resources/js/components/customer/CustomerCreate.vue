@@ -80,7 +80,8 @@
   
       <div class="card-footer">
         <button class="btn btn-primary">Создать</button>
-        <router-link :to="{name: 'customers'}" class="btn btn-default float-right">Отмена</router-link>
+        <router-link :to="{name: 'customers'}" class="btn btn-default float-right" v-if="!optionLeavePage">Отмена</router-link>
+        <router-link :to="{name: 'search-customer'}" class="btn btn-default float-right" v-if="optionLeavePage">Вернуться</router-link>
       </div>
       <!-- /.card-footer -->
     </form>
@@ -92,7 +93,9 @@
   export default {
     data(){
       return {
-        customer: {}
+        customer: {},
+        customerResponse: {},
+        optionLeavePage: false
       }
     },
     /*
@@ -107,19 +110,50 @@
     },
     methods: {
       addCustomer(){
-        //this.route.sequence = this.sequenceNum;
-        //this.mission.is_super = this.superChecked;
-        //this.mission.is_final = this.finalChecked;
         let uri = '/api/customers';
         this.axios.post(uri, this.customer).then((response) => {
-          if(response.data.data) {
-            //swal("Заказ", "Ваш заказ принят!", "success");
-            this.$router.push({name: 'customers'});
+          if(!response.data.data) {
+            swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+          }
+          this.customerResponse = response.data.data;
+          if(!this.customerResponse.hasOwnProperty('error')) {
+            swal("Ошибка", "Неверный формат ответа сервера при создании нового клиента", "error");
+            this.$router.push({name: 'tasks'});
+          }
+          if(!this.customerResponse.error) {
+            //this.$emit("changecartevent", 1);
+            swal("Сохранение изменений", this.customerResponse.message, "success");
+            if(this.optionLeavePage) {
+              this.$router.push({name: 'contracts-for-customer', params: {customid: this.customerResponse.customer.id}});
+            }
+            else {
+              this.$router.push({name: 'customers'});
+            }
           }
           else {
-            swal("Сохранение изменений", "Что то пошло не так...", "error");
-            this.$router.push({name: 'customers'});
+            swal("Ошибка", this.customerResponse.message, "error");
+            this.$router.push({name: 'tasks'});
           }
+          
+          
+          //if(response.data.data.id) {
+          //  swal("Заказ", 'Новый клиент "' + this.customer.surname + ' ' + this.customer.name + '" успешно создан', "success");
+          //  if(this.optionLeavePage) {
+          //    this.$router.push({name: 'contracts-for-customer', params: {customid: this.customer.id}});
+          //  }
+          //  else {
+          //    this.$router.push({name: 'customers'});
+          //  }
+          //}
+          //else {
+          //  swal("Сохранение изменений", "Что то пошло не так...", "error");
+          //  if(this.optionLeavePage) {
+          //    this.$router.push({name: 'search-customer'});
+          //  }
+          //  else {
+          //    this.$router.push({name: 'customers'});
+          //  }
+          //}
         })
         .catch(e => {
           if(e == 'Error: Request failed with status code 401') {
@@ -131,10 +165,26 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'customers'});
+            if(this.optionLeavePage) {
+              this.$router.push({name: 'search-customer'});
+            }
+            else {
+              this.$router.push({name: 'customers'});
+            }
           }
         });
       },
-    }
+    },
+    beforeRouteEnter(to, from, next) {
+      if(from.name == 'customer-not-found') {
+        next(vm => {
+          // экземпляр компонента доступен как `vm`
+          vm.optionLeavePage = true;
+        });
+      }
+      else {
+        next();
+      }
+    },
   }
 </script>
