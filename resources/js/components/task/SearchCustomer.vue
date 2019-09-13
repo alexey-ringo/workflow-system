@@ -10,7 +10,12 @@
       <div class="form-group">
         <label class="col-sm-4 control-label">Фамилия клиента</label>
         <div class="col-sm-10">
-          <input type="text" v-model="keywordsSurname" class="form-control" placeholder="Фамилия клиента">
+          <div class="input-group">
+            <input type="text" class="form-control" v-model="keywordsSurname" placeholder="Фамилия клиента">
+            <span class="input-group-append">
+              <button type="button" class="btn btn-info btn-flat" @click="refreshResults">Обновить</button>
+            </span>
+          </div>
           <ul v-if="visibleFoundCustomersSurname">
             <li v-for="result in resultsSurname" :key="result.id">
               <router-link :to="{name: 'contracts-for-customer', params: {customid: result.id}}" @click.native="sendCustomer(result)">
@@ -24,8 +29,12 @@
       <div class="form-group">
         <label class="col-sm-4 control-label">Телефон клиента</label>
         <div class="col-sm-10">
-          <input type="text" v-model="keywordsPhone" class="form-control" placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
-          
+          <div class="input-group">
+            <input type="text" class="form-control" v-model="keywordsPhone" placeholder="В формате 7xxxxxxxxxx (10 знаков после семерки)">
+            <span class="input-group-append">
+              <button type="button" class="btn btn-info btn-flat" @click="refreshResults">Обновить</button>
+            </span>
+          </div>
         </div>
       </div>
       
@@ -33,7 +42,6 @@
       
     </div>
     <!-- /.card-body -->
-    
     
     
     <div v-if="defaultInputs" class="card-footer">
@@ -50,8 +58,8 @@
     data(){
       return {
         foundCustomer: {},
-        keywordsPhone: null,
-        keywordsSurname: null,
+        keywordsPhone: '',
+        keywordsSurname: '',
         resultsSurname: [],
         phoneNotFound: false,
         defaultInputs: true
@@ -148,6 +156,16 @@
       },
       sendCustomer(customer) {
         this.foundCustomer = customer;
+      },
+      refreshResults() {
+        this.resultsSurname = [];
+        //Vue.set(this.keywordsSurname = '');
+        this.keywordsSurname = '';
+        this.keywordsPhone = '';
+        if(!this.isEmptyObject(this.foundCustomer)) {
+          this.foundCustomer = {};
+            this.$router.push({name: 'search-customer'});
+        }
       },
     },
     computed: {

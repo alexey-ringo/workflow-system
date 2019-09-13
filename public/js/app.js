@@ -5536,12 +5536,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       foundCustomer: {},
-      keywordsPhone: null,
-      keywordsSurname: null,
+      keywordsPhone: '',
+      keywordsSurname: '',
       resultsSurname: [],
       phoneNotFound: false,
       defaultInputs: true
@@ -5657,6 +5665,19 @@ __webpack_require__.r(__webpack_exports__);
     },
     sendCustomer: function sendCustomer(customer) {
       this.foundCustomer = customer;
+    },
+    refreshResults: function refreshResults() {
+      this.resultsSurname = []; //Vue.set(this.keywordsSurname = '');
+
+      this.keywordsSurname = '';
+      this.keywordsPhone = '';
+
+      if (!this.isEmptyObject(this.foundCustomer)) {
+        this.foundCustomer = {};
+        this.$router.push({
+          name: 'search-customer'
+        });
+      }
     }
   },
   computed: {
@@ -48047,27 +48068,41 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "col-sm-10" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.keywordsSurname,
-                  expression: "keywordsSurname"
-                }
-              ],
-              staticClass: "form-control",
-              attrs: { type: "text", placeholder: "Фамилия клиента" },
-              domProps: { value: _vm.keywordsSurname },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.keywordsSurname,
+                    expression: "keywordsSurname"
                   }
-                  _vm.keywordsSurname = $event.target.value
+                ],
+                staticClass: "form-control",
+                attrs: { type: "text", placeholder: "Фамилия клиента" },
+                domProps: { value: _vm.keywordsSurname },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.keywordsSurname = $event.target.value
+                  }
                 }
-              }
-            }),
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-append" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-info btn-flat",
+                    attrs: { type: "button" },
+                    on: { click: _vm.refreshResults }
+                  },
+                  [_vm._v("Обновить")]
+                )
+              ])
+            ]),
             _vm._v(" "),
             _vm.visibleFoundCustomersSurname
               ? _c(
@@ -48128,30 +48163,44 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "col-sm-10" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.keywordsPhone,
-                  expression: "keywordsPhone"
-                }
-              ],
-              staticClass: "form-control",
-              attrs: {
-                type: "text",
-                placeholder: "В формате 7xxxxxxxxxx (10 знаков после семерки)"
-              },
-              domProps: { value: _vm.keywordsPhone },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.keywordsPhone,
+                    expression: "keywordsPhone"
                   }
-                  _vm.keywordsPhone = $event.target.value
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  placeholder: "В формате 7xxxxxxxxxx (10 знаков после семерки)"
+                },
+                domProps: { value: _vm.keywordsPhone },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.keywordsPhone = $event.target.value
+                  }
                 }
-              }
-            })
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-append" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-info btn-flat",
+                    attrs: { type: "button" },
+                    on: { click: _vm.refreshResults }
+                  },
+                  [_vm._v("Обновить")]
+                )
+              ])
+            ])
           ])
         ]),
         _vm._v(" "),
