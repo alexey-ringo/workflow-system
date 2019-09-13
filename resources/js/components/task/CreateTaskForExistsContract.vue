@@ -58,7 +58,7 @@
       return {
         task: {},
         contract: {},
-        response: {},
+        taskResponse: {},
         routes: [],
         selectRoute: null,
       }
@@ -133,18 +133,18 @@
             swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
             this.$router.push({name: 'contracts-for-customer'});
           }
-          this.response = response.data.data;
-          if(!this.response.hasOwnProperty('error')) {
+          this.taskResponse = response.data.data;
+          if(!this.taskResponse.hasOwnProperty('error')) {
             swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
           	this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
-          if(!this.response.error) {
+          if(!this.taskResponse.error) {
             //this.$emit("changecartevent", 1);
-            swal("Сохранение изменений", this.response.message, "success");
+            swal("Сохранение изменений", this.taskResponse.message, "success");
             this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
           else {
-          	swal("Ошибка", this.response.message, "error");
+          	swal("Ошибка", this.taskResponse.message, "error");
           	this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
         })
@@ -170,7 +170,6 @@
         }
       return true;
       },
-      
     },
   }
 </script>

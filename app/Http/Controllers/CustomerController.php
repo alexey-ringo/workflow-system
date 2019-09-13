@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
@@ -32,6 +33,13 @@ class CustomerController extends Controller
      */
     public function store(Request $request, CustomerService $customerService)
     {
+        $currentUser = User::find($request->user('api')->id);
+        if(!$currentUser) {
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Не определен пользователь, создающий нового клиента'
+                                    ]]);
+        }
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:processes',
@@ -40,8 +48,8 @@ class CustomerController extends Controller
             'is_final' => 'required',
         ]);
         */
-        /** @var App\Services\CustomerResponse $createdcustomer */
-        $createdCustomer = $customerService->createNewCustomer($request);
+        /** @var App\Services\CustomerResponse $createdCustomer */
+        $createdCustomer = $customerService->createNewCustomer($request, $currentUser);
         
         return response()->json(['data' => [
                                         'error' => $createdCustomer->getError(),

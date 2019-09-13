@@ -5336,7 +5336,6 @@ __webpack_require__.r(__webpack_exports__);
     return {
       customer: {},
       task: {},
-      response: {},
       contractResponse: {},
       visibleTaskForNewContract: false
     };
@@ -5396,6 +5395,8 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       var uri = '/api/contracts';
+      this.customer.task_route = 1;
+      this.customer.task_description = this.task.description;
       this.axios.post(uri, this.customer).then(function (response) {
         if (!response.data.data) {
           swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
@@ -5408,9 +5409,9 @@ __webpack_require__.r(__webpack_exports__);
         }
 
         if (!_this2.contractResponse.error) {
-          _this2.task.contract_id = _this2.contractResponse.contract.id;
+          _this2.setDefault();
 
-          _this2.createTaskForNewContract();
+          swal("Сохранение изменений", _this2.contractResponse.message, "success");
         } else {
           swal("Ошибка", _this2.contractResponse.message, "error");
         }
@@ -5429,70 +5430,6 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    deleteContract: function deleteContract(id) {
-      var _this3 = this;
-
-      var uri = "/api/contracts/".concat(id);
-      this.axios["delete"](uri).then(function (response) {
-        if (response.data.data) {
-          _this3.setDefault();
-        } else {
-          swal("Удаление контракта", "Что то пошло не так...", "error");
-
-          _this3.setDefault();
-        }
-      })["catch"](function (e) {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this3.setDefault();
-      });
-    },
-    createTaskForNewContract: function createTaskForNewContract() {
-      var _this4 = this;
-
-      var uri = '/api/tasks';
-      this.task.route = 1;
-      this.axios.post(uri, this.task).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
-
-          _this4.deleteContract(_this4.task.contract_id);
-        }
-
-        _this4.response = response.data.data;
-
-        if (!_this4.response.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при создании новой задачи", "error");
-
-          _this4.deleteContract(_this4.task.contract_id);
-        }
-
-        if (!_this4.response.error) {
-          _this4.setDefault();
-
-          swal("Сохранение изменений", _this4.response.message, "success");
-        } else {
-          swal("Ошибка", _this4.response.message, "error");
-
-          _this4.deleteContract(_this4.task.contract_id);
-        }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-
-            _this4.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-        } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //this.$router.push({name: 'tasks'});
-
-          _this4.deleteContract(_this4.task.contract_id);
-        }
-      });
-    },
     setDefault: function setDefault() {
       this.visibleTaskForNewContract = false;
       this.task = {};
@@ -5507,8 +5444,7 @@ __webpack_require__.r(__webpack_exports__);
 
       return true;
     }
-  },
-  computed: {}
+  }
 });
 
 /***/ }),
@@ -5581,7 +5517,7 @@ __webpack_require__.r(__webpack_exports__);
     return {
       task: {},
       contract: {},
-      response: {},
+      taskResponse: {},
       routes: [],
       selectRoute: null
     };
@@ -5684,9 +5620,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        _this3.response = response.data.data;
+        _this3.taskResponse = response.data.data;
 
-        if (!_this3.response.hasOwnProperty('error')) {
+        if (!_this3.taskResponse.hasOwnProperty('error')) {
           swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
 
           _this3.$router.push({
@@ -5697,9 +5633,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        if (!_this3.response.error) {
+        if (!_this3.taskResponse.error) {
           //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this3.response.message, "success");
+          swal("Сохранение изменений", _this3.taskResponse.message, "success");
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -5708,7 +5644,7 @@ __webpack_require__.r(__webpack_exports__);
             }
           });
         } else {
-          swal("Ошибка", _this3.response.message, "error");
+          swal("Ошибка", _this3.taskResponse.message, "error");
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -6082,7 +6018,7 @@ __webpack_require__.r(__webpack_exports__);
         error: false,
         message: ''
       },
-      response: {},
+      taskResponse: {},
       comments: [],
       comment: {},
       visibleCommentCreate: false
@@ -6110,7 +6046,7 @@ __webpack_require__.r(__webpack_exports__);
       if (!_this.task.hasOwnProperty('error')) {
         _this.getAllComments();
       } else {
-        swal("Ошибка", "Для задачи № " + _this.task + " '" + _this.title + "' " + _this.message, "error");
+        swal("Ошибка", 'Задача № ' + _this.task.task + ' "' + _this.task.title + '" : ' + _this.task.message, "error");
 
         _this.$router.push({
           name: 'tasks'
@@ -6154,9 +6090,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        _this2.response = response.data.data;
+        _this2.taskResponse = response.data.data;
 
-        if (!_this2.response.hasOwnProperty('error')) {
+        if (!_this2.taskResponse.hasOwnProperty('error')) {
           swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
 
           _this2.$router.push({
@@ -6164,15 +6100,15 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        if (!_this2.response.error) {
+        if (!_this2.taskResponse.error) {
           //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this2.response.message, "success");
+          swal("Сохранение изменений", _this2.taskResponse.message, "success");
 
           _this2.$router.push({
             name: 'tasks'
           });
         } else {
-          swal("Ошибка", _this2.response.message, "error");
+          swal("Ошибка", _this2.taskResponse.message, "error");
 
           _this2.$router.push({
             name: 'tasks'
@@ -6214,9 +6150,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        _this3.response = response.data.data;
+        _this3.taskResponse = response.data.data;
 
-        if (!_this3.response.hasOwnProperty('error')) {
+        if (!_this3.taskResponse.hasOwnProperty('error')) {
           swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
 
           _this3.$router.push({
@@ -6224,15 +6160,15 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        if (!_this3.response.error) {
+        if (!_this3.taskResponse.error) {
           //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this3.response.message, "success");
+          swal("Сохранение изменений", _this3.taskResponse.message, "success");
 
           _this3.$router.push({
             name: 'tasks'
           });
         } else {
-          swal("Ошибка", _this3.response.message, "error");
+          swal("Ошибка", _this3.taskResponse.message, "error");
 
           _this3.$router.push({
             name: 'tasks'
@@ -6274,9 +6210,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        _this4.response = response.data.data;
+        _this4.taskResponse = response.data.data;
 
-        if (!_this4.response.hasOwnProperty('error')) {
+        if (!_this4.taskResponse.hasOwnProperty('error')) {
           swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
 
           _this4.$router.push({
@@ -6284,15 +6220,15 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        if (!_this4.response.error) {
+        if (!_this4.taskResponse.error) {
           //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this4.response.message, "success");
+          swal("Сохранение изменений", _this4.taskResponse.message, "success");
 
           _this4.$router.push({
             name: 'tasks'
           });
         } else {
-          swal("Ошибка", _this4.response.message, "error");
+          swal("Ошибка", _this4.taskResponse.message, "error");
 
           _this4.$router.push({
             name: 'tasks'
@@ -6346,9 +6282,9 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        _this6.response = response.data.data;
+        _this6.taskResponse = response.data.data;
 
-        if (!_this6.response.hasOwnProperty('error')) {
+        if (!_this6.taskResponse.hasOwnProperty('error')) {
           swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
 
           _this6.$router.push({
@@ -6356,7 +6292,7 @@ __webpack_require__.r(__webpack_exports__);
           });
         }
 
-        if (!_this6.response.error) {
+        if (!_this6.taskResponse.error) {
           switch (destination) {
             case 1:
               _this6.updateTaskToNext();
@@ -6392,7 +6328,7 @@ __webpack_require__.r(__webpack_exports__);
               break;
           }
         } else {
-          swal("Ошибка", _this6.response.message, "error");
+          swal("Ошибка", _this6.taskResponse.message, "error");
 
           _this6.closeNewComment();
         }

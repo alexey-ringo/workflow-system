@@ -98,7 +98,6 @@
       return {
         customer: {},
         task: {},
-        response: {},
         contractResponse: {},
         visibleTaskForNewContract: false
       }
@@ -148,6 +147,10 @@
       },
       createContract() {
         let uri = '/api/contracts';
+        
+        this.customer.task_route = 1;
+        this.customer.task_description = this.task.description;
+        
         this.axios.post(uri, this.customer).then((response) => {
           if(!response.data.data) {
             swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
@@ -157,8 +160,8 @@
             swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
           }
           if(!this.contractResponse.error) {
-            this.task.contract_id = this.contractResponse.contract.id;
-            this.createTaskForNewContract();
+            this.setDefault();
+            swal("Сохранение изменений", this.contractResponse.message, "success");
           }
           else {
             swal("Ошибка", this.contractResponse.message, "error");
@@ -178,61 +181,6 @@
           }
         });
       },
-      deleteContract(id) {
-        let uri = `/api/contracts/${id}`;
-        this.axios.delete(uri)
-          .then((response) => {
-            if(response.data.data) {
-              this.setDefault();
-            }
-            else {
-              swal("Удаление контракта", "Что то пошло не так...", "error");
-              this.setDefault();
-            }
-          })
-          .catch(e => {
-            swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.setDefault();
-        });
-      },
-      createTaskForNewContract() {
-        let uri = '/api/tasks';
-        this.task.route = 1;
-        
-        this.axios.post(uri, this.task).then((response) => {
-          if(!response.data.data) {
-            swal("Ошибка", "Нет ответа от сервера при создании новой задачи", "error");
-            this.deleteContract(this.task.contract_id);
-          }
-          this.response = response.data.data;
-          if(!this.response.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при создании новой задачи", "error");
-            this.deleteContract(this.task.contract_id);
-          }
-          if(!this.response.error) {
-            this.setDefault();
-            swal("Сохранение изменений", this.response.message, "success");
-          }
-          else {
-            swal("Ошибка", this.response.message, "error");
-            this.deleteContract(this.task.contract_id);
-          }
-        })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
-            }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-          }
-          else {
-            swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            //this.$router.push({name: 'tasks'});
-            this.deleteContract(this.task.contract_id);
-          }
-        });
-      },
       setDefault() {
         this.visibleTaskForNewContract = false;
         this.task = {};
@@ -246,11 +194,6 @@
         }
       return true;
       },
-      
-      
-    },
-    computed: {
-      
     },
   }
 </script>

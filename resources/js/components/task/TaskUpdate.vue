@@ -72,7 +72,7 @@
           error: false,
           message: ''
         },
-        response: {},
+        taskResponse: {},
         comments: [],
         comment: {},
         visibleCommentCreate: false
@@ -98,7 +98,7 @@
           this.getAllComments();
         }
         else {
-          swal("Ошибка", "Для задачи № " + this.task + " '" + this.title + "' " + this.message, "error");
+          swal("Ошибка", 'Задача № ' + this.task.task + ' "' + this.task.title + '" : ' + this.task.message, "error");
           this.$router.push({name: 'tasks'});
         }
       })
@@ -128,18 +128,18 @@
               swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
               this.$router.push({name: 'tasks'});
             }
-            this.response = response.data.data;
-            if(!this.response.hasOwnProperty('error')) {
+            this.taskResponse = response.data.data;
+            if(!this.taskResponse.hasOwnProperty('error')) {
               swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
           	  this.$router.push({name: 'tasks'});
             }
-            if(!this.response.error) {
+            if(!this.taskResponse.error) {
               //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.response.message, "success");
+              swal("Сохранение изменений", this.taskResponse.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-            	swal("Ошибка", this.response.message, "error");
+            	swal("Ошибка", this.taskResponse.message, "error");
             	this.$router.push({name: 'tasks'});
             }
           })
@@ -167,18 +167,18 @@
               swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
               this.$router.push({name: 'tasks'});
             }
-            this.response = response.data.data;
-            if(!this.response.hasOwnProperty('error')) {
+            this.taskResponse = response.data.data;
+            if(!this.taskResponse.hasOwnProperty('error')) {
               swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
           	  this.$router.push({name: 'tasks'});
             }
-            if(!this.response.error) {
+            if(!this.taskResponse.error) {
               //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.response.message, "success");
+              swal("Сохранение изменений", this.taskResponse.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-          	  swal("Ошибка", this.response.message, "error");
+          	  swal("Ошибка", this.taskResponse.message, "error");
           	  this.$router.push({name: 'tasks'});
             }
           })
@@ -206,18 +206,18 @@
               swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
               this.$router.push({name: 'tasks'});
             }
-            this.response = response.data.data;
-            if(!this.response.hasOwnProperty('error')) {
+            this.taskResponse = response.data.data;
+            if(!this.taskResponse.hasOwnProperty('error')) {
               swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
           	  this.$router.push({name: 'tasks'});
             }
-            if(!this.response.error) {
+            if(!this.taskResponse.error) {
               //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.response.message, "success");
+              swal("Сохранение изменений", this.taskResponse.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-          	  swal("Ошибка", this.response.message, "error");
+          	  swal("Ошибка", this.taskResponse.message, "error");
           	  this.$router.push({name: 'tasks'});
             }
           })
@@ -257,12 +257,12 @@
               swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
               this.$router.push({name: 'tasks'});
             }
-          this.response = response.data.data;
-          if(!this.response.hasOwnProperty('error')) {
+          this.taskResponse = response.data.data;
+          if(!this.taskResponse.hasOwnProperty('error')) {
             swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
             this.$router.push({name: 'tasks'});
           }
-          if(!this.response.error) {
+          if(!this.taskResponse.error) {
             switch(destination) {
               case 1:
                 this.updateTaskToNext();
@@ -296,7 +296,7 @@
             }
           }
           else {
-            swal("Ошибка", this.response.message, "error");
+            swal("Ошибка", this.taskResponse.message, "error");
             this.closeNewComment();
           }
         })

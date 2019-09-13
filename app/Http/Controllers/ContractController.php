@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
@@ -30,8 +31,16 @@ class ContractController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    //В $request передаем данные о customer
     public function store(Request $request, CustomerService $customerService)
     {
+        $currentUser = User::find($request->user('api')->id);
+        if(!$currentUser) {
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Не определен пользователь, создающий новый контракт'
+                                    ]]);
+        }
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:processes',
@@ -43,7 +52,7 @@ class ContractController extends Controller
         
         $customer = Customer::find($request->get('id'));
         if($customer) {
-            $newContract = $customerService->createNewContract($customer);
+            $newContract = $customerService->createNewContract($request, $customer, $currentUser);
             return response()->json(['data' => [
                                         'error' => $newContract->getError(),
                                         'contract' => $newContract->getContract(),
@@ -95,25 +104,7 @@ class ContractController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $customer->surname = $request->get('surname');
-        $customer->name = $request->get('name');
-        $customer->second_name = $request->get('second_name');
-        $customer->city = $request->get('city');
-        $customer->region = $request->get('region');
-        $customer->street = $request->get('street');
-        $customer->building = $request->get('building');
-        $customer->flat = $request->get('flat');
-        $customer->description = $request->get('description');
-        $customer->save();
         
-        //$process->update($request->all());
-        
-        if($customer) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }
         
     }
 

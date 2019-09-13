@@ -15,6 +15,13 @@ use App\Http\Resources\Task\TaskCollection;
 
 class TaskController extends Controller
 {
+    private $taskService;
+    
+    public function __construct(TaskService $taskService)
+    {
+        $this->taskService = $taskService;
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -43,11 +50,14 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, TaskService $taskService)
+    public function store(Request $request)
     {
         $currentUser = User::find($request->user('api')->id);
         if(!$currentUser) {
-            return response()->json(['data' => 0]);
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Не определен пользователь, создающий эту задачу'
+                                    ]]);
         }
         
         /*
@@ -57,7 +67,7 @@ class TaskController extends Controller
         ]);
         */
         
-        $createdTask = $taskService->createFirstTask($request, $currentUser);
+        $createdTask = $this->taskService->createFirstTask($request, $currentUser);
         
         return response()->json(['data' => [
                                         'error' => $createdTask->getError(),
@@ -72,8 +82,15 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show(/*Task $task*/$id)
     {
+        $task = Task::find($id);
+        if(!$task) {
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Запрашиваемая задача с идентификатором id ' . $id . ' не найдена'
+                                    ]]);
+        }
         $isSequenceFirst = $task->process->isSequenceFirst($task->route);
         
         $prevProcess = $task->process->getPrevProcess($task->route);
@@ -102,9 +119,7 @@ class TaskController extends Controller
                                             ]]);
         }
         
-       
         return new TaskCustomResource($task, $prevProcess->id, $nextProcess->id, $prevProcess->name, $nextProcess->name, $isSequenceFirst, $isSequenceLast);
-        
     }
     
 
@@ -115,18 +130,24 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task, TaskService $taskService)
+    public function update(Request $request, Task $task)
     {
         $currentUser = $request->user('api');
         if(!$currentUser) {
-            return response()->json(['data' => 0]);
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Не определен пользователь, работающий над этим процессом'
+                                    ]]);
         }
         $currentProcess = Process::find($request['currentProcessId']);
         if(!$currentProcess) {
-            return response()->json(['data' => 0]);
+            return response()->json(['data' => [
+                                        'error' => true,
+                                        'message' => 'Не определен текущий процесс'
+                                    ]]);
         }
        
-        $updatedTask = $taskService->createNextTask(
+        $updatedTask = $this->taskService->createNextTask(
                                                         $request,
                                                         $task, 
                                                         $currentUser, 
@@ -137,7 +158,6 @@ class TaskController extends Controller
                                         'task' => $updatedTask->getTask(),
                                         'message' => $updatedTask->getMessage()
                                     ]]);
-       
     }
 
     /**

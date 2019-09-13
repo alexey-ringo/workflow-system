@@ -77,7 +77,7 @@ class TaskService
             else {
 	            report($exception);
             }
-	        $message = 'Ошибка БД при создании новой задачи!';
+	        $message = 'Ошибка БД при создании новой задачи (исключение)!';
             return new TaskResponse($message);
 	    }
         
