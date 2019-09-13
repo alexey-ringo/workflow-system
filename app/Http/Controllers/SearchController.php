@@ -10,6 +10,7 @@ use App\Http\Resources\Customer\PhoneCollection;
 use App\Http\Resources\Customer\PhoneResource;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
+use App\Http\Resources\Customer\CustomerRelationResource;
 
 
 class SearchController extends Controller
@@ -17,14 +18,10 @@ class SearchController extends Controller
     public function searchPhone(Request $request)
     {
         $phone = Phone::where('phone', $request->keywords)->first();
-        //dd($request->keywords, $phone);
-
-        //return response()->json(['data' => $phone]);
-        //return response()->json($phone);
         if($phone) {
             $customer = $phone->customer;
-            //$customer = $customer->with('contracts')->first();
-            return new CustomerResource($customer->with('phones', 'contracts')->first());
+            //return new CustomerResource($customer->with('phones', 'contracts')->first());
+            return new CustomerRelationResource($customer);
         }
         else {
             return response()->json(['data' => 0]);
@@ -35,9 +32,11 @@ class SearchController extends Controller
     {
         //$customer = Customer::where('surname', $request->keywords)->get();
         $customer = Customer::where('surname', 'LIKE', '%' . $request->keywords . '%')->get();
-        
-        if($customer) {
+        if(!$customer->isEmpty()) {
             return new CustomerCollection($customer);
+        }
+        else {
+            return response()->json(['data' => 0]);
         }
     }
 }

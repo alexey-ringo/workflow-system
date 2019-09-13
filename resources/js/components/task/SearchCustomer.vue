@@ -11,9 +11,9 @@
         <label class="col-sm-4 control-label">Фамилия клиента</label>
         <div class="col-sm-10">
           <input type="text" v-model="keywordsSurname" class="form-control" placeholder="Фамилия клиента">
-          <ul v-if="resultsSurname.length > 0">
+          <ul v-if="visibleFoundCustomersSurname">
             <li v-for="result in resultsSurname" :key="result.id">
-              <router-link :to="{name: 'contracts-for-customer', params: {customid: result.id}}">
+              <router-link :to="{name: 'contracts-for-customer', params: {customid: result.id}}" @click.native="sendCustomer(result)">
                 {{ result.surname + ' ' + result.name + ' город: ' + result.city + ' ул. ' + result.street + ' дом ' + result.building + ' кв. ' + result.flat }}
               </router-link>
             </li>
@@ -29,7 +29,7 @@
         </div>
       </div>
       
-      <router-view v-bind:customerProp="customerByPhone"></router-view>
+      <router-view v-bind:customerProp="foundCustomer"></router-view>
       
     </div>
     <!-- /.card-body -->
@@ -49,7 +49,7 @@
   export default {
     data(){
       return {
-        customerByPhone: {},
+        foundCustomer: {},
         keywordsPhone: null,
         keywordsSurname: null,
         resultsSurname: [],
@@ -66,13 +66,12 @@
     },
     watch: {
       keywordsPhone(after, before) {
-        if(this.keywordsPhone.length === 11) {
+        if(this.keywordsPhone.length == 11) {
           this.fetchPhone();
         }
       },
       keywordsSurname(after, before) {
-        this.fetchSurname();
-        if(this.keywordsSurname.length === 3) {
+        if(this.keywordsSurname.length > 2) {
           this.fetchSurname();
         }
       }
@@ -86,13 +85,13 @@
           this.axios.get(uri, { params: { keywords: this.keywordsPhone }})
           	.then((response) => {
               if(response.data.data) {
-                this.customerByPhone = response.data.data;
+                this.foundCustomer = response.data.data;
                 this.phoneNotFound = false;
                 this.defaultInputs = false;
-                this.$router.push({name: 'contracts-for-customer', params: {customid: this.customerByPhone.id}});
+                this.$router.push({name: 'contracts-for-customer', params: {customid: this.foundCustomer.id}});
               }
               else {
-                this.customerByPhone = {};
+                this.foundCustomer = {};
                 this.phoneNotFound = true;
                 this.defaultInputs = false;
                 this.$router.push({name: 'customer-not-found'});
@@ -111,7 +110,6 @@
             this.$router.push({name: 'tasks'});
           }
         });
-        
       },
       fetchSurname() {
         //this.axios.get('/api/search-phone', { params: { keywords: this.keywords } })
@@ -131,7 +129,6 @@
             	//console.log(e);
             	swal('Ошибка', "Внутренняя ошибка сервера", "error");
             });
-        
       },
       isEmptyObject(obj) {
         for (var i in obj) {
@@ -144,18 +141,13 @@
       setDefault() {
         this.keywordsPhone = null;
         this.keywordsSurname = null;
-        this.customerByPhone = {};
+        this.foundCustomer = {};
         this.resultsSurname = [];
         this.phoneNotFound = false;
         this.defaultInputs = true;
       },
-      isRouteForCurrentCustomer(routeVal) {
-        if(routeVal == 1) {
-          return false;
-        }
-        else {
-          return true;
-        }
+      sendCustomer(customer) {
+        this.foundCustomer = customer;
       },
     },
     computed: {
@@ -166,6 +158,14 @@
           }
         }
       return true;
+      },
+      visibleFoundCustomersSurname() {
+        if(this.resultsSurname.length > 0) {
+          return true;
+        }
+        else {
+          return false;
+        }
       }
     },
   }

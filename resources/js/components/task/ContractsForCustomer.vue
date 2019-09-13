@@ -109,6 +109,14 @@
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
       this.update();
     },
+    watch: {
+      customerProp: {
+        immediate: true, 
+        handler (val, oldVal) {
+          this.customer = this.customerProp;
+        }
+      }
+    },
     methods: {
       update() {
         if(this.isEmptyObject(this.customerProp)) {

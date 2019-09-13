@@ -2158,270 +2158,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //import Products from './lteitems/Products.vue';
 //import Orders from './lteitems/Orders.vue';
 //import Purchases from './lteitems/Purchases.vue';
@@ -5346,6 +5082,14 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     this.update();
   },
+  watch: {
+    customerProp: {
+      immediate: true,
+      handler: function handler(val, oldVal) {
+        this.customer = this.customerProp;
+      }
+    }
+  },
   methods: {
     update: function update() {
       if (this.isEmptyObject(this.customerProp)) {
@@ -5795,7 +5539,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      customerByPhone: {},
+      foundCustomer: {},
       keywordsPhone: null,
       keywordsSurname: null,
       resultsSurname: [],
@@ -5810,14 +5554,12 @@ __webpack_require__.r(__webpack_exports__);
   },
   watch: {
     keywordsPhone: function keywordsPhone(after, before) {
-      if (this.keywordsPhone.length === 11) {
+      if (this.keywordsPhone.length == 11) {
         this.fetchPhone();
       }
     },
     keywordsSurname: function keywordsSurname(after, before) {
-      this.fetchSurname();
-
-      if (this.keywordsSurname.length === 3) {
+      if (this.keywordsSurname.length > 2) {
         this.fetchSurname();
       }
     }
@@ -5836,18 +5578,18 @@ __webpack_require__.r(__webpack_exports__);
         }
       }).then(function (response) {
         if (response.data.data) {
-          _this.customerByPhone = response.data.data;
+          _this.foundCustomer = response.data.data;
           _this.phoneNotFound = false;
           _this.defaultInputs = false;
 
           _this.$router.push({
             name: 'contracts-for-customer',
             params: {
-              customid: _this.customerByPhone.id
+              customid: _this.foundCustomer.id
             }
           });
         } else {
-          _this.customerByPhone = {};
+          _this.foundCustomer = {};
           _this.phoneNotFound = true;
           _this.defaultInputs = false;
 
@@ -5908,17 +5650,13 @@ __webpack_require__.r(__webpack_exports__);
     setDefault: function setDefault() {
       this.keywordsPhone = null;
       this.keywordsSurname = null;
-      this.customerByPhone = {};
+      this.foundCustomer = {};
       this.resultsSurname = [];
       this.phoneNotFound = false;
       this.defaultInputs = true;
     },
-    isRouteForCurrentCustomer: function isRouteForCurrentCustomer(routeVal) {
-      if (routeVal == 1) {
-        return false;
-      } else {
-        return true;
-      }
+    sendCustomer: function sendCustomer(customer) {
+      this.foundCustomer = customer;
     }
   },
   computed: {
@@ -5930,6 +5668,13 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return true;
+    },
+    visibleFoundCustomersSurname: function visibleFoundCustomersSurname() {
+      if (this.resultsSurname.length > 0) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 });
@@ -42978,41 +42723,7 @@ var render = function() {
                       1
                     )
                   ])
-                ]),
-                _vm._v(" "),
-                _vm._m(14),
-                _vm._v(" "),
-                _vm._m(15),
-                _vm._v(" "),
-                _vm._m(16),
-                _vm._v(" "),
-                _vm._m(17),
-                _vm._v(" "),
-                _vm._m(18),
-                _vm._v(" "),
-                _c("li", { staticClass: "nav-header" }, [_vm._v("EXAMPLES")]),
-                _vm._v(" "),
-                _vm._m(19),
-                _vm._v(" "),
-                _vm._m(20),
-                _vm._v(" "),
-                _vm._m(21),
-                _vm._v(" "),
-                _vm._m(22),
-                _vm._v(" "),
-                _c("li", { staticClass: "nav-header" }, [
-                  _vm._v("MISCELLANEOUS")
-                ]),
-                _vm._v(" "),
-                _vm._m(23),
-                _vm._v(" "),
-                _c("li", { staticClass: "nav-header" }, [_vm._v("LABELS")]),
-                _vm._v(" "),
-                _vm._m(24),
-                _vm._v(" "),
-                _vm._m(25),
-                _vm._v(" "),
-                _vm._m(26)
+                ])
               ]
             )
           ])
@@ -43021,7 +42732,7 @@ var render = function() {
     ),
     _vm._v(" "),
     _c("div", { staticClass: "content-wrapper" }, [
-      _vm._m(27),
+      _vm._m(14),
       _vm._v(" "),
       _c("section", { staticClass: "content" }, [
         _c("div", { staticClass: "row" }, [
@@ -43030,7 +42741,7 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _vm._m(28),
+    _vm._m(15),
     _vm._v(" "),
     _c("aside", { staticClass: "control-sidebar control-sidebar-dark" }, [
       _c(
@@ -43537,558 +43248,6 @@ var staticRenderFns = [
       _c("p", [
         _vm._v("\n                Telegram Bot\n                "),
         _c("i", { staticClass: "right fa fa-angle-left" })
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "../widgets.html" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-th" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Widgets\n                "),
-          _c("span", { staticClass: "right badge badge-danger" }, [
-            _vm._v("New")
-          ])
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-pie-chart" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Charts\n                "),
-          _c("i", { staticClass: "right fa fa-angle-left" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../charts/chartjs.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("ChartJS")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../charts/flot.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Flot")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../charts/inline.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Inline")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-tree" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                UI Elements\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../UI/general.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("General")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../UI/icons.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Icons")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../UI/buttons.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Buttons")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../UI/sliders.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Sliders")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-edit" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Forms\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../forms/general.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("General Elements")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../forms/advanced.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Advanced Elements")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../forms/editors.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Editors")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview menu-open" }, [
-      _c("a", { staticClass: "nav-link active", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-table" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Tables\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../tables/simple.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Simple Tables")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link active",
-              attrs: { href: "../tables/data.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Data Tables")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c(
-        "a",
-        { staticClass: "nav-link", attrs: { href: "../calendar.html" } },
-        [
-          _c("i", { staticClass: "nav-icon fa fa-calendar" }),
-          _vm._v(" "),
-          _c("p", [
-            _vm._v("\n                Calendar\n                "),
-            _c("span", { staticClass: "badge badge-info right" }, [_vm._v("2")])
-          ])
-        ]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-envelope-o" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Mailbox\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../mailbox/mailbox.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Inbox")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../mailbox/compose.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Compose")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../mailbox/read-mail.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Read")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-book" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Pages\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/invoice.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Invoice")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/profile.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Profile")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/login.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Login")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/register.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Register")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/lockscreen.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Lockscreen")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item has-treeview" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-plus-square-o" }),
-        _vm._v(" "),
-        _c("p", [
-          _vm._v("\n                Extras\n                "),
-          _c("i", { staticClass: "fa fa-angle-left right" })
-        ])
-      ]),
-      _vm._v(" "),
-      _c("ul", { staticClass: "nav nav-treeview" }, [
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/404.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Error 404")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/500.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Error 500")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            {
-              staticClass: "nav-link",
-              attrs: { href: "../examples/blank.html" }
-            },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Blank Page")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", { staticClass: "nav-item" }, [
-          _c(
-            "a",
-            { staticClass: "nav-link", attrs: { href: "../../starter.html" } },
-            [
-              _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Starter Page")])
-            ]
-          )
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c(
-        "a",
-        {
-          staticClass: "nav-link",
-          attrs: { href: "https://adminlte.io/docs" }
-        },
-        [
-          _c("i", { staticClass: "nav-icon fa fa-file" }),
-          _vm._v(" "),
-          _c("p", [_vm._v("Documentation")])
-        ]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-circle-o text-danger" }),
-        _vm._v(" "),
-        _c("p", { staticClass: "text" }, [_vm._v("Important")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-circle-o text-warning" }),
-        _vm._v(" "),
-        _c("p", [_vm._v("Warning")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("li", { staticClass: "nav-item" }, [
-      _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-        _c("i", { staticClass: "nav-icon fa fa-circle-o text-info" }),
-        _vm._v(" "),
-        _c("p", [_vm._v("Informational")])
       ])
     ])
   },
@@ -48910,7 +48069,7 @@ var render = function() {
               }
             }),
             _vm._v(" "),
-            _vm.resultsSurname.length > 0
+            _vm.visibleFoundCustomersSurname
               ? _c(
                   "ul",
                   _vm._l(_vm.resultsSurname, function(result) {
@@ -48925,6 +48084,11 @@ var render = function() {
                               to: {
                                 name: "contracts-for-customer",
                                 params: { customid: result.id }
+                              }
+                            },
+                            nativeOn: {
+                              click: function($event) {
+                                return _vm.sendCustomer(result)
                               }
                             }
                           },
@@ -48991,7 +48155,7 @@ var render = function() {
           ])
         ]),
         _vm._v(" "),
-        _c("router-view", { attrs: { customerProp: _vm.customerByPhone } })
+        _c("router-view", { attrs: { customerProp: _vm.foundCustomer } })
       ],
       1
     ),
