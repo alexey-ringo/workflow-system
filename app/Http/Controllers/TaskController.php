@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Process;
 
 use App\Services\TaskService;
+use App\Services\WorkflowService;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\Task\TaskResource;
@@ -15,12 +16,12 @@ use App\Http\Resources\Task\TaskCollection;
 
 class TaskController extends Controller
 {
-    private $taskService;
+    //private $workflowService;
     
-    public function __construct(TaskService $taskService)
-    {
-        $this->taskService = $taskService;
-    }
+    //public function __construct(WorkflowService $workflowService)
+    //{
+    //    $this->workflowService = $workflowService;
+    //}
     
     /**
      * Display a listing of the resource.
@@ -50,8 +51,9 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, WorkflowService $workflowService)
     {
+        /*
         $currentUser = User::find($request->user('api')->id);
         if(!$currentUser) {
             return response()->json(['data' => [
@@ -59,6 +61,7 @@ class TaskController extends Controller
                                         'message' => 'Не определен пользователь, создающий эту задачу'
                                     ]]);
         }
+        */
         
         /*
         $validator = $request->validate([
@@ -67,10 +70,10 @@ class TaskController extends Controller
         ]);
         */
         
-        $createdTask = $this->taskService->createFirstTask($request, $currentUser);
+        $createdTask = $workflowService->createFirstTask();
         
         return response()->json(['data' => [
-                                        'error' => $createdTask->getError(),
+                                        'error' => $createdTask->hasError(),
                                         'task' => $createdTask->getTask(),
                                         'message' => $createdTask->getMessage()
                                     ]]);
@@ -130,8 +133,9 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update(Request $request, Task $task, WorkflowService $workflowService)
     {
+        /*
         $currentUser = $request->user('api');
         if(!$currentUser) {
             return response()->json(['data' => [
@@ -139,6 +143,7 @@ class TaskController extends Controller
                                         'message' => 'Не определен пользователь, работающий над этим процессом'
                                     ]]);
         }
+        */
         $currentProcess = Process::find($request['currentProcessId']);
         if(!$currentProcess) {
             return response()->json(['data' => [
@@ -147,14 +152,12 @@ class TaskController extends Controller
                                     ]]);
         }
        
-        $updatedTask = $this->taskService->createNextTask(
-                                                        $request,
-                                                        $task, 
-                                                        $currentUser, 
+        $updatedTask = $workflowService->createNextTask(
+                                                        $task,
                                                         $currentProcess
                                                         );
         return response()->json(['data' => [
-                                        'error' => $updatedTask->getError(),
+                                        'error' => $updatedTask->hasError(),
                                         'task' => $updatedTask->getTask(),
                                         'message' => $updatedTask->getMessage()
                                     ]]);

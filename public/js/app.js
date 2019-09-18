@@ -2639,7 +2639,7 @@ __webpack_require__.r(__webpack_exports__);
           swal("Ошибка", _this.customerResponse.message, "error");
 
           _this.$router.push({
-            name: 'tasks'
+            name: 'search-customer'
           });
         } //if(response.data.data.id) {
         //  swal("Заказ", 'Новый клиент "' + this.customer.surname + ' ' + this.customer.name + '" успешно создан', "success");
@@ -5674,10 +5674,11 @@ __webpack_require__.r(__webpack_exports__);
 
       if (!this.isEmptyObject(this.foundCustomer)) {
         this.foundCustomer = {};
-        this.$router.push({
-          name: 'search-customer'
-        });
       }
+
+      this.$router.push({
+        name: 'search-customer'
+      });
     }
   },
   computed: {

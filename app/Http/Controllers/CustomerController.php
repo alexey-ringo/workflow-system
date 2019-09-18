@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
+use App\Services\WorkflowService;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Customer\CustomerRelationResource;
@@ -31,8 +32,9 @@ class CustomerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, CustomerService $customerService)
+    public function store(Request $request, WorkflowService $workflowService)
     {
+        /*
         $currentUser = User::find($request->user('api')->id);
         if(!$currentUser) {
             return response()->json(['data' => [
@@ -40,6 +42,7 @@ class CustomerController extends Controller
                                         'message' => 'Не определен пользователь, создающий нового клиента'
                                     ]]);
         }
+        */
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:processes',
@@ -49,10 +52,10 @@ class CustomerController extends Controller
         ]);
         */
         /** @var App\Services\CustomerResponse $createdCustomer */
-        $createdCustomer = $customerService->createNewCustomer($request, $currentUser);
+        $createdCustomer = $workflowService->createNewCustomer();
         
         return response()->json(['data' => [
-                                        'error' => $createdCustomer->getError(),
+                                        'error' => $createdCustomer->hasError(),
                                         'customer' => $createdCustomer->getCustomer(),
                                         'message' => $createdCustomer->getMessage()
                                     ]]);
@@ -100,15 +103,15 @@ class CustomerController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $customer->surname = $request->get('surname');
-        $customer->name = $request->get('name');
-        $customer->second_name = $request->get('second_name');
-        $customer->city = $request->get('city');
-        $customer->region = $request->get('region');
-        $customer->street = $request->get('street');
-        $customer->building = $request->get('building');
-        $customer->flat = $request->get('flat');
-        $customer->description = $request->get('description');
+        $customer->surname = $request->input('surname');
+        $customer->name = $request->input('name');
+        $customer->second_name = $request->input('second_name');
+        $customer->city = $request->input('city');
+        $customer->region = $request->input('region');
+        $customer->street = $request->input('street');
+        $customer->building = $request->input('building');
+        $customer->flat = $request->input('flat');
+        $customer->description = $request->input('description');
         $customer->save();
         
         //$process->update($request->all());

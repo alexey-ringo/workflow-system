@@ -43,10 +43,10 @@ class RouteController extends Controller
         ]);
         */
         $route = Route::create([
-            'name' => $request->get('name'),
-            'value' => $request->get('value'),
-            'description' => $request->get('description'),
-            'in_use' => $request->get('in_use'),
+            'name' => $request->input('name'),
+            'value' => $request->input('value'),
+            'description' => $request->input('description'),
+            'in_use' => $request->input('in_use'),
         ]);
         
         if($route) {
@@ -87,10 +87,10 @@ class RouteController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $route->name = $request->get('name');
-        $route->value = $request->get('value');
-        $route->description = $request->get('description');
-        $route->in_use = $request->get('in_use');
+        $route->name = $request->input('name');
+        $route->value = $request->input('value');
+        $route->description = $request->input('description');
+        $route->in_use = $request->input('in_use');
         $route->save();
         
         //$process->update($request->all());

@@ -22,48 +22,72 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class TaskService
 {
-    public function createFirstTask(Request $request, User $user): TaskResponse
+    private $user;
+    
+    private $request;
+    
+    private $task;
+    
+    private $closedTask;
+    
+    private $error = false;
+    
+    private $message;
+    
+    
+    public function __construct(Request $request)
     {
+        $this->request = $request;
+        $this->user = User::find($this->request->user('api')->id);
+    }
+    
+    public function createFirstTask(): TaskResponse
+    {
+        if(!$this->user) {
+            $this->error = true;
+            $this->message = 'Не найден текущий пользователь!';
+            return new TaskResponse($this->message);
+        }
         //После валидации будет излишним
-        //if($request->get('route') != 1) {
+        //if($this->request->input('route') != 1) {
         //    return null;
         //}
         //Првоерка на единичность задач по контракту с роутом = 1
         
-        $route = Route::where('value', $request->route)->first();
+        $route = Route::where('value', $this->request->route)->first();
         if(!$route) {
-            $message = 'Маршрут обработки задач не найден!';
-            return new TaskResponse($message);
+            $this->message = 'Маршрут обработки задач не найден!';
+            return new TaskResponse($this->message);
         }
         
         $firstProcessSequence = 1;
         $process = Process::getProcess($route, $firstProcessSequence);
         if(!$process) {
-            $message = 'Стартовый процесс в выбранном маршруте обработки задач не найден!';
-            return new TaskResponse($message);
+            $this->message = 'Стартовый процесс в выбранном маршруте обработки задач не найден!';
+            return new TaskResponse($this->message);
         }
         
         try {
-            $task = Task::create([
+            $this->task = Task::create([
                 'task' => $this->createTaskNum(),
-                'task_sequence' => $this->createTaskSeq(0),
+                'task_sequence' => $this->createTaskSeq(),
                 'route' => $route->value,
                 'process_sequence' => $firstProcessSequence,
                 'title' => $route->name,
-                'description' => $request->description,
+                'description' => $this->request->description,
                 'status' => 1,
                 'process_id' => $process->id,
-                'contract_id' => $request->contract_id,
-                'creating_user_id' => $user->id,
+                'contract_id' => $this->request->contract_id,
+                'creating_user_id' => $this->user->id,
                 'process_name' => $process->name,
                 'process_slug' => $process->slug,
-                'creating_user_name' => $user->name,
-                'creating_user_email' => $user->email,
+                'creating_user_name' => $this->user->name,
+                'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$task) {
-                $message = 'Ошибка БД при создании новой задачи!';
-                return new TaskResponse($message);
+            if(!$this->task) {
+                $this->message = 'Ошибка БД при создании новой задачи!';
+                return new TaskResponse($this->message);
             }
         }
         catch(Exception $exception) {
@@ -77,192 +101,130 @@ class TaskService
             else {
 	            report($exception);
             }
-	        $message = 'Ошибка БД при создании новой задачи (исключение)!';
-            return new TaskResponse($message);
+	        $this->message = 'Ошибка БД при создании новой задачи (исключение)!';
+            return new TaskResponse($this->message);
 	    }
         
-        
-        try {
-            $closedTask = $this->closeTask($task, $user);
-            if(!$closedTask) {
-                $message = 'Ошибка БД при автосохранении первоначального процесса по задаче № ' . $task->task;
-                return new TaskResponse($message);
-            }
+        $this->closeTask();
+        if(!$this->error) {
+            return new TaskResponse($this->message);
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            report($exception);
-            }
-            else {
-	            report($exception);
-            }
-	        $message = 'Ошибка БД (исключение) при автосохранении первоначального процесса по задаче № ' . $task->task;
-            return new TaskResponse($message);
-	    }
         
-        $nextProcess = $closedTask->process->getNextProcess($route->id); //настройка работы исключений - убрать id!!!
+        $nextProcess = $this->closedTask->process->getNextProcess($route->id); //настройка работы исключений - убрать id!!!
         if(!$nextProcess) {
-            $task->delete();
-            $message = 'Не найден следующий процесс обработки данной задачи!';
-            return new TaskResponse($message);
+            $this->closedTask->delete();
+            $this->message = 'Не найден следующий процесс обработки данной задачи!';
+            return new TaskResponse($this->message);
         }
         
         try {
-            $nextTask = Task::create([
-                'task' => $closedTask->task,
-                'task_sequence' => $this->createTaskSeq($closedTask->task_sequence),
-                'route' => $closedTask->route,
+            $this->task = Task::create([
+                'task' => $this->closedTask->task,
+                'task_sequence' => $this->createTaskSeq(),
+                'route' => $this->closedTask->route,
                 'process_sequence' => $nextProcess->sequence,
-                'title' => $closedTask->title,
-                'description' => $request->description,
+                'title' => $this->closedTask->title,
+                'description' => $this->request->description,
                 'status' => 1,
                 'process_id' => $nextProcess->id,
-                'contract_id' => $closedTask->contract_id,
-                'creating_user_id' => $user->id,
+                'contract_id' => $this->closedTask->contract_id,
+                'creating_user_id' => $this->user->id,
                 'process_name' => $nextProcess->name,
                 'process_slug' => $nextProcess->slug,
-                'creating_user_name' => $user->name,
-                'creating_user_email' => $user->email,
+                'creating_user_name' => $this->user->name,
+                'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$nextTask) {
-                $message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $task->task;
-                return new TaskResponse($message);
+            if(!$this->task) {
+                $this->message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $this->closedTask->task;
+                return new TaskResponse($this->message);
             }
         }
         catch(Exception $exception) {
 	        if ($exception instanceof ErrorException) {
                 $e = new WorkflowException;
-                $task->delete();
+                $this->closedTask->delete();
                 $e->report($exception);
             }
             elseif($exception instanceof FatalThrowableError) {
-                $task->delete();
-	            report($exception);
-            }
-            else {
-	            report($exception);
-            }
-	        $message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $task->task;
-            return new TaskResponse($message);
-	    }
-	    
-	    
-	    try {
-	        Event::dispatch(new onCreateEvent($nextTask));
-	    }
-	    catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
                 $e = new WorkflowException;
+                $this->closedTask->delete();
                 $e->report($exception);
             }
             else {
-	            report($exception);
+	            $e = new WorkflowException;
+                $this->closedTask->delete();
+                $e->report($exception);
             }
-	        $message = 'Ошибка при генерации события создания новой задачи!';
-            return new TaskResponse($message);
+	        $this->message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $this->closedTask->task;
+            return new TaskResponse($this->message);
 	    }
 	    
-        $message = 'Новая задача № ' . $nextTask->task . ' успешно создана и передана в следующий процесс обработки "' . $nextTask->process_name . '"';
-        return new TaskResponse($message, $nextTask);
+	    Event::dispatch(new onCreateEvent($this->task));
+	    
+        $this->message = 'Новая задача № ' . $this->task->task . ' успешно создана и передана в следующий процесс обработки "' . $this->task->process_name . '"';
+        return new TaskResponse($this->message, $this->task);
     }
     
     
     
     
     public function createNextTask(
-                                    Request $request,
-                                    Task $task, 
-                                    User $user, 
-                                    Process $process
+                                   Task $task,
+                                   Process $process
                                 ): TaskResponse
     {
-        
-        //Закрытие предидущего последнего sequence
-        try {
-            $closedTask = $this->closeTask($task, $user);
-            if(!$closedTask) {
-                $message = 'Ошибка БД при сохранении и закрытии текущего процесса "' . $task->process_name . '" по задаче № ' . $task->task;
-                return new TaskResponse($message);
-            }
+        if(!$this->user) {
+            $this->error = true;
+            $this->message = 'Не найден текущий пользователь!';
+            return new TaskResponse($this->message);
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            report($exception);
-            }
-            else {
-	            report($exception);
-            }
-	        $message = 'Ошибка БД (исключение) при сохранении и закрытии текущего процесса "' . $task->process_name . '" по задаче № ' . $task->task;
-            return new TaskResponse($message);
-	    }
+        $this->task = $task;
         
-        
-        if($request->get('destination') == 3) {
-            try {
-                $closedTask = $this->closeTask($task, $user);
-                if(!$closedTask) {
-                    $message = 'Ошибка БД при закрытии задачи № '. $task->task . ' в процессе "' . $task->process_name . '"';
-                    return new TaskResponse($message);
-                }
-                $message = 'Задача № ' . $closedTask->task . ' успешно завершена и закрыта';
-                return new TaskResponse($message, $closedTask);
-            }
-            catch(Exception $exception) {
-	            if ($exception instanceof ErrorException) {
-                    $e = new WorkflowException;
-                    $e->report($exception);
-                }
-                elseif($exception instanceof FatalThrowableError) {
-	                report($exception);
-                }
-                else {
-	                report($exception);
-                }
-	            $message = 'Ошибка БД (исключение) при закрытии задачи № '. $task->task . ' в процессе "' . $task->process_name . '"';
-                return new TaskResponse($message);
-	        }
+        //Закрытие предидущего или последнего sequence
+        $this->closeTask();
+        if($this->error) {
+            $this->task->delete();
+            return new TaskResponse($this->message);
         }
         
+        if($this->request->input('destination') == 3) {
+            $this->message = 'Задача № ' . $this->closedTask->task . ' успешно завершена и закрыта';
+            return new TaskResponse($this->message, $this->closedTask);
+        }
+        
+        
         try {
-            $nextTask = Task::create([
-                'task' => $closedTask->task,
-                'task_sequence' => $this->createTaskSeq($closedTask->task_sequence),
-                'route' => $closedTask->route,
+            $this->task = Task::create([
+                'task' => $this->closedTask->task,
+                'task_sequence' => $this->createTaskSeq(),
+                'route' => $this->closedTask->route,
                 'process_sequence' => $process->sequence,
-                'title' => $closedTask->title,
-                'description' => $closedTask->description,
+                'title' => $this->closedTask->title,
+                'description' => $this->closedTask->description,
                 'status' => 1,
                 'process_id' => $process->id,
-                'contract_id' =>$closedTask->contract_id,
-                'creating_user_id' => $user->id,
+                'contract_id' =>$this->closedTask->contract_id,
+                'creating_user_id' => $this->user->id,
                 'process_name' => $process->name,
                 'process_slug' => $process->slug,
-                'creating_user_name' => $user->name,
-                'creating_user_email' => $user->email,
+                'creating_user_name' => $this->user->name,
+                'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$nextTask) {
-                switch ($request->get('destination')) {
+            if(!$this->task) {
+                switch ($this->request->input('destination')) {
                     case 1:
-                        $message = 'Ошибка БД при создании следующего процесса "' . $process->name . '" для задачи № ' . $task->task;
-                        return new TaskResponse($message);
+                        $this->message = 'Ошибка БД при создании следующего процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        return new TaskResponse($this->message);
                         break;
                     case 2:
-                        $message = 'Ошибка БД при возврате в предидущий процесс "' . $process->name . '" для задачи № ' . $task->task;
-                        return new TaskResponse($message);
+                        $this->message = 'Ошибка БД при возврате в предидущий процесс "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        return new TaskResponse($this->message);
                         break;
                     default:
-                        $message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $task->task;
-                        return new TaskResponse($message);
+                        $this->message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        return new TaskResponse($this->message);
                 }
             }
         }
@@ -272,76 +234,84 @@ class TaskService
                 $e->report($exception);
             }
             elseif($exception instanceof FatalThrowableError) {
-	            report($exception);
+	            $e = new WorkflowException;
+                $e->report($exception);
             }
             else {
-	            report($exception);
+	            $e = new WorkflowException;
+                $e->report($exception);
             }
-	        $message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $task->task;
-            return new TaskResponse($message);
+	        $this->message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+            return new TaskResponse($this->message);
 	    }
         
+        Event::dispatch(new onUpdateEvent($this->closedTask, $this->task));
+        
+        switch ($this->request->input('destination')) {
+            case 1:
+                $this->message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача передана в следующий процесс обработки "' . $process->name . '"';
+                return new TaskResponse($this->message, $this->task);
+                break;
+            case 2:
+                $this->message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' . $process->name . '"';
+                return new TaskResponse($this->message, $this->task);
+                break;
+            default:
+                $this->message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача передана в процесс обработки "' . $process->name . '"';
+                return new TaskResponse($this->message, $this->task);
+        }
+    }
+    
+    
+    private function closeTask() 
+    {
         try {
-            Event::dispatch(new onUpdateEvent($task, $nextTask));
+            $this->closedTask = $this->task;
+            //Закрытие предидущего или последнего sequence
+            $this->closedTask->status = 0;
+            $this->closedTask->closing_user_id = $this->user->id;
+            $this->closedTask->closing_user_name = $this->user->name;
+            $this->closedTask->closing_user_email = $this->user->email;
+            if(!$this->closedTask->save()) {
+                $this->error = true;
+                $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name . '" по задаче № '. $this->task->task;
+            }
+            $this->message = 'Процесс "' . $this->task->process_name . ' по задаче '. $this->task->task .'" успешно закрыт';
         }
         catch(Exception $exception) {
 	        if ($exception instanceof ErrorException) {
                 $e = new WorkflowException;
                 $e->report($exception);
             }
-            else {
-	            report($exception);
+            elseif($exception instanceof FatalThrowableError) {
+	            $e = new WorkflowException;
+                $e->report($exception);
             }
-	        $message = 'Ошибка при генерации события обработки задачи № ' . $task->task . ' в процессе "' . $process->name . '"';
-            return new TaskResponse($message);
+            else {
+	            $e = new WorkflowException;
+                $e->report($exception);
+            }
+            $this->error = true;
+	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name . '" по задаче № '. $this->task->task . ' (Исключение)';
 	    }
-        switch ($request->get('destination')) {
-            case 1:
-                $message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $nextTask->task . ' успешно выполнен и задача передана в следующий процесс обработки "' . $process->name . '"';
-                return new TaskResponse($message, $nextTask);
-                break;
-            case 2:
-                $message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $nextTask->task . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' . $process->name . '"';
-                return new TaskResponse($message, $nextTask);
-                break;
-            default:
-                $message = 'Процесс "' . $closedTask->process_name . '" по задаче № ' . $nextTask->task . ' успешно выполнен и задача передана в процесс обработки "' . $process->name . '"';
-                return new TaskResponse($message, $nextTask);
-        }
     }
     
     
-    public function closeTask(Task $task, User $user): ?Task 
-    {
-        //Закрытие предидущего последнего sequence
-        $task->status = 0;
-        $task->closing_user_id = $user->id;
-        $task->closing_user_name = $user->name;
-        $task->closing_user_email = $user->email;
-        if($task->save()) {
-            return $task;
-        }
-        else {
-            return null;
-        }
-    }
-    
-    
-    public function createTaskNum(): int 
+    private function createTaskNum(): int 
     {
         $lastTask = Task::all()->max('task');
         return $lastTask + 1;
     }
     
     
-    public function createTaskSeq(int $nextTaskSeq): int 
+    private function createTaskSeq(): int 
     {
         //Нужна проверка на существования соответствующего процесса
-        return $nextTaskSeq + 1;
+        return $this->closedTask ? $this->closedTask->task_sequence + 1 : 1;
     }
     
     
-    public function createComment(Request $request, Task $task, User $user): TaskResponse
+    public function createComment(Task $task): TaskResponse
     {
         try {
             $comment = Comment::create([
@@ -350,17 +320,17 @@ class TaskService
                 'task_id' => $task->id,
                 'comment_seq' => $this->createCommentSeq($task),
                 'common_comment_seq' => $this->createCommonCommentSeq($task),
-                'comment' => $request->get('comment'),
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_email' => $user->email
+                'comment' => $this->request->input('comment'),
+                'user_id' => $this->user->id,
+                'user_name' => $this->user->name,
+                'user_email' => $this->user->email
             ]);
             if(!$comment) {
-                $message = 'Ошибка при добавлении комментария по задаче № ' . $task->task;
-                return new TaskResponse($message);    
+                $this->message = 'Ошибка при добавлении комментария по задаче № ' . $task->task;
+                return new TaskResponse($this->message);    
             }
-            $message = 'Комментарий по задаче № ' . $task->task . ' был успешно добавлен';
-            return new TaskResponse($message, $task);
+            $this->message = 'Комментарий по задаче № ' . $task->task . ' был успешно добавлен';
+            return new TaskResponse($this->message, $task);
         }
         catch(Exception $exception) {
 	        if ($exception instanceof ErrorException) {
@@ -373,8 +343,8 @@ class TaskService
             else {
 	            report($exception);
             }
-	        $message = 'Ошибка (исключение) при добавлении комментария по задаче № ' . $task->task;
-            return new TaskResponse($message);
+	        $this->message = 'Ошибка (исключение) при добавлении комментария по задаче № ' . $task->task;
+            return new TaskResponse($this->message);
 	    }
     }
     

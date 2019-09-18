@@ -132,7 +132,7 @@
           }
           else {
             swal("Ошибка", this.customerResponse.message, "error");
-            this.$router.push({name: 'tasks'});
+            this.$router.push({name: 'search-customer'});
           }
           
           

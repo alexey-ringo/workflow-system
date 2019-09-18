@@ -43,8 +43,8 @@ class PermissionController extends Controller
         ]);
         
         $permission = Permission::create([
-            'slug' => $request->get('slug'),
-            'name' => $request->get('name'),
+            'slug' => $request->input('slug'),
+            'name' => $request->input('name'),
         ]);
         
         return new PermissionResource($permission);
@@ -87,7 +87,7 @@ class PermissionController extends Controller
             'name' => 'required|string|max:255',
         ]);
         
-        $permission->name = $request->get('name');
+        $permission->name = $request->input('name');
         $permission->save();
         
         return new PermissionResource($permission);

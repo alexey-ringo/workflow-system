@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Comment;
 use App\Models\Task;
 use App\Services\TaskService;
+use App\Services\WorkflowService;
 use App\Http\Resources\Task\CommentCollection;
 use App\Http\Resources\Task\CommentResource;
 
@@ -18,7 +19,7 @@ class CommentController extends Controller
      */
     public function index(Request $request)
     {
-        $task = Task::find((int) $request->get('task'));
+        $task = Task::find((int) $request->input('task'));
        
         return new CommentCollection(Comment::getAllCommentsForTask($task));
     }
@@ -31,7 +32,7 @@ class CommentController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, TaskService $taskService)
+    public function store(Request $request, WorkflowService $workflowService)
     {
         $currentUser = $request->user('api');
         if(!$currentUser) {
@@ -49,13 +50,11 @@ class CommentController extends Controller
             'name' => 'required|string|max:255|unique:groups',
         ]);
         */
-        $createdComment = $taskService->createComment(
-                                                    $request,
-                                                    $currentTask,
-                                                    $currentUser
+        $createdComment = $workflowService->createComment(
+                                                    $currentTask
                                                     );
         return response()->json(['data' => [
-                                        'error' => $createdComment->getError(),
+                                        'error' => $createdComment->hasError(),
                                         'task' => $createdComment->getTask(),
                                         'message' => $createdComment->getMessage()
                                     ]]);

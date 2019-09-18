@@ -48,8 +48,8 @@ class RoleController extends Controller
         ]);
         
         $role = Role::create([
-            'slug' => $request->get('slug'),
-            'name' => $request->get('name')
+            'slug' => $request->input('slug'),
+            'name' => $request->input('name')
         ]);
         
         //Проверка на наличие полученного от формы значения поля с name="permissions"
@@ -99,7 +99,7 @@ class RoleController extends Controller
             'name' => 'required|string|max:255',
         ]);
         
-        $role->name = $request->get('name');
+        $role->name = $request->input('name');
         $role->save();
         
         //Если список разрешений операций пуст - отсоединяем

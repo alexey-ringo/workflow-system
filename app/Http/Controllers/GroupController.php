@@ -48,8 +48,8 @@ class GroupController extends Controller
         ]);
         
         $group = Group::create([
-            'slug' => $request->get('slug'),
-            'name' => $request->get('name')
+            'slug' => $request->input('slug'),
+            'name' => $request->input('name')
         ]);
         
         //Проверка на наличие полученного от формы значения поля с name="processes"
@@ -98,7 +98,7 @@ class GroupController extends Controller
             'name' => 'required|string|max:255',
         ]);
         
-        $group->name = $request->get('name');
+        $group->name = $request->input('name');
         $group->save();
         
         //Если список разрешений операций пуст - отсоединяем

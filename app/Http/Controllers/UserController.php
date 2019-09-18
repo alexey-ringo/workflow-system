@@ -114,11 +114,11 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6|confirmed',
         ]);
         
-        $user->name = $request->get('name');
-        $user->phone = $request->get('phone');
-        $user->email = $request->get('email');
+        $user->name = $request->input('name');
+        $user->phone = $request->input('phone');
+        $user->email = $request->input('email');
         //Если поле == null - в модель пароль не передавать, иначе - зашифровать перед передачей в модель
-        $request->get('password') == null ?: $user->password = bcrypt($request['password']);
+        $request->input('password') == null ?: $user->password = bcrypt($request['password']);
         $user->save();
         
         //Если список ролей пуст - отсоединяем

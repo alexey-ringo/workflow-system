@@ -39,8 +39,8 @@ class PhoneController extends Controller
         */
         
         $phone = Phone::create([
-            'customer_id' => $request->get('customer_id'),
-            'phone' => $request->get('phone'),
+            'customer_id' => $request->input('customer_id'),
+            'phone' => $request->input('phone'),
         ]);
         //Illuminate\Database\QueryException
         
@@ -85,7 +85,7 @@ class PhoneController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $phone->phone = $request->get('phone');
+        $phone->phone = $request->input('phone');
         $customer->save();
         
         if($phone) {

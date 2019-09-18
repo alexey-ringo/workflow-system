@@ -164,8 +164,8 @@
         this.keywordsPhone = '';
         if(!this.isEmptyObject(this.foundCustomer)) {
           this.foundCustomer = {};
-            this.$router.push({name: 'search-customer'});
         }
+        this.$router.push({name: 'search-customer'});
       },
     },
     computed: {

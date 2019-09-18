@@ -38,12 +38,12 @@ class ProcessController extends Controller
         */
         
         $process = Process::create([
-            'route_id' => $request->get('route_id'),
-            'name' => $request->get('name'),
-            'slug' => $request->get('slug'),
-            'sequence' => $request->get('sequence'),
-            'is_super' => $request->get('is_super'),
-            'is_final' => $request->get('is_final'),
+            'route_id' => $request->input('route_id'),
+            'name' => $request->input('name'),
+            'slug' => $request->input('slug'),
+            'sequence' => $request->input('sequence'),
+            'is_super' => $request->input('is_super'),
+            'is_final' => $request->input('is_final'),
         ]);
         
         return new ProcessResource($process);   
@@ -79,11 +79,11 @@ class ProcessController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $process->name = $request->get('route_id');
-        $process->name = $request->get('name');
-        $process->sequence = $request->get('sequence');
-        $process->is_super = $request->get('is_super');
-        $process->is_final = $request->get('is_final');
+        $process->name = $request->input('route_id');
+        $process->name = $request->input('name');
+        $process->sequence = $request->input('sequence');
+        $process->is_super = $request->input('is_super');
+        $process->is_final = $request->input('is_final');
         $process->save();
         
         //$process->update($request->all());

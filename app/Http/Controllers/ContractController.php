@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Services\CustomerService;
+use App\Services\WorkflowService;
 use App\Http\Resources\Contract\ContractCollection;
 use App\Http\Resources\Contract\ContractResource;
 use App\Http\Resources\Contract\ContractRelationResource;
@@ -32,8 +33,9 @@ class ContractController extends Controller
      * @return \Illuminate\Http\Response
      */
     //В $request передаем данные о customer
-    public function store(Request $request, CustomerService $customerService)
+    public function store(Request $request, WorkflowService $workflowService)
     {
+        /*
         $currentUser = User::find($request->user('api')->id);
         if(!$currentUser) {
             return response()->json(['data' => [
@@ -41,6 +43,7 @@ class ContractController extends Controller
                                         'message' => 'Не определен пользователь, создающий новый контракт'
                                     ]]);
         }
+        */
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255|unique:processes',
@@ -50,11 +53,11 @@ class ContractController extends Controller
         ]);
         */
         
-        $customer = Customer::find($request->get('id'));
+        $customer = Customer::find($request->input('id'));
         if($customer) {
-            $newContract = $customerService->createNewContract($request, $customer, $currentUser);
+            $newContract = $workflowService->createNewContract($customer);
             return response()->json(['data' => [
-                                        'error' => $newContract->getError(),
+                                        'error' => $newContract->hasError(),
                                         'contract' => $newContract->getContract(),
                                         'message' => $newContract->getMessage()
                                     ]]);
