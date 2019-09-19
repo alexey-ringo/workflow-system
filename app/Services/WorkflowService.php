@@ -11,7 +11,6 @@ use App\Models\Process;
 use App\Models\Route;
 use App\Models\Comment;
 
-use App\Services\TaskService;
 use App\Services\CustomerResponse;
 use App\Services\ContractResponse;
 use App\Services\TaskResponse;
@@ -37,6 +36,8 @@ class WorkflowService
     
     private $request;
     
+    private $customer;
+    
     private $contract;
     
     private $task;
@@ -54,16 +55,21 @@ class WorkflowService
         $this->taskService = $taskService;
     }
     
+    /**
+     * Create new Customer.
+     * 
+     * @return \App\Services\CustomerResponse
+     */
     public function createNewCustomer(): CustomerResponse
     {
-        if(!$this->user) {
+        if(empty($this->user)) {
             $this->error = true;
-            $this->message = 'Не найден текущий пользователь!';
+            $this->message = 'Невозможно создание нового клиента - Не найден текущий пользователь!';
             return new CustomerResponse($this->message);
         }
         
         try {
-            $customer = Customer::create([
+            $this->customer = Customer::create([
                 'surname' => $this->request->input('surname'),
                 'name' => $this->request->input('name'),
                 'second_name' => $this->request->input('second_name'),
@@ -75,7 +81,8 @@ class WorkflowService
                 'email' => $this->request->input('email'),
                 'description' => $this->request->input('description'),
             ]);
-            if(!$customer) {
+            if(empty($this->customer)) {
+                $this->error = true;
                 $this->message = 'Ошибка при создании нового клиента';
                 return new CustomerResponse($this->message);
             }
@@ -100,13 +107,14 @@ class WorkflowService
         
         try {
             $phone = Phone::create([
-                'customer_id' => $customer->id,
+                'customer_id' => $this->customer->id,
                 'phone' => $this->request->input('phone'),
             ]);
-            if(!$phone) {
+            if(empty($phone)) {
                 $this->error = true;
-                $this->message = 'Ошибка при добавлении телефонов для клиента ' . $customer->name . ' ' . $customer->surname;
-                $customer->delete();
+                $this->message = 'Ошибка при добавлении телефонов для клиента ' 
+                                . $this->customer->name . ' ' . $this->customer->surname;
+                $this->customer->delete();
                 return new CustomerResponse($this->message);
             }
         }
@@ -124,48 +132,64 @@ class WorkflowService
                 $e->report($exception);
             }
             $this->error = true;
-	        $this->message = 'Ошибка при добавлении телефонов для клиента ' . $customer->name . ' ' . $customer->surname . ' (исключение)!';
-	        $customer->delete();
+	        $this->message = 'Ошибка при добавлении телефонов для клиента ' 
+	                        . $this->customer->name . ' ' . $this->customer->surname . 
+	                        ' (исключение)!';
+	        $this->customer->delete();
             return new CustomerResponse($this->message);
 	    }
         
-        Event::dispatch(new onCustomerCreateEvent($customer));
+        Event::dispatch(new onCustomerCreateEvent($this->customer));
         
         $this->request->request->add(['task_route' => 1]);
         $this->request->request->add(['task_description' => 'Первоначальная задача при создании нового клиента']);
       
-        /** @var App\Services\ContractResponse $contractResponse */
-        $contractResponse = $this->createNewContract($customer);
-        if($contractResponse->hasError()) {
-            $this->error = true;
-            $this->message = 'Ошибка при автоматическом создании контракта для клиента ' . $customer->name . ' ' . $customer->surname . '  ' . $contractResponse->getMessage();
-            $customer->delete();
+        $this->createNewContract($this->customer);
+        if($this->error) {
+            $this->message = 'Ошибка при автоматическом создании контракта для клиента ' 
+                            . $this->customer->name . ' ' . $this->customer->surname . 
+                            '  ' . $this->error;
+            $this->customer->delete();
             return new CustomerResponse($this->message);
         }
-        
-        $this->message = 'Новый клиент ' . $customer->name . ' ' . $customer->surname . ' успешно создан и ему автоматически добавлен новый контракт № ' . /*$contractResponse->getContractNum()*/$this->contract->contract_num;
-        return new CustomerResponse($this->message, $customer);
+        $this->message = 'Новый клиент ' . $this->customer->name . ' ' . $this->customer->surname . ' успешно создан и ему автоматически добавлен новый контракт № ' . $this->contract->contract_num;
+        return new CustomerResponse($this->message, $this->customer);
     }
     
     
-    
+    /**
+     * Create new Contract for Customer.
+     * 
+     * @param  \App\Models\Customer $customer
+     * @return \App\Services\ContractResponse
+     */
     public function createNewContract(Customer $customer): ContractResponse
     {
-        $contractNum = $this->createContractNum();
-        if(!$contractNum) {
+        if(empty($this->user)) {
             $this->error = true;
-            $this->message = 'Ошибка выделения номера для нового контракта для клиента ' . $customer->name . ' ' . $customer->surname;
+            $this->message = 'Невозможно создание нового контракта - Не найден текущий пользователь системы!';
+            return new ContractResponse($this->message);
+        }
+        if(empty($this->customer)) {
+            $this->customer = $customer;
+        }
+        $contractNum = $this->createContractNum();
+        if(empty($contractNum)) {
+            $this->error = true;
+            $this->message = 'Ошибка выделения номера для нового контракта для клиента ' 
+                            . $this->customer->name . ' ' . $this->customer->surname;
             return new ContractResponse($this->message);
         }
         
         try {
             $this->contract = Contract::create([
                 'contract_num' => $contractNum,
-                'customer_id' => $customer->id,
+                'customer_id' => $this->customer->id,
             ]);
-            if(!$this->contract) {
+            if(empty($this->contract)) {
                 $this->error - true;
-                $this->message = 'Ошибка при создании нового контракта для клиента ' . $customer->name . ' ' . $customer->surname;
+                $this->message = 'Ошибка при создании нового контракта для клиента ' 
+                                . $this->customer->name . ' ' . $this->customer->surname;
                 return new ContractResponse($this->message);
             }
         }
@@ -182,7 +206,9 @@ class WorkflowService
 	            $e = new WorkflowException;
                 $e->report($exception);
             }
-	        $this->message = 'Ошибка при создании нового контракта для клиента ' . $customer->name . ' ' . $customer->surname . ' (исключение)';
+	        $this->message = 'Ошибка при создании нового контракта для клиента ' 
+	                        . $this->customer->name . ' ' . $this->customer->surname 
+	                        . ' (исключение)';
             return new ContractResponse($this->message);
 	    }
         
@@ -190,31 +216,37 @@ class WorkflowService
         
         $this->firstTaskAdapter();
         if($this->error) {
-            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта ' . $this->contract->contract_num . 
-                        ' у клиента ' . $customer->name . ' ' . $customer->surname . ' : ' . $taskResponse->getMessage();
+            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта № ' 
+                            . $this->contract->contract_num . ' у клиента ' . $this->customer->name 
+                            . ' ' . $this->customer->surname . ' : ' . $this->message;
             $this->contract->delete();
             return new ContractResponse($this->message);
         }
         
-        /** @var App\Services\TaskResponse $taskResponse */
-        $taskResponse = $this->createFirstTask();
-        if($taskResponse->hasError()) {
-            $this->error = true;
-            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта № ' . $this->contract->contract_num . ' у клиента ' . $customer->name . ' ' . $customer->surname . ' : "' . $taskResponse->getMessage() . ' "';
+        $this->createFirstTask();
+        if($this->error) {
+            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта № ' 
+                            . $this->contract->contract_num . ' у клиента ' 
+                            . $this->customer->name . ' ' . $this->customer->surname . ' : "' 
+                            . $this->message . ' "';
             $this->contract->delete();
             return new CustomerResponse($this->message);
         }
         
-        $this->message = 'Успешно создан новый контракт № ' . $this->contract->contract_num . ' для клиента ' . $customer->name . ' ' . $customer->surname;
+        $this->message = 'Успешно создан новый контракт № ' . $this->contract->contract_num . ' для клиента ' . $this->customer->name . ' ' . $this->customer->surname;
         return new ContractResponse($this->message, $this->contract);
     }
     
-    
+    /**
+     * Create first Task.
+     * 
+     * @return \App\Services\TaskResponse
+     */
     public function createFirstTask(): TaskResponse
     {
-        if(!$this->user) {
+        if(empty($this->user)) {
             $this->error = true;
-            $this->message = 'Не найден текущий пользователь!';
+            $this->message = 'Невозможно создание новой задачи - Не найден текущий пользователь системы!';
             return new TaskResponse($this->message);
         }
         //После валидации будет излишним
@@ -224,14 +256,14 @@ class WorkflowService
         //Првоерка на единичность задач по контракту с роутом = 1
         
         $route = Route::where('value', $this->request->route)->first();
-        if(!$route) {
-            $this->message = 'Маршрут обработки задач не найден!';
+        if(empty($route)) {
+            $this->message = 'Маршрут обработки для новой задачи не найден!';
             return new TaskResponse($this->message);
         }
         
         $firstProcessSequence = 1;
         $process = Process::getProcess($route, $firstProcessSequence);
-        if(!$process) {
+        if(empty($process)) {
             $this->message = 'Стартовый процесс в выбранном маршруте обработки задач не найден!';
             return new TaskResponse($this->message);
         }
@@ -281,8 +313,9 @@ class WorkflowService
             return new TaskResponse($this->message);
         }
         
+        /** @var App\Models\Process $nextProcess */
         $nextProcess = $this->closedTask->process->getNextProcess($route->id); //настройка работы исключений - убрать id!!!
-        if(!$nextProcess) {
+        if(empty($nextProcess)) {
             $this->closedTask->delete();
             $this->message = 'Не найден следующий процесс обработки данной задачи!';
             return new TaskResponse($this->message);
@@ -307,7 +340,9 @@ class WorkflowService
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
             if(!$this->task) {
-                $this->message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $this->closedTask->task;
+                $this->message = 'Ошибка БД при создании следующего процесса "' 
+                                . $nextProcess->name . '" для задачи № ' 
+                                . $this->closedTask->task;
                 return new TaskResponse($this->message);
             }
         }
@@ -327,25 +362,34 @@ class WorkflowService
                 $this->closedTask->delete();
                 $e->report($exception);
             }
-	        $this->message = 'Ошибка БД при создании следующего процесса "' . $nextProcess->name . '" для задачи № ' . $this->closedTask->task;
+	        $this->message = 'Ошибка БД при создании следующего процесса "' 
+	                        . $nextProcess->name . '" для задачи № ' 
+	                        . $this->closedTask->task . ' (Исключение)';
             return new TaskResponse($this->message);
 	    }
 	    
 	    Event::dispatch(new onTaskCreateEvent($this->task));
 	    
-        $this->message = 'Новая задача № ' . $this->task->task . ' успешно создана и передана в следующий процесс обработки "' . $this->task->process_name . '"';
+        $this->message = 'Новая задача № ' . $this->task->task 
+                        . ' успешно создана и передана в следующий процесс обработки "' 
+                        . $this->task->process_name . '"';
         return new TaskResponse($this->message, $this->task);
     }
     
     
+    /**
+     * Create next Task.
+     * 
+     * @return \App\Services\TaskResponse
+     */
     public function createNextTask(
                                    Task $task,
                                    Process $process
                                 ): TaskResponse
     {
-        if(!$this->user) {
+        if(empty($this->user)) {
             $this->error = true;
-            $this->message = 'Не найден текущий пользователь!';
+            $this->message = 'Невозможна работа над задачой - Не найден текущий пользователь системы!';
             return new TaskResponse($this->message);
         }
         $this->task = $task;
@@ -358,7 +402,8 @@ class WorkflowService
         }
         
         if($this->request->input('destination') == 3) {
-            $this->message = 'Задача № ' . $this->closedTask->task . ' успешно завершена и закрыта';
+            $this->message = 'Задача № ' . $this->closedTask->task 
+                            . ' успешно завершена и закрыта';
             return new TaskResponse($this->message, $this->closedTask);
         }
         
@@ -384,15 +429,21 @@ class WorkflowService
             if(!$this->task) {
                 switch ($this->request->input('destination')) {
                     case 1:
-                        $this->message = 'Ошибка БД при создании следующего процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        $this->message = 'Ошибка БД при создании следующего процесса "' 
+                                        . $process->name . '" для задачи № ' 
+                                        . $this->closedTask->task;
                         return new TaskResponse($this->message);
                         break;
                     case 2:
-                        $this->message = 'Ошибка БД при возврате в предидущий процесс "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        $this->message = 'Ошибка БД при возврате в предидущий процесс "' 
+                                        . $process->name . '" для задачи № ' 
+                                        . $this->closedTask->task;
                         return new TaskResponse($this->message);
                         break;
                     default:
-                        $this->message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+                        $this->message = 'Ошибка БД при создании процесса "' 
+                                        . $process->name . '" для задачи № ' 
+                                        . $this->closedTask->task;
                         return new TaskResponse($this->message);
                 }
             }
@@ -410,7 +461,8 @@ class WorkflowService
 	            $e = new WorkflowException;
                 $e->report($exception);
             }
-	        $this->message = 'Ошибка БД при создании процесса "' . $process->name . '" для задачи № ' . $this->closedTask->task;
+	        $this->message = 'Ошибка БД при создании процесса "' . $process->name 
+	                        . '" для задачи № ' . $this->closedTask->task;
             return new TaskResponse($this->message);
 	    }
         
@@ -418,40 +470,57 @@ class WorkflowService
         
         switch ($this->request->input('destination')) {
             case 1:
-                $this->message = 'Процесс "' . $this->closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача передана в следующий процесс обработки "' . $process->name . '"';
+                $this->message = 'Процесс "' . $this->closedTask->process_name 
+                                . '" по задаче № ' . $this->task->task 
+                                . ' успешно выполнен и задача передана в следующий процесс обработки "' 
+                                . $process->name . '"';
                 return new TaskResponse($this->message, $this->task);
                 break;
             case 2:
-                $this->message = 'Процесс "' . $this->closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' . $process->name . '"';
+                $this->message = 'Процесс "' . $this->closedTask->process_name 
+                                . '" по задаче № ' . $this->task->task 
+                                . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' 
+                                . $process->name . '"';
                 return new TaskResponse($this->message, $this->task);
                 break;
             default:
-                $this->message = 'Процесс "' . $this->closedTask->process_name . '" по задаче № ' . $this->task->task . ' успешно выполнен и задача передана в процесс обработки "' . $process->name . '"';
+                $this->message = 'Процесс "' . $this->closedTask->process_name 
+                                . '" по задаче № ' . $this->task->task 
+                                . ' успешно выполнен и задача передана в процесс обработки "' 
+                                . $process->name . '"';
                 return new TaskResponse($this->message, $this->task);
         }
     }
     
     
+    /**
+     * Create Comment.
+     * 
+     * @return \App\Services\TaskResponse
+     */
     public function createComment(Task $task): TaskResponse
     {
+        $this->task = $task;
         try {
             $comment = Comment::create([
-                'task_num' => $task->task,
-                'task_seq_num' => $task->task_sequence,
-                'task_id' => $task->id,
-                'comment_seq' => $this->createCommentSeq($task),
-                'common_comment_seq' => $this->createCommonCommentSeq($task),
+                'task_num' => $this->task->task,
+                'task_seq_num' => $this->task->task_sequence,
+                'task_id' => $this->task->id,
+                'comment_seq' => $this->createCommentSeq(),
+                'common_comment_seq' => $this->createCommonCommentSeq(),
                 'comment' => $this->request->input('comment'),
                 'user_id' => $this->user->id,
                 'user_name' => $this->user->name,
                 'user_email' => $this->user->email
             ]);
             if(!$comment) {
-                $this->message = 'Ошибка при добавлении комментария по задаче № ' . $task->task;
+                $this->message = 'Ошибка при добавлении комментария по задаче № ' 
+                                . $this->task->task;
                 return new TaskResponse($this->message);    
             }
-            $this->message = 'Комментарий по задаче № ' . $task->task . ' был успешно добавлен';
-            return new TaskResponse($this->message, $task);
+            $this->message = 'Комментарий по задаче № ' . $this->task->task 
+                            . ' был успешно добавлен';
+            return new TaskResponse($this->message, $this->task);
         }
         catch(Exception $exception) {
 	        if ($exception instanceof ErrorException) {
@@ -464,7 +533,8 @@ class WorkflowService
             else {
 	            report($exception);
             }
-	        $this->message = 'Ошибка (исключение) при добавлении комментария по задаче № ' . $task->task;
+	        $this->message = 'Ошибка (исключение) при добавлении комментария по задаче № ' 
+	                        . $this->task->task;
             return new TaskResponse($this->message);
 	    }
     }
@@ -532,11 +602,14 @@ class WorkflowService
             $this->closedTask->closing_user_id = $this->user->id;
             $this->closedTask->closing_user_name = $this->user->name;
             $this->closedTask->closing_user_email = $this->user->email;
-            if(!$this->closedTask->save()) {
+            if(empty($this->closedTask->save())) {
                 $this->error = true;
-                $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name . '" по задаче № '. $this->task->task;
+                $this->message = 'Ошибка БД при закрытии процесса "' 
+                                . $this->task->process_name . '" по задаче № '
+                                . $this->task->task;
             }
-            $this->message = 'Процесс "' . $this->task->process_name . ' по задаче '. $this->task->task .'" успешно закрыт';
+            $this->message = 'Процесс "' . $this->task->process_name . ' по задаче ' 
+                            . $this->task->task .'" успешно закрыт';
         }
         catch(Exception $exception) {
 	        if ($exception instanceof ErrorException) {
@@ -552,7 +625,8 @@ class WorkflowService
                 $e->report($exception);
             }
             $this->error = true;
-	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name . '" по задаче № '. $this->task->task . ' (Исключение)';
+	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name 
+	                        . '" по задаче № '. $this->task->task . ' (Исключение)';
 	    }
     }
     
@@ -570,14 +644,14 @@ class WorkflowService
         return $this->closedTask ? $this->closedTask->task_sequence + 1 : 1;
     }
     
-    private function createCommentSeq(Task $task): int 
+    private function createCommentSeq(): int 
     {
-        return $task->comments->count() + 1;
+        return $this->task->comments->count() + 1;
     }
     
     
-    private function createCommonCommentSeq(Task $task): int
+    private function createCommonCommentSeq(): int
     {
-        return Comment::getAllCommentsForTask($task)->count() + 1;
+        return Comment::getAllCommentsForTask($this->task)->count() + 1;
     }
 }
