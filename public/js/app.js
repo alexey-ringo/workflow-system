@@ -5142,22 +5142,34 @@ __webpack_require__.r(__webpack_exports__);
       this.customer.task_route = 1;
       this.customer.task_description = this.task.description;
       this.axios.post(uri, this.customer).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
-        }
+        if (response.data.data) {
+          _this2.contractResponse = response.data.data;
 
-        _this2.contractResponse = response.data.data;
+          if (!_this2.contractResponse.hasOwnProperty('error')) {
+            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+          }
 
-        if (!_this2.contractResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-        }
+          if (!_this2.contractResponse.error) {
+            _this2.setDefault();
 
-        if (!_this2.contractResponse.error) {
-          _this2.setDefault();
-
-          swal("Сохранение изменений", _this2.contractResponse.message, "success");
+            swal("Сохранение изменений", _this2.contractResponse.message, "success");
+          } else {
+            swal("Ошибка", _this2.contractResponse.message, "error");
+          }
+        } else if (response.data) {
+          if (response.data.hasOwnProperty('errors') && response.data.hasOwnProperty('message')) {
+            swal("Ошибка в заполнении обязательных полей", response.data.message, "error");
+          } else {
+            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+          }
+        } else if (response) {
+          if (response.hasOwnProperty('errors') && response.hasOwnProperty('message')) {
+            swal("Ошибка в заполнении обязательных полей", response.message, "error");
+          } else {
+            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+          }
         } else {
-          swal("Ошибка", _this2.contractResponse.message, "error");
+          swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
         }
       })["catch"](function (e) {
         if (e == 'Error: Request failed with status code 401') {
@@ -5170,7 +5182,8 @@ __webpack_require__.r(__webpack_exports__);
           } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
 
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //this.$router.push({name: 'customers'});
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log(e); //this.$router.push({name: 'customers'});
         }
       });
     },
@@ -6077,15 +6090,9 @@ __webpack_require__.r(__webpack_exports__);
               break;
 
             case 4:
-              //const id = this.task.id;
-              //this.$router.push({name: 'task-update', params: { id }});
               _this6.closeNewComment();
 
-              _this6.getAllComments(); //Так не работает!
-              //this.$router.push({path: `/task/${this.task.id}`});
-              //Колхозное обновление страницы!
-              //location.reload();
-
+              _this6.getAllComments();
 
               break;
 
@@ -6130,6 +6137,15 @@ __webpack_require__.r(__webpack_exports__);
           commid: commentId
         }
       }); //this.$router.push({path: `/comment/${commentId}`});
+    },
+    isEmptyObject: function isEmptyObject(obj) {
+      for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+          return false;
+        }
+      }
+
+      return true;
     }
   },
   computed: {
@@ -6138,7 +6154,22 @@ __webpack_require__.r(__webpack_exports__);
     },
     isSequenceFirst: function isSequenceFirst() {
       return this.task.isSequenceFirst;
-    }
+    },
+    isEmptyComment: function isEmptyComment() {
+      if (this.isEmptyObject(this.comment)) {
+        return true;
+      } else {
+        if (this.comment.comment.length == 0) {
+          return true;
+        }
+
+        return false;
+      }
+    } //visibleCommentCreate() {
+    //return this.meta['canTaskCreate'];
+    //return true;
+    //},
+
   }
 });
 
@@ -48381,6 +48412,7 @@ var render = function() {
                     "button",
                     {
                       staticClass: "btn btn-primary",
+                      attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
                           return _vm.storeNewComment(2)
@@ -48399,6 +48431,7 @@ var render = function() {
                     "button",
                     {
                       staticClass: "btn btn-primary",
+                      attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
                           return _vm.storeNewComment(1)
@@ -48416,6 +48449,7 @@ var render = function() {
                 "button",
                 {
                   staticClass: "btn btn-primary",
+                  attrs: { disabled: _vm.isEmptyComment },
                   on: {
                     click: function($event) {
                       return _vm.storeNewComment(4)
@@ -48430,6 +48464,7 @@ var render = function() {
                     "button",
                     {
                       staticClass: "btn btn-primary",
+                      attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
                           return _vm.storeNewComment(3)
@@ -48559,11 +48594,11 @@ var render = function() {
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
-                    ? _c("td", [_vm._v(_vm._s(task.sequence))])
+                    ? _c("td", [_vm._v(_vm._s(task.process_sequence))])
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
-                    ? _c("td", [_vm._v(_vm._s(task.task_seq))])
+                    ? _c("td", [_vm._v(_vm._s(task.task_sequence))])
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
@@ -48579,7 +48614,7 @@ var render = function() {
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
-                    ? _c("td", [_vm._v(_vm._s(task.deadline))])
+                    ? _c("td", [_vm._v(_vm._s(task.created_at))])
                     : _vm._e(),
                   _vm._v(" "),
                   task.status

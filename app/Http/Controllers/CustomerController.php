@@ -6,8 +6,8 @@ use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-use App\Services\CustomerService;
 use App\Services\WorkflowService;
+use App\Http\Requests\CustomerRequest;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Customer\CustomerRelationResource;
@@ -32,7 +32,7 @@ class CustomerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, WorkflowService $workflowService)
+    public function store(CustomerRequest $request, WorkflowService $workflowService)
     {
         /*
         $currentUser = User::find($request->user('api')->id);

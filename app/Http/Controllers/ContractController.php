@@ -7,7 +7,6 @@ use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-use App\Services\CustomerService;
 use App\Services\WorkflowService;
 use App\Http\Resources\Contract\ContractCollection;
 use App\Http\Resources\Contract\ContractResource;

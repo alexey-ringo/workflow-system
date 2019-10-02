@@ -6,7 +6,6 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Process;
 
-use App\Services\TaskService;
 use App\Services\WorkflowService;
 
 use Illuminate\Http\Request;
@@ -16,11 +15,11 @@ use App\Http\Resources\Task\TaskCollection;
 
 class TaskController extends Controller
 {
-    //private $workflowService;
+    //private $currentUser;
     
-    //public function __construct(WorkflowService $workflowService)
+    //public function __construct(Request $request)
     //{
-    //    $this->workflowService = $workflowService;
+    //    $currentUser = $request->user('api');
     //}
     
     /**

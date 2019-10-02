@@ -48,11 +48,11 @@ class WorkflowService
     
     private $message;
     
-    public function __construct(Request $request, TaskService $taskService)
+    public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->user = User::find($this->request->user('api')->id);
-        $this->taskService = $taskService;
+        //$this->user = User::find($this->request->user('api')->id);
+        $this->user = $this->request->user('api');
     }
     
     /**

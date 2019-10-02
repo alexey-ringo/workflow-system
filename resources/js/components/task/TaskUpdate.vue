@@ -47,10 +47,10 @@
       <!-- /.card-body -->
       <div class="card-footer">
         <div v-if="visibleCommentCreate">
-          <button class="btn btn-primary" v-if="!isSequenceFirst" @click="storeNewComment(2)">Назад в <b>{{task.prevProcessName}}</b></button>
-          <button class="btn btn-primary" v-if="!isSequenceLast" @click="storeNewComment(1)">Вперед в <b>{{task.nextProcessName}}</b></button>
-          <button class="btn btn-primary" @click="storeNewComment(4)">Просто комментарий</button>
-          <button class="btn btn-primary" v-if="isSequenceLast" @click="storeNewComment(3)">Закрыть заявку</button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceFirst" @click="storeNewComment(2)">Назад в <b>{{task.prevProcessName}}</b></button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceLast" @click="storeNewComment(1)">Вперед в <b>{{task.nextProcessName}}</b></button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" @click="storeNewComment(4)">Просто комментарий</button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="isSequenceLast" @click="storeNewComment(3)">Закрыть заявку</button>
           <a href="#" class="btn btn-default float-right" v-on:click="closeNewComment">Отмена</a>
         </div>
         <div v-if="!visibleCommentCreate">
@@ -277,22 +277,13 @@
               break;
               
               case 4:
-                //const id = this.task.id;
-                //this.$router.push({name: 'task-update', params: { id }});
-                
                 this.closeNewComment();
                 this.getAllComments();
-                
-                //Так не работает!
-                //this.$router.push({path: `/task/${this.task.id}`});
-                //Колхозное обновление страницы!
-                //location.reload();
               break;
               
               default:
                 this.closeNewComment();
               break;
-              
             }
           }
           else {
@@ -323,6 +314,14 @@
         this.$router.push({name: 'comment-details', params: {commid: commentId} });
         //this.$router.push({path: `/comment/${commentId}`});
       },
+      isEmptyObject(obj) {
+        for (var i in obj) {
+          if (obj.hasOwnProperty(i)) {
+            return false;
+          }
+        }
+      return true;
+      },
     },
     computed: {
       isSequenceLast() {
@@ -331,6 +330,17 @@
       isSequenceFirst() {
         return this.task.isSequenceFirst;
       },
+      isEmptyComment() {
+        if(this.isEmptyObject(this.comment)) {
+          return true;
+        }
+        else {
+          if(this.comment.comment.length == 0) {
+            return true;
+          }
+          return false;
+        }
+      }
       //visibleCommentCreate() {
         //return this.meta['canTaskCreate'];
         //return true;

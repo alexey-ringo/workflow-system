@@ -31,12 +31,12 @@
                 <tbody>
                     <tr v-for="task in process.tasks" :key="process.id">
                         <td v-if="task.status">{{ task.task  }}</td>
-                        <td v-if="task.status">{{ task.sequence  }}</td>
-                        <td v-if="task.status">{{ task.task_seq  }}</td>
+                        <td v-if="task.status">{{ task.process_sequence  }}</td>
+                        <td v-if="task.status">{{ task.task_sequence  }}</td>
                         <td v-if="task.status">{{ task.title  }}</td>
                         <td v-if="task.status">{{ task.description }}</td>
                         <td v-if="task.status">{{ task.creating_user_name }}</td>
-                        <td v-if="task.status">{{ task.deadline }}</td>
+                        <td v-if="task.status">{{ task.created_at }}</td>
                         <td v-if="task.status">
                             <router-link :to="{name: 'task-update', params: {id: task.id}}" class="btn btn-xs btn-default">
                                 Edit

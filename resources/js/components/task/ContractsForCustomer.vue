@@ -160,19 +160,37 @@
         this.customer.task_description = this.task.description;
         
         this.axios.post(uri, this.customer).then((response) => {
-          if(!response.data.data) {
-            swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
+          if(response.data.data) {
+            this.contractResponse = response.data.data;
+            if(!this.contractResponse.hasOwnProperty('error')) {
+              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+            }
+            if(!this.contractResponse.error) {
+              this.setDefault();
+              swal("Сохранение изменений", this.contractResponse.message, "success");
+            }
+            else {
+              swal("Ошибка", this.contractResponse.message, "error");
+            }
           }
-          this.contractResponse = response.data.data;
-          if(!this.contractResponse.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+          else if(response.data) {
+            if(response.data.hasOwnProperty('errors') && response.data.hasOwnProperty('message')) {
+              swal("Ошибка в заполнении обязательных полей", response.data.message, "error");
+            }
+            else {
+              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+            }
           }
-          if(!this.contractResponse.error) {
-            this.setDefault();
-            swal("Сохранение изменений", this.contractResponse.message, "success");
+          else if(response) {
+            if(response.hasOwnProperty('errors') && response.hasOwnProperty('message')) {
+              swal("Ошибка в заполнении обязательных полей", response.message, "error");
+            }
+            else {
+              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
+            }
           }
           else {
-            swal("Ошибка", this.contractResponse.message, "error");
+            swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
           }
         })
         .catch(e => {
@@ -185,6 +203,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log(e);
             //this.$router.push({name: 'customers'});
           }
         });
