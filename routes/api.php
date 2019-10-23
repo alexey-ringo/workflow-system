@@ -38,7 +38,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('/customers','CustomerController');
     Route::apiResource('/phones','PhoneController');
     Route::apiResource('/contracts','ContractController');
-    Route::apiResource('/prices','PriceController');
+    Route::apiResource('/tariffs','TariffController');
     //Route::get('/current-user', 'DashboardController@currentUser');
     //Route::apiResource('/users','UserController');
     

@@ -10,7 +10,7 @@
         <div class="form-group">
           <label for="inputUIRole" class="col-sm-4 control-label">UI политики безопасности</label>
           <div class="col-sm-10">
-            <input type="text" v-model="role.slug" class="form-control" id="inputUIRole" disabled required placeholder="UI политики безопасности">
+            <input type="text" v-model="role.slug" class="form-control" id="inputUIRole" disabled placeholder="UI политики безопасности">
           </div>
         </div>
                   

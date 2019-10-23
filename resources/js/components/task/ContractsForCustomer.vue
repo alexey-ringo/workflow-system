@@ -98,7 +98,7 @@
       return {
         customer: {},
         task: {},
-        contractResponse: {},
+        message: '',
         visibleTaskForNewContract: false
       }
     },
@@ -129,23 +129,35 @@
       getCustomer() {
         let uri = `/api/customers/${this.$route.params.customid}`;
         this.axios.get(uri).then((response) => {
-          this.customer = response.data.data;
-          if(this.isEmptyObject(this.customer)) {
-            swal('Ошибка', 'Клиент с id "' + this.$route.params.customid + '" не найден!', 'error');
+          if(response.data.data) {
+            this.customer = response.data.data;
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к данным клиента", "error");
             this.$router.push({name: 'search-customer'});
           }
         })
-        .catch(e => {
-          //console.log(e);
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
-            }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'search-customer'});
+              }
+            }         
+          }
+          else if(error.request) {
+            console.log(error.request.data);
           }
           else {
-            swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
             this.$router.push({name: 'search-customer'});
           }
         });
@@ -156,55 +168,42 @@
       createContract() {
         let uri = '/api/contracts';
         
-        this.customer.task_route = 1;
         this.customer.task_description = this.task.description;
         
         this.axios.post(uri, this.customer).then((response) => {
-          if(response.data.data) {
-            this.contractResponse = response.data.data;
-            if(!this.contractResponse.hasOwnProperty('error')) {
-              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-            }
-            if(!this.contractResponse.error) {
-              this.setDefault();
-              swal("Сохранение изменений", this.contractResponse.message, "success");
-            }
-            else {
-              swal("Ошибка", this.contractResponse.message, "error");
-            }
-          }
-          else if(response.data) {
-            if(response.data.hasOwnProperty('errors') && response.data.hasOwnProperty('message')) {
-              swal("Ошибка в заполнении обязательных полей", response.data.message, "error");
-            }
-            else {
-              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-            }
-          }
-          else if(response) {
-            if(response.hasOwnProperty('errors') && response.hasOwnProperty('message')) {
-              swal("Ошибка в заполнении обязательных полей", response.message, "error");
-            }
-            else {
-              swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-            }
+          if(response.data.message) {
+            this.message = response.data.message;
+            this.setDefault();
+            swal("Сохранение изменений", this.message, "success");
           }
           else {
-            swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
+            swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
           }
         })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                
+              }
+            }//Ошибки валидации
+            else {
+              swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
             }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          }
+          else if(error.request) {
+            console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            console.log(e);
-            //this.$router.push({name: 'customers'});
+            console.log('Внутренняя ошибка: ' + error.message);
           }
         });
       },
@@ -220,6 +219,15 @@
           }
         }
       return true;
+      },
+      errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
       },
     },
   }

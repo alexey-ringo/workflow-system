@@ -29,14 +29,14 @@
           </div>
         </div>
         
-        
-                  
         <div class="form-group">
-          <label for="inputTaskDesc" class="col-sm-4 control-label">Краткое описание</label>
+          <label class="col-sm-4 control-label">Первоначальный комментарий к новой задаче</label>
           <div class="col-sm-10">
-            <input type="text" v-model="task.description" class="form-control" placeholder="Краткое описание">
+            <textarea class="form-control" v-model="task.comment" placeholder="Первоначальный комментарий к новой задаче " style="height: 300px">
+            </textarea>
           </div>
         </div>
+        
       </div>
       <!-- /.card-body -->
       <div class="card-footer">
@@ -58,7 +58,7 @@
       return {
         task: {},
         contract: {},
-        taskResponse: {},
+        message: '',
         routes: [],
         selectRoute: null,
       }
@@ -76,22 +76,35 @@
         let uri = '/api/routes?filter=1';
         this.axios.get(uri)
       	  .then((response) => {
-      	    if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при чтении маршрутов", "error");
+      	    if(response.data.data) {
+      	      this.routes = response.data.data;
+      	    }
+      	    else {
+      	      swal("Ошибка", "Нет ответа от сервера при чтении маршрутов", "error");
               this.$router.push({name: 'search-customer'});
-            }
-        	  this.routes = response.data.data;
+      	    }
           })
-          .catch(e => {
-        	  if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
-              }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'search-customer'});
+                }
+              }         
+            }
+            else if(error.request) {
+              console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
               this.$router.push({name: 'search-customer'});
             }
           });
@@ -99,27 +112,35 @@
       getContract() {
         let uri = `/api/contracts/${this.$route.params.contractid}`;
         this.axios.get(uri).then((response) => {
-          if(!response.data.data) {
+          if(response.data.data) {
+            this.contract = response.data.data;
+          }
+          else {
             swal("Ошибка", "Нет ответа от сервера при доступе к контракту клиента", "error");
             this.$router.push({name: 'search-customer'});
           }
-          this.contract = response.data.data;
-          if(this.isEmptyObject(this.contract)) {
-            swal('Ошибка', 'Контракт № "' + this.$route.params.contractid + '" не найден!', 'error');
-            this.$router.push({name: 'search-customer'});
-          }
         })
-        .catch(e => {
-        //console.log(e);
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
-            }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'search-customer'});
+              }
+            }         
+          }
+          else if(error.request) {
+            console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
             this.$router.push({name: 'search-customer'});
           }
         });
@@ -129,46 +150,52 @@
         this.task.route = route;
         this.task.contract_id = this.contract.id;
         this.axios.post(uri, this.task).then((response) => {
-          if(!response.data.data) {
-            swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
-            this.$router.push({name: 'contracts-for-customer'});
-          }
-          this.taskResponse = response.data.data;
-          if(!this.taskResponse.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
-          	this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
-          }
-          if(!this.taskResponse.error) {
-            //this.$emit("changecartevent", 1);
-            swal("Сохранение изменений", this.taskResponse.message, "success");
+          if(response.data.message) {
+            this.message = response.data.message;
+            swal("Сохранение изменений", this.message, "success");
             this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
           else {
-          	swal("Ошибка", this.taskResponse.message, "error");
+            swal("Ошибка", "Нет ответа сервера при создании задачи", "error");
           	this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
         })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
+              }
+            }//Ошибки валидации
+            else {
+              swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
             }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          }
+          else if(error.request) {
+            console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
             this.$router.push({name: 'contracts-for-customer', params: {customid: this.contract.customer.id}});
           }
         });
       },
-      isEmptyObject(obj) {
-        for (var i in obj) {
-          if (obj.hasOwnProperty(i)) {
-            return false;
+      errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
           }
-        }
-      return true;
+          return result;
       },
     },
   }

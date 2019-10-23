@@ -34,30 +34,14 @@ class CommentController extends Controller
      */
     public function store(Request $request, WorkflowService $workflowService)
     {
-        $currentUser = $request->user('api');
-        if(!$currentUser) {
-            return response()->json(['data' => 0]);
-        }
-        
         $currentTask = Task::find($request['taskId']);
         if(!$currentTask) {
-            return response()->json(['data' => 0]);
-        }
+            return response()->json(['message' => 'Задача, к которой собираются добавить комментарий - не найдена!'], 422);
+        }       
+       
+        $createdComment = $workflowService->createComment($currentTask);
         
-        /*
-        $validator = $request->validate([
-            'slug' => 'required|string|max:255|unique:groups',
-            'name' => 'required|string|max:255|unique:groups',
-        ]);
-        */
-        $createdComment = $workflowService->createComment(
-                                                    $currentTask
-                                                    );
-        return response()->json(['data' => [
-                                        'error' => $createdComment->hasError(),
-                                        'task' => $createdComment->getTask(),
-                                        'message' => $createdComment->getMessage()
-                                    ]]);
+        return response()->json(['message' => $createdComment->getMessage()]);
     }
 
     /**
@@ -66,13 +50,19 @@ class CommentController extends Controller
      * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function show(Comment $comment)
+    public function show($id)
     {
+        $comment = Comment::find($id);
         //В случае использования CustomCommentResource для передачи
         //в компонент vue CommentDetails имени Process
         //$task = $comment->task;
         //$process = $task->process;
-        return new CommentResource($comment);
+        if($comment) {
+            return new CommentResource($comment);
+        }
+        else {
+            return response()->json(['message' => 'Комментарий с идентификатором id ' . $id . ' не найден!'], 422);
+        }
     }
 
     

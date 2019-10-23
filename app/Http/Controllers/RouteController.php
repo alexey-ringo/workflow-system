@@ -33,27 +33,19 @@ class RouteController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:processes',
-            'sequence' => 'required|unique:processes',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
+    {        
         $route = Route::create([
             'name' => $request->input('name'),
             'value' => $request->input('value'),
             'description' => $request->input('description'),
-            'in_use' => $request->input('in_use'),
+            'is_active' => $request->input('is_active'),
         ]);
         
         if($route) {
-            return response()->json(['data' => 1]);
+            return response()->json(['message' => 'Новый маршрут успешно создан']);
         }
         else {
-            return response()->json(['data' => 0]);
+            return response()->json(['message' => 'Внутранняя ошибка при создании нового маршрута!'], 500);
         }  
     }
 
@@ -63,9 +55,15 @@ class RouteController extends Controller
      * @param  \App\Route  $route
      * @return \Illuminate\Http\Response
      */
-    public function show(Route $route/* int $id*/)
+    public function show(int $id)
     {
-        return new RouteResource($route);
+        $route = Route::find($id);
+        if($route) {
+            return new RouteResource($route);
+        }
+        else {
+            return response()->json(['message' => 'Маршрут с идентификатором id ' . $id . ' не найден!'], 422);
+        }
     }
 
    
@@ -90,16 +88,16 @@ class RouteController extends Controller
         $route->name = $request->input('name');
         $route->value = $request->input('value');
         $route->description = $request->input('description');
-        $route->in_use = $request->input('in_use');
-        $route->save();
+        $route->is_active = $request->input('is_active');
+        
         
         //$process->update($request->all());
         
-        if($route) {
-            return response()->json(['data' => 1]);
+        if($route->save()) {
+            return response()->json(['message' => 'Изменения для маршрута успешно применены']);
         }
         else {
-            return response()->json(['data' => 0]);
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений в маршруте!'], 500);
         }  
     }
 

@@ -40,13 +40,19 @@ class ProcessController extends Controller
         $process = Process::create([
             'route_id' => $request->input('route_id'),
             'name' => $request->input('name'),
-            'slug' => $request->input('slug'),
+            //'slug' => $request->input('slug'),
             'sequence' => $request->input('sequence'),
             'is_super' => $request->input('is_super'),
             'is_final' => $request->input('is_final'),
+            'is_active' => $request->input('is_active'),
         ]);
         
-        return new ProcessResource($process);   
+        if($process) {
+            return response()->json(['message' => 'Новый процесс успешно создан']);
+        }
+        else {
+            return response()->json(['message' => 'Внутранняя ошибка при создании нового процесса!'], 500);
+        }    
     }
 
     /**
@@ -55,10 +61,15 @@ class ProcessController extends Controller
      * @param  \App\Process  $process
      * @return \Illuminate\Http\Response
      */
-    public function show(/*Process $process*/ int $id)
+    public function show(int $id)
     {
-        return new ProcessResource(Process::FindOrFail($id));
-        //return new ProcessResource($process);
+        $process = Process::find($id);
+        if($process) {
+            return new ProcessResource($process);
+        }
+        else {
+            return response()->json(['message' => 'Процесс с идентификатором id ' . $id . ' не найден!'], 422);
+        }        
     }
     
 
@@ -84,11 +95,16 @@ class ProcessController extends Controller
         $process->sequence = $request->input('sequence');
         $process->is_super = $request->input('is_super');
         $process->is_final = $request->input('is_final');
-        $process->save();
+        $process->is_active = $request->input('is_active');        
         
         //$process->update($request->all());
         
-        return new ProcessResource($process);
+        if($process->save()) {
+            return response()->json(['message' => 'Изменения для процесса успешно применены']);
+        }
+        else {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений в процессе!'], 500);
+        }
     }
 
     /**

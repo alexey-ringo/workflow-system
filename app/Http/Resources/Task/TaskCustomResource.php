@@ -6,6 +6,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TaskCustomResource extends JsonResource
 {
+    public $resource;
+    public $prevProcessName;
+    public $nextProcessName;
+    public $prevProcessId;
+    public $nextProcessId;
+    public $isSequenceFirst;
+    public $isSequenceLast;
+    
     public function __construct(
                                 $resource, 
                                 int $prevProcessId, 
@@ -39,7 +47,7 @@ class TaskCustomResource extends JsonResource
             'title' => $this->resource->title,
             'description' => $this->resource->description,
             'sequence' => $this->resource->process_sequence,
-            'sequenceName' => $this->resource->process_name,
+            'processName' => $this->resource->process->name,
             'taskStatus' => $this->resource->status,
             'prevProcessId' => $this->prevProcessId,
             'nextProcessId' => $this->nextProcessId,

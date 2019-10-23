@@ -2158,6 +2158,23 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //import Products from './lteitems/Products.vue';
 //import Orders from './lteitems/Orders.vue';
 //import Purchases from './lteitems/Purchases.vue';
@@ -2581,11 +2598,34 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       customer: {},
-      customerResponse: {},
+      tariffs: [],
+      message: '',
+      selectTariff: false,
       optionLeavePage: false
     };
   },
@@ -2598,92 +2638,116 @@ __webpack_require__.r(__webpack_exports__);
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getTariffs();
   },
   methods: {
-    addCustomer: function addCustomer() {
+    getTariffs: function getTariffs() {
       var _this = this;
 
-      var uri = '/api/customers';
-      this.axios.post(uri, this.customer).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
-        }
+      var uri = '/api/tariffs';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.tariffs = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
 
-        _this.customerResponse = response.data.data;
-
-        if (!_this.customerResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при создании нового клиента", "error");
-
-          _this.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        if (!_this.customerResponse.error) {
-          //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this.customerResponse.message, "success");
-
-          if (_this.optionLeavePage) {
-            _this.$router.push({
-              name: 'contracts-for-customer',
-              params: {
-                customid: _this.customerResponse.customer.id
-              }
-            });
-          } else {
-            _this.$router.push({
-              name: 'customers'
-            });
-          }
+          _this.leavePageRules();
         } else {
-          swal("Ошибка", _this.customerResponse.message, "error");
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку тарифов", "error");
 
-          _this.$router.push({
-            name: 'search-customer'
-          });
-        } //if(response.data.data.id) {
-        //  swal("Заказ", 'Новый клиент "' + this.customer.surname + ' ' + this.customer.name + '" успешно создан', "success");
-        //  if(this.optionLeavePage) {
-        //    this.$router.push({name: 'contracts-for-customer', params: {customid: this.customer.id}});
-        //  }
-        //  else {
-        //    this.$router.push({name: 'customers'});
-        //  }
-        //}
-        //else {
-        //  swal("Сохранение изменений", "Что то пошло не так...", "error");
-        //  if(this.optionLeavePage) {
-        //    this.$router.push({name: 'search-customer'});
-        //  }
-        //  else {
-        //    this.$router.push({name: 'customers'});
-        //  }
-        //}
+          _this.leavePageRules();
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
-            _this.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
+              _this.leavePageRules();
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
-          if (_this.optionLeavePage) {
-            _this.$router.push({
-              name: 'search-customer'
-            });
-          } else {
-            _this.$router.push({
-              name: 'customers'
-            });
-          }
+          _this.leavePageRules();
         }
       });
+    },
+    addCustomer: function addCustomer() {
+      var _this2 = this;
+
+      this.customer.contract_tariff_id = this.selectTariff;
+      var uri = '/api/customers';
+      this.axios.post(uri, this.customer).then(function (response) {
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
+          _this2.leavePageRules();
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.leavePageRules();
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.leavePageRules();
+        }
+      });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
+    },
+    leavePageRules: function leavePageRules() {
+      if (this.optionLeavePage) {
+        this.$router.push({
+          name: 'search-customer'
+        });
+      } else {
+        this.$router.push({
+          name: 'customers'
+        });
+      }
     }
   },
   beforeRouteEnter: function beforeRouteEnter(to, from, next) {
@@ -3169,7 +3233,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      permission: {}
+      permission: {},
+      message: ''
     };
   },
   methods: {
@@ -3178,16 +3243,59 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/permissions';
       this.axios.post(uri, this.permission).then(function (response) {
-        if (response.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
           _this.$router.push({
             name: 'permissions'
           });
-        } else {}
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при создании нового разрешения операций", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'permissions'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'permissions'
+          });
+        }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3341,23 +3449,66 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      permissions: []
+      permissions: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/permissions';
-    this.axios.get(uri).then(function (response) {
-      _this.permissions = response.data.data;
-    })["catch"](function (e) {
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
-    });
+    this.getPermissions();
   },
   methods: {
+    getPermissions: function getPermissions() {
+      var _this = this;
+
+      var uri = '/api/permissions';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.permissions = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку всех разрешений операций", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deletePermission: function deletePermission(id) {
       var _this2 = this;
 
@@ -3365,13 +3516,32 @@ __webpack_require__.r(__webpack_exports__);
 
       if (confirm("Do you really want to delete it?")) {
         this.axios["delete"](uri).then(function (response) {
-          if (response.data) {
+          if (response.data.data) {
             _this2.permissions.splice(_this2.permissions.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            swal("Удаление политики", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного разрешения", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
     }
@@ -3434,7 +3604,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      role: {}
+      role: {},
+      message: ''
     };
   },
   methods: {
@@ -3443,18 +3614,59 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/roles';
       this.axios.post(uri, this.role).then(function (response) {
-        if (response.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
           _this.$router.push({
             name: 'roles'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при создании новой политика безопасности", "error");
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'roles'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'roles'
+          });
+        }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3628,24 +3840,66 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      roles: []
+      roles: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/roles';
-    this.axios.get(uri).then(function (response) {
-      _this.roles = response.data.data;
-    })["catch"](function (e) {
-      //console.log(e);
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
-    });
+    this.getRoles();
   },
   methods: {
+    getRoles: function getRoles() {
+      var _this = this;
+
+      var uri = '/api/roles';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.roles = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку всех политик безопасности", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deleteRole: function deleteRole(id) {
       var _this2 = this;
 
@@ -3653,13 +3907,32 @@ __webpack_require__.r(__webpack_exports__);
 
       if (confirm("Do you really want to delete it?")) {
         this.axios["delete"](uri).then(function (response) {
-          if (response.data) {
+          if (response.data.data) {
             _this2.roles.splice(_this2.roles.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            swal("Удаление политики", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранной политики", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
     },
@@ -3721,17 +3994,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      group: {}
+      group: {},
+      message: ''
     };
   },
   methods: {
@@ -3740,18 +4007,59 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/groups';
       this.axios.post(uri, this.group).then(function (response) {
-        if (response.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
           _this.$router.push({
             name: 'groups'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при создании новой рабочей группы", "error");
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'groups'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'groups'
+          });
+        }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3806,37 +4114,79 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       group: {},
+      message: '',
       processesChecked: []
     };
   },
-  created: function created() {
-    var _this = this;
 
-    var uri = "/api/groups/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      _this.group = response.data.data;
-
-      _this.setProcessesChecked();
-    });
+  /*
+  created() {
   },
-  mounted: function mounted() {//let uri = `/api/groups/${this.$route.params.id}`;
-    //this.axios.get(uri).then((response) => {
-    //  this.group = response.data.data;
-    //this.setProcessesChecked();
-    //});
+  */
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getUpdatedGroup();
   },
   methods: {
+    getUpdatedGroup: function getUpdatedGroup() {
+      var _this = this;
+
+      var uri = "/api/groups/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.group = response.data.data;
+
+          _this.setProcessesChecked();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'groups'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой рабочей группе", "error");
+
+          _this.$router.push({
+            name: 'groups'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'groups'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'groups'
+          });
+        }
+      });
+    },
     updateGroup: function updateGroup()
     /*event*/
     {
@@ -3847,24 +4197,69 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.group
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
-          //this.$emit("changecartevent", 1);
-          //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
           _this2.$router.push({
             name: 'groups'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в рабочей группе", "error");
+
+          _this2.$router.push({
+            name: 'groups'
+          });
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'groups'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'groups'
+          });
+        }
       });
     },
     setProcessesChecked: function setProcessesChecked() {
       for (var i = 0; i < this.group.processes.length; i++) {
         Vue.set(this.processesChecked, i, this.group.processes[i].id);
       }
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3921,30 +4316,69 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      groups: []
+      groups: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/groups';
-    this.axios.get(uri).then(function (response) {
-      _this.groups = response.data.data;
-    })["catch"](function (e) {
-      //console.log(e);
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
-    });
+    this.getGroups();
   },
   methods: {
+    getGroups: function getGroups() {
+      var _this = this;
+
+      var uri = '/api/groups';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.groups = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку рабочих групп", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deleteGroup: function deleteGroup(id) {
       var _this2 = this;
 
@@ -3952,13 +4386,32 @@ __webpack_require__.r(__webpack_exports__);
 
       if (confirm("Do you really want to delete it?")) {
         this.axios["delete"](uri).then(function (response) {
-          if (response.data) {
+          if (response.data.data) {
             _this2.groups.splice(_this2.groups.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            swal("Удаление рабочей группы", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранной группы", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
     },
@@ -4062,64 +4515,85 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       process: {},
       routes: [],
+      message: '',
+      processStatus: false,
       superChecked: false,
       finalChecked: false,
       selectRoute: false
     };
   },
-
-  /*
-  create() {
-    let token = localStorage.getItem('jwt')
-     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
-    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    
-    let uri = '/api/processes';
-    this.axios.get(uri)
-    	.then((response) => {
-      	this.processes = response.data.data;
-      })
-      .catch(e => {
-      	swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      });
-  },
-  */
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routes = response.data.data;
-    })["catch"](function (e) {
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this.$router.push({
-          name: 'processes'
-        });
-      }
-    });
+    this.getRoutes();
   },
   methods: {
+    getRoutes: function getRoutes() {
+      var _this = this;
+
+      var uri = '/api/routes';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.routes = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку маршрутов", "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
     addProcess: function addProcess() {
       var _this2 = this;
+
+      if (this.processStatus) {
+        this.process.is_active = 1;
+      } else {
+        this.process.is_active = null;
+      }
 
       if (this.superChecked) {
         this.process.is_super = 1;
@@ -4136,36 +4610,59 @@ __webpack_require__.r(__webpack_exports__);
       this.process.route_id = this.selectRoute;
       var uri = '/api/processes';
       this.axios.post(uri, this.process).then(function (response) {
-        if (response.data.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
           _this2.$router.push({
             name: 'processes'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
-
-          _this2.$router.push({
-            name: 'processes'
-          });
+          swal("Ошибка", "Нет ответа от сервера при создании нового процесса", "error");
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this2.$router.push({
+                name: 'processes'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this2.$router.push({
             name: 'processes'
           });
         }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -4254,68 +4751,147 @@ __webpack_require__.r(__webpack_exports__);
     return {
       process: {},
       routes: [],
+      message: '',
+      processStatus: false,
       selectRoute: null,
       superChecked: false,
       finalChecked: false
     };
   },
-  created: function created() {
-    var _this = this;
 
+  /*
+  created() {
+  },
+  */
+  mounted: function mounted() {
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routes = response.data.data;
-
-      _this.getProcess();
-    })["catch"](function (e) {
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this.$router.push({
-          name: 'processes'
-        });
-      }
-    });
-  },
-  mounted: function mounted() {//let uri = `/api/processes/${this.$route.params.id}`;
-    //this.axios.get(uri).then((response) => {
-    //  this.process = response.data.data;
-    //});
+    this.getRoutes();
   },
   methods: {
-    getProcess: function getProcess() {
-      var _this2 = this;
+    getUpdatedProcess: function getUpdatedProcess() {
+      var _this = this;
 
       var uri = "/api/processes/".concat(this.$route.params.id);
       this.axios.get(uri).then(function (response) {
-        _this2.process = response.data.data;
+        if (response.data.data) {
+          _this.process = response.data.data;
 
-        _this2.setRouteSelected();
+          _this.setRouteSelected();
 
-        _this2.setSuperChecked();
+          _this.setSuperChecked();
 
-        _this2.setFinalChecked();
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          _this.setFinalChecked();
+
+          _this.setStatusChecked();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому процессу", "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
+    getRoutes: function getRoutes() {
+      var _this2 = this;
+
+      var uri = '/api/routes';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.routes = response.data.data;
+
+          _this2.getUpdatedProcess();
+        } else if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку всех маршрутов", "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
       });
     },
     updateProcess: function updateProcess()
     /*event*/
     {
       var _this3 = this;
+
+      if (this.processStatus) {
+        this.process.is_active = 1;
+      } else {
+        this.process.is_active = null;
+      }
 
       if (this.superChecked) {
         this.process.is_super = 1;
@@ -4334,26 +4910,47 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.process
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
-          //this.$emit("changecartevent", 1);
+        if (response.data.message) {
+          _this3.message = response.data.message;
+          swal("Сохранение изменений", _this3.message, "success");
+
           _this3.$router.push({
             name: 'processes'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в процессе", "error");
+
+          _this3.$router.push({
+            name: 'processes'
+          });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this3.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this3.$router.push({
+                name: 'processes'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this3.$router.push({
             name: 'processes'
@@ -4372,6 +4969,20 @@ __webpack_require__.r(__webpack_exports__);
     },
     setFinalChecked: function setFinalChecked() {
       this.finalChecked = this.process.is_final;
+    },
+    setStatusChecked: function setStatusChecked() {
+      this.processStatus = this.process.is_active;
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -4437,38 +5048,72 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      processes: []
+      processes: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/processes';
-    this.axios.get(uri).then(function (response) {
-      _this.processes = response.data.data;
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+    this.getProcesses();
   },
   methods: {
+    getProcesses: function getProcesses() {
+      var _this = this;
+
+      var uri = '/api/processes';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.processes = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку процессов", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deleteProcess: function deleteProcess(id) {
       var _this2 = this;
 
@@ -4478,11 +5123,30 @@ __webpack_require__.r(__webpack_exports__);
         this.axios["delete"](uri).then(function (response) {
           if (response.data.data) {
             _this2.processes.splice(_this2.processes.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            swal("Удаление задачи", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного процесса", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
     }
@@ -4562,6 +5226,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       route: {},
+      message: '',
       routeStatus: false
     };
   },
@@ -4571,60 +5236,75 @@ __webpack_require__.r(__webpack_exports__);
   },
   */
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routes = response.data.data;
-    })["catch"](function (e) {
-      swal('Ошибка', "Внутренняя ошибка сервера", "error");
-    });
   },
   methods: {
     addRoute: function addRoute() {
-      var _this2 = this;
+      var _this = this;
 
       if (this.routeStatus) {
-        this.route.in_use = 1;
+        this.route.is_active = 1;
       } else {
-        this.route.in_use = null;
+        this.route.is_active = null;
       }
 
       var uri = '/api/routes';
       this.axios.post(uri, this.route).then(function (response) {
-        if (response.data.data) {
-          //swal("Заказ", "Ваш заказ принят!", "success");
-          _this2.$router.push({
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
+          _this.$router.push({
             name: 'routes'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
-
-          _this2.$router.push({
-            name: 'routes'
-          });
+          swal("Ошибка", "Нет ответа от сервера при создании маршрута для обработки клиентских заявок", "error");
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this.$router.push({
+                name: 'routes'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
-          _this2.$router.push({
+          _this.$router.push({
             name: 'routes'
           });
         }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -4694,6 +5374,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       route: {},
+      message: '',
       routeStatus: false
     };
   },
@@ -4704,68 +5385,121 @@ __webpack_require__.r(__webpack_exports__);
   },
   */
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = "/api/routes/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      _this.route = response.data.data;
-
-      _this.setRouteStatus();
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+    this.getUpdatedRoute();
   },
   methods: {
+    getUpdatedRoute: function getUpdatedRoute() {
+      var _this = this;
+
+      var uri = "/api/routes/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.route = response.data.data;
+
+          _this.setRouteStatus();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'routes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому маршруту", "error");
+
+          _this.$router.push({
+            name: 'routes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'routes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'routes'
+          });
+        }
+      });
+    },
     updateRoute: function updateRoute()
     /*event*/
     {
       var _this2 = this;
 
       if (this.routeStatus) {
-        this.route.in_use = 1;
+        this.route.is_active = 1;
       } else {
-        this.route.in_use = null;
+        this.route.is_active = null;
       }
 
       var uri = "/api/routes/".concat(this.$route.params.id);
       this.axios.patch(uri, this.route
       /*{}*/
       ).then(function (response) {
-        if (response.data.data) {
-          //this.$emit("changecartevent", 1);
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
           _this2.$router.push({
             name: 'routes'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в маршруте", "error");
+
+          _this2.$router.push({
+            name: 'routes'
+          });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this2.$router.push({
+                name: 'routes'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this2.$router.push({
             name: 'routes'
@@ -4773,8 +5507,19 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
+    },
     setRouteStatus: function setRouteStatus() {
-      this.routeStatus = this.route.in_use;
+      this.routeStatus = this.route.is_active;
     }
   }
 });
@@ -4840,35 +5585,66 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      routes: []
+      routes: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/routes';
-    this.axios.get(uri).then(function (response) {
-      _this.routes = response.data.data;
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+    this.getRoutes();
   },
   methods: {
+    getRoutes: function getRoutes() {
+      var _this = this;
+
+      var uri = '/api/routes';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.routes = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку маршрутов процессов задач", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deleteRoute: function deleteRoute(id) {
       var _this2 = this;
 
@@ -4878,13 +5654,309 @@ __webpack_require__.r(__webpack_exports__);
         this.axios["delete"](uri).then(function (response) {
           if (response.data.data) {
             _this2.routes.splice(_this2.routes.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            swal("Удаление задачи", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного маршрута", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
+    }
+  },
+  beforeRouteEnter: function beforeRouteEnter(to, from, next) {
+    if (!localStorage.getItem('jwt')) {
+      return next('login');
+    }
+
+    next();
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      tariff: {},
+      message: '',
+      isActive: true
+    };
+  },
+  methods: {
+    addTariff: function addTariff() {
+      var _this = this;
+
+      if (this.isActive) {
+        this.tariff.is_active = true;
+      } else {
+        this.tariff.is_active = false;
+      }
+
+      var uri = '/api/tariffs';
+      this.axios.post(uri, this.tariff).then(function (response) {
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
+          _this.$router.push({
+            name: 'tariffs'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при создании нового тарифа", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'groups'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'groups'
+          });
+        }
+      });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js&":
+/*!*************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js& ***!
+  \*************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      tariffs: [],
+      message: ''
+    };
+  },
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getTariffs();
+  },
+  methods: {
+    getTariffs: function getTariffs() {
+      var _this = this;
+
+      var uri = '/api/tariffs';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.tariffs = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку тарифов", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
     }
   },
   beforeRouteEnter: function beforeRouteEnter(to, from, next) {
@@ -5072,7 +6144,7 @@ __webpack_require__.r(__webpack_exports__);
     return {
       customer: {},
       task: {},
-      contractResponse: {},
+      message: '',
       visibleTaskForNewContract: false
     };
   },
@@ -5103,28 +6175,39 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = "/api/customers/".concat(this.$route.params.customid);
       this.axios.get(uri).then(function (response) {
-        _this.customer = response.data.data;
-
-        if (_this.isEmptyObject(_this.customer)) {
-          swal('Ошибка', 'Клиент с id "' + _this.$route.params.customid + '" не найден!', 'error');
+        if (response.data.data) {
+          _this.customer = response.data.data;
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к данным клиента", "error");
 
           _this.$router.push({
             name: 'search-customer'
           });
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this.$router.push({
+                name: 'search-customer'
+              });
+            }
+          }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера при чтении данных клиента", "error");
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this.$router.push({
             name: 'search-customer'
@@ -5139,51 +6222,40 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       var uri = '/api/contracts';
-      this.customer.task_route = 1;
       this.customer.task_description = this.task.description;
       this.axios.post(uri, this.customer).then(function (response) {
-        if (response.data.data) {
-          _this2.contractResponse = response.data.data;
+        if (response.data.message) {
+          _this2.message = response.data.message;
 
-          if (!_this2.contractResponse.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-          }
+          _this2.setDefault();
 
-          if (!_this2.contractResponse.error) {
-            _this2.setDefault();
-
-            swal("Сохранение изменений", _this2.contractResponse.message, "success");
-          } else {
-            swal("Ошибка", _this2.contractResponse.message, "error");
-          }
-        } else if (response.data) {
-          if (response.data.hasOwnProperty('errors') && response.data.hasOwnProperty('message')) {
-            swal("Ошибка в заполнении обязательных полей", response.data.message, "error");
-          } else {
-            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-          }
-        } else if (response) {
-          if (response.hasOwnProperty('errors') && response.hasOwnProperty('message')) {
-            swal("Ошибка в заполнении обязательных полей", response.message, "error");
-          } else {
-            swal("Ошибка", "Неверный формат ответа сервера при создании нового контракта", "error");
-          }
+          swal("Сохранение изменений", _this2.message, "success");
         } else {
-          swal("Ошибка", "Нет ответа от сервера при создании нового контракта", "error");
+          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
-          console.log(e); //this.$router.push({name: 'customers'});
+          console.log('Внутренняя ошибка: ' + error.message);
         }
       });
     },
@@ -5200,6 +6272,17 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return true;
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -5274,7 +6357,7 @@ __webpack_require__.r(__webpack_exports__);
     return {
       task: {},
       contract: {},
-      taskResponse: {},
+      message: '',
       routes: [],
       selectRoute: null
     };
@@ -5292,27 +6375,39 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/routes?filter=1';
       this.axios.get(uri).then(function (response) {
-        if (!response.data.data) {
+        if (response.data.data) {
+          _this.routes = response.data.data;
+        } else {
           swal("Ошибка", "Нет ответа от сервера при чтении маршрутов", "error");
 
           _this.$router.push({
             name: 'search-customer'
           });
         }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-        _this.routes = response.data.data;
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
-            _this.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
+              _this.$router.push({
+                name: 'search-customer'
+              });
+            }
+          }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this.$router.push({
             name: 'search-customer'
@@ -5325,36 +6420,39 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = "/api/contracts/".concat(this.$route.params.contractid);
       this.axios.get(uri).then(function (response) {
-        if (!response.data.data) {
+        if (response.data.data) {
+          _this2.contract = response.data.data;
+        } else {
           swal("Ошибка", "Нет ответа от сервера при доступе к контракту клиента", "error");
 
           _this2.$router.push({
             name: 'search-customer'
           });
         }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-        _this2.contract = response.data.data;
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
-        if (_this2.isEmptyObject(_this2.contract)) {
-          swal('Ошибка', 'Контракт № "' + _this2.$route.params.contractid + '" не найден!', 'error');
-
-          _this2.$router.push({
-            name: 'search-customer'
-          });
-        }
-      })["catch"](function (e) {
-        //console.log(e);
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
+              _this2.$router.push({
+                name: 'search-customer'
+              });
+            }
+          }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this2.$router.push({
             name: 'search-customer'
@@ -5369,30 +6467,9 @@ __webpack_require__.r(__webpack_exports__);
       this.task.route = route;
       this.task.contract_id = this.contract.id;
       this.axios.post(uri, this.task).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
-
-          _this3.$router.push({
-            name: 'contracts-for-customer'
-          });
-        }
-
-        _this3.taskResponse = response.data.data;
-
-        if (!_this3.taskResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при создании задачи", "error");
-
-          _this3.$router.push({
-            name: 'contracts-for-customer',
-            params: {
-              customid: _this3.contract.customer.id
-            }
-          });
-        }
-
-        if (!_this3.taskResponse.error) {
-          //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this3.taskResponse.message, "success");
+        if (response.data.message) {
+          _this3.message = response.data.message;
+          swal("Сохранение изменений", _this3.message, "success");
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -5401,7 +6478,7 @@ __webpack_require__.r(__webpack_exports__);
             }
           });
         } else {
-          swal("Ошибка", _this3.taskResponse.message, "error");
+          swal("Ошибка", "Нет ответа сервера при создании задачи", "error");
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -5410,18 +6487,36 @@ __webpack_require__.r(__webpack_exports__);
             }
           });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this3.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this3.$router.push({
+                name: 'contracts-for-customer',
+                params: {
+                  customid: _this3.contract.customer.id
+                }
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this3.$router.push({
             name: 'contracts-for-customer',
@@ -5432,14 +6527,16 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    isEmptyObject: function isEmptyObject(obj) {
-      for (var i in obj) {
-        if (obj.hasOwnProperty(i)) {
-          return false;
-        }
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
       }
 
-      return true;
+      return result;
     }
   }
 });
@@ -5787,18 +6884,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      task: {
-        error: false,
-        message: ''
-      },
-      taskResponse: {},
+      task: {},
+      message: '',
       comments: [],
       comment: {},
       visibleCommentCreate: false
@@ -5806,322 +6896,262 @@ __webpack_require__.r(__webpack_exports__);
   },
   created: function created() {},
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = "/api/tasks/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      if (!response.data.data) {
-        swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
-
-        _this.$router.push({
-          name: 'tasks'
-        });
-      }
-
-      _this.task = response.data.data;
-
-      if (!_this.task.hasOwnProperty('error')) {
-        _this.getAllComments();
-      } else {
-        swal("Ошибка", 'Задача № ' + _this.task.task + ' "' + _this.task.title + '" : ' + _this.task.message, "error");
-
-        _this.$router.push({
-          name: 'tasks'
-        });
-      }
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-        _this.$router.push({
-          name: 'tasks'
-        });
-      }
-    });
+    this.getUpdatedTask();
   },
   methods: {
-    updateTaskToNext: function updateTaskToNext() {
+    getUpdatedTask: function getUpdatedTask() {
+      var _this = this;
+
+      var uri = "/api/tasks/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.task = response.data.data;
+
+          _this.getAllComments();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'tasks'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой задаче", "error");
+
+          _this.$router.push({
+            name: 'tasks'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'tasks'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'tasks'
+          });
+        }
+      });
+    },
+    updateTask: function updateTask(destination) {
       var _this2 = this;
 
-      this.task.currentProcessId = this.task.nextProcessId;
-      this.task.destination = 1;
+      if (this.isEmptyComment) {
+        return;
+      }
+
+      var errNoResponseMsg = '';
+
+      switch (destination) {
+        case 1:
+          this.task.currentProcessId = this.task.nextProcessId;
+          errNoResponseMsg = 'Нет ответа от сервера при передаче задачи в следующий процесс';
+          break;
+
+        case 2:
+          this.task.currentProcessId = this.task.prevProcessId;
+          errNoResponseMsg = 'Нет ответа от сервера при возврате задачи в предидущий процесс';
+          break;
+
+        case 3:
+          this.task.currentProcessId = this.task.nextProcessId;
+          errNoResponseMsg = 'Нет ответа от сервера при закрытии задачи';
+          break;
+
+        default:
+          errNoResponseMsg = 'Неправильно указано направление движения процесса задачи';
+          swal("Ошибка", errNoResponseMsg, "error"); //this.closeNewComment();
+          //this.getAllComments();
+
+          this.$router.push({
+            name: 'tasks'
+          });
+          break;
+      }
+
+      this.task.comment = this.comment.comment;
+      this.task.destination = destination;
       var uri = "/api/tasks/".concat(this.$route.params.id);
       this.axios.patch(uri, this.task
       /*{}*/
       ).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
-
-          _this2.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        _this2.taskResponse = response.data.data;
-
-        if (!_this2.taskResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
-
-          _this2.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        if (!_this2.taskResponse.error) {
-          //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this2.taskResponse.message, "success");
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
 
           _this2.$router.push({
             name: 'tasks'
           });
         } else {
-          swal("Ошибка", _this2.taskResponse.message, "error");
+          swal("Ошибка", errNoResponseMsg, "error");
 
           _this2.$router.push({
             name: 'tasks'
           });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this2.$router.push({
+                name: 'tasks'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this2.$router.push({
-            name: 'tasks'
-          });
-        }
-      });
-    },
-    updateTaskToPrev: function updateTaskToPrev() {
-      var _this3 = this;
-
-      this.task.currentProcessId = this.task.prevProcessId;
-      this.task.destination = 2;
-      var uri = "/api/tasks/".concat(this.$route.params.id);
-      this.axios.patch(uri, this.task
-      /*{}*/
-      ).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
-
-          _this3.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        _this3.taskResponse = response.data.data;
-
-        if (!_this3.taskResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
-
-          _this3.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        if (!_this3.taskResponse.error) {
-          //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this3.taskResponse.message, "success");
-
-          _this3.$router.push({
-            name: 'tasks'
-          });
-        } else {
-          swal("Ошибка", _this3.taskResponse.message, "error");
-
-          _this3.$router.push({
-            name: 'tasks'
-          });
-        }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-
-            _this3.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-        } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-          _this3.$router.push({
-            name: 'tasks'
-          });
-        }
-      });
-    },
-    updateTaskToClose: function updateTaskToClose() {
-      var _this4 = this;
-
-      this.task.currentProcessId = this.task.nextProcessId;
-      this.task.destination = 3;
-      var uri = "/api/tasks/".concat(this.$route.params.id);
-      this.axios.patch(uri, this.task
-      /*{}*/
-      ).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
-
-          _this4.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        _this4.taskResponse = response.data.data;
-
-        if (!_this4.taskResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
-
-          _this4.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        if (!_this4.taskResponse.error) {
-          //this.$emit("changecartevent", 1);
-          swal("Сохранение изменений", _this4.taskResponse.message, "success");
-
-          _this4.$router.push({
-            name: 'tasks'
-          });
-        } else {
-          swal("Ошибка", _this4.taskResponse.message, "error");
-
-          _this4.$router.push({
-            name: 'tasks'
-          });
-        }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-
-            _this4.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-        } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-
-          _this4.$router.push({
             name: 'tasks'
           });
         }
       });
     },
     getAllComments: function getAllComments() {
-      var _this5 = this;
+      var _this3 = this;
 
       var commentsUri = "/api/comments?task=".concat(this.task.id);
       this.axios.get(commentsUri).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при доступе к комментариям", "error");
-        }
+        if (response.data.data) {
+          _this3.comments = response.data.data; //this.meta = response.data.meta;
+        } else if (response.data.message) {
+          _this3.message = response.data.message;
+          swal("Ошибка", _this3.message, "error");
 
-        _this5.comments = response.data.data; //this.meta = response.data.meta;
+          _this3.$router.push({
+            name: 'tasks'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к комментариям по модифицируемой задаче", "error");
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this3.$router.push({
+                name: 'tasks'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this3.$router.push({
+            name: 'tasks'
+          });
+        }
       });
     },
     createNewComment: function createNewComment() {
       this.visibleCommentCreate = true;
     },
-    storeNewComment: function storeNewComment(destination) {
-      var _this6 = this;
+    storeComment: function storeComment() {
+      var _this4 = this;
 
       this.comment.taskId = this.task.id;
       var uri = '/api/comments';
       this.axios.post(uri, this.comment).then(function (response) {
-        if (!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
+        if (response.data.message) {
+          _this4.message = response.data.message;
+          swal("Сохранение нового комментария", _this4.message, "success");
 
-          _this6.$router.push({
-            name: 'tasks'
-          });
-        }
+          _this4.closeNewComment();
 
-        _this6.taskResponse = response.data.data;
-
-        if (!_this6.taskResponse.hasOwnProperty('error')) {
-          swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
-
-          _this6.$router.push({
-            name: 'tasks'
-          });
-        }
-
-        if (!_this6.taskResponse.error) {
-          switch (destination) {
-            case 1:
-              _this6.updateTaskToNext();
-
-              break;
-
-            case 2:
-              _this6.updateTaskToPrev();
-
-              break;
-
-            case 3:
-              _this6.updateTaskToClose();
-
-              break;
-
-            case 4:
-              _this6.closeNewComment();
-
-              _this6.getAllComments();
-
-              break;
-
-            default:
-              _this6.closeNewComment();
-
-              break;
-          }
+          _this4.getAllComments();
         } else {
-          swal("Ошибка", _this6.taskResponse.message, "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error"); //this.$router.push({name: 'tasks'});
 
-          _this6.closeNewComment();
+          _this4.closeNewComment();
+
+          _this4.getAllComments();
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this6.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Пользователь не зарегистрирован", "error");
+                _this4.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error"); //this.$router.push({name: 'tasks'});
 
+              _this4.closeNewComment();
+
+              _this4.getAllComments();
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this4.errMessageToStr(error.response.data), "error");
+
+              _this4.closeNewComment();
+
+              _this4.getAllComments();
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //this.$router.push({name: 'tasks'});
 
-          _this6.$router.push({
-            name: 'tasks'
-          });
+          _this4.closeNewComment();
+
+          _this4.getAllComments();
         }
       });
     },
@@ -6130,7 +7160,6 @@ __webpack_require__.r(__webpack_exports__);
       this.comment = {};
     },
     showComment: function showComment(commentId) {
-      console.log(commentId);
       this.$router.push({
         name: 'comment-details',
         params: {
@@ -6146,6 +7175,17 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return true;
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   },
   computed: {
@@ -6156,6 +7196,13 @@ __webpack_require__.r(__webpack_exports__);
       return this.task.isSequenceFirst;
     },
     isEmptyComment: function isEmptyComment() {
+      //  if(this.comment.hasOwnProperty('comment')) {
+      //    if(this.comment.comment.length == 0) {
+      //      return true;
+      //    }
+      //    return false;
+      //  }
+      //  return true;
       if (this.isEmptyObject(this.comment)) {
         return true;
       } else {
@@ -6243,38 +7290,70 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       processes: [],
+      message: '',
       //tasks: [],
       meta: []
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/tasks';
-    this.axios.get(uri).then(function (response) {
-      _this.processes = response.data.data; //this.tasks = response.data.data;
+    this.getTasks();
+  },
+  methods: {
+    getTasks: function getTasks() {
+      var _this = this;
 
-      _this.meta = response.data.meta;
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
+      var uri = '/api/tasks';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.processes = response.data.data; //this.tasks = response.data.data;
+
+          _this.meta = response.data.meta;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
 
           _this.$router.push({
-            name: 'login'
+            name: 'dashboard'
           });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку задач", "error");
 
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    }
   },
-  methods: {},
   computed: {
     visibleCreate: function visibleCreate() {
       return this.meta['canTaskCreate'];
@@ -6640,7 +7719,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      user: {}
+      user: {},
+      message: ''
     };
   },
   mounted: function mounted() {
@@ -6654,27 +7734,59 @@ __webpack_require__.r(__webpack_exports__);
 
       var uri = '/api/users';
       this.axios.post(uri, this.user).then(function (response) {
-        if (response.data) {
+        if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Сохранение изменений", _this.message, "success");
+
           _this.$router.push({
             name: 'users'
           });
         } else {
-          swal("Создание нового пользователя", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при создании нового пользователя системы", "error");
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this.$router.push({
+                name: 'users'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'users'
+          });
         }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -6912,48 +8024,99 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      users: []
+      users: [],
+      message: ''
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = '/api/users';
-    this.axios.get(uri).then(function (response) {
-      _this.users = response.data.data;
-    })["catch"](function (e) {
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+    this.getUsers();
   },
   methods: {
+    getUsers: function getUsers() {
+      var _this = this;
+
+      var uri = '/api/users';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.users = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку пользователей системы", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'dashboard'
+              });
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+
+          _this.$router.push({
+            name: 'dashboard'
+          });
+        }
+      });
+    },
     deleteUser: function deleteUser(id) {
       var _this2 = this;
 
-      var uri = '/api/users/${id}';
+      var uri = "/api/users/".concat(id);
 
       if (confirm("Do you really want to delete it?")) {
         this.axios["delete"](uri).then(function (response) {
-          if (response.data) {
+          if (response.data.data) {
             _this2.users.splice(_this2.users.indexOf(id), 1);
+          } else if (response.data.message) {
+            _this2.message = response.data.message;
+            swal("Ошибка", _this2.message, "error");
           } else {
-            console.log('could mot delete');
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного пользователя", "error");
           }
-        })["catch"](function (e) {
-          alert("Could not delete this User");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this2.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
     }
@@ -42482,6 +43645,50 @@ var render = function() {
                           "router-link",
                           {
                             staticClass: "nav-link",
+                            attrs: { to: { name: "tariffs" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Все тарифы")])
+                          ]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
+                            attrs: { to: { name: "tariff-create" } }
+                          },
+                          [
+                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
+                            _c("p", [_vm._v("Новый тариф")])
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("li", { staticClass: "nav-item has-treeview" }, [
+                  _vm._m(8),
+                  _vm._v(" "),
+                  _c("ul", { staticClass: "nav nav-treeview" }, [
+                    _c(
+                      "li",
+                      { staticClass: "nav-item" },
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            staticClass: "nav-link",
                             attrs: { to: { name: "users" } }
                           },
                           [
@@ -42515,7 +43722,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(8),
+                  _vm._m(9),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42559,7 +43766,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(9),
+                  _vm._m(10),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42603,7 +43810,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(10),
+                  _vm._m(11),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42647,7 +43854,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(11),
+                  _vm._m(12),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42691,7 +43898,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(12),
+                  _vm._m(13),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42735,7 +43942,7 @@ var render = function() {
                 ]),
                 _vm._v(" "),
                 _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(13),
+                  _vm._m(14),
                   _vm._v(" "),
                   _c("ul", { staticClass: "nav nav-treeview" }, [
                     _c(
@@ -42785,7 +43992,7 @@ var render = function() {
     ),
     _vm._v(" "),
     _c("div", { staticClass: "content-wrapper" }, [
-      _vm._m(14),
+      _vm._m(15),
       _vm._v(" "),
       _c("section", { staticClass: "content" }, [
         _c("div", { staticClass: "row" }, [
@@ -42794,7 +44001,7 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _vm._m(15),
+    _vm._m(16),
     _vm._v(" "),
     _c("aside", { staticClass: "control-sidebar control-sidebar-dark" }, [
       _c(
@@ -43209,6 +44416,19 @@ var staticRenderFns = [
       _vm._v(" "),
       _c("p", [
         _vm._v("\n                Контракты\n                "),
+        _c("i", { staticClass: "right fa fa-angle-left" })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
+      _c("i", { staticClass: "nav-icon fa fa-dashboard" }),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n                Тарифы\n                "),
         _c("i", { staticClass: "right fa fa-angle-left" })
       ])
     ])
@@ -43959,28 +45179,119 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
-            _c("textarea", {
-              directives: [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Тариф")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
                 {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.customer.description,
-                  expression: "customer.description"
-                }
-              ],
-              staticClass: "form-control",
-              staticStyle: { height: "300px" },
-              attrs: { placeholder: "Комментарии по клиенту" },
-              domProps: { value: _vm.customer.description },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectTariff,
+                      expression: "selectTariff"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectTariff = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
                   }
-                  _vm.$set(_vm.customer, "description", $event.target.value)
+                },
+                _vm._l(_vm.tariffs, function(tariff) {
+                  return _c(
+                    "option",
+                    { key: tariff.id, domProps: { value: tariff.id } },
+                    [
+                      _vm._v(
+                        "\n              " +
+                          _vm._s(tariff.name + " " + tariff.price) +
+                          "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v(
+                "Порвоначальный комментарий к новой задаче по новому контракту"
+              )
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("textarea", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.customer.task_comment,
+                    expression: "customer.task_comment"
+                  }
+                ],
+                staticClass: "form-control",
+                staticStyle: { height: "300px" },
+                attrs: { placeholder: "Комментарии по клиенту" },
+                domProps: { value: _vm.customer.task_comment },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.customer, "task_comment", $event.target.value)
+                  }
                 }
-              }
-            })
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Комментарий по клиенту")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("textarea", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.customer.description,
+                    expression: "customer.description"
+                  }
+                ],
+                staticClass: "form-control",
+                staticStyle: { height: "300px" },
+                attrs: { placeholder: "Комментарии по клиенту" },
+                domProps: { value: _vm.customer.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.customer, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
           ])
         ]),
         _vm._v(" "),
@@ -44805,7 +46116,6 @@ var render = function() {
                 attrs: {
                   type: "text",
                   id: "inputUIPermission",
-                  required: "",
                   placeholder: "UI разрешения"
                 },
                 domProps: { value: _vm.permission.slug },
@@ -44919,7 +46229,6 @@ var render = function() {
                   type: "text",
                   id: "inputUIPermission",
                   disabled: "",
-                  required: "",
                   placeholder: "UI роли"
                 },
                 domProps: { value: _vm.permission.slug },
@@ -45248,7 +46557,6 @@ var render = function() {
                 attrs: {
                   type: "text",
                   id: "inputUIRole",
-                  required: "",
                   placeholder: "UI политики безопасности"
                 },
                 domProps: { value: _vm.role.slug },
@@ -45362,7 +46670,6 @@ var render = function() {
                   type: "text",
                   id: "inputUIRole",
                   disabled: "",
-                  required: "",
                   placeholder: "UI политики безопасности"
                 },
                 domProps: { value: _vm.role.slug },
@@ -45729,46 +47036,6 @@ var render = function() {
                 }
               })
             ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIGroup" }
-              },
-              [_vm._v("UI рабочей группы")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.group.slug,
-                    expression: "group.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIGroup",
-                  required: "",
-                  placeholder: "UI рабочей группы"
-                },
-                domProps: { value: _vm.group.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.group, "slug", $event.target.value)
-                  }
-                }
-              })
-            ])
           ])
         ]),
         _vm._v(" "),
@@ -45842,47 +47109,6 @@ var render = function() {
       },
       [
         _c("div", { staticClass: "card-body" }, [
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIGroup" }
-              },
-              [_vm._v("UI рабочей группы")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.group.slug,
-                    expression: "group.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIGroup",
-                  disabled: "",
-                  required: "",
-                  placeholder: "UI рабочей группы"
-                },
-                domProps: { value: _vm.group.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.group, "slug", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
             _c(
               "label",
@@ -46061,8 +47287,6 @@ var render = function() {
               return _c("tr", { key: group.id }, [
                 _c("td", [_vm._v(_vm._s(group.name))]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(group.slug))]),
-                _vm._v(" "),
                 _c("td", [
                   _vm._v(_vm._s(_vm.relatedProcesses(group.processes)))
                 ]),
@@ -46131,8 +47355,6 @@ var staticRenderFns = [
       _c("tr", [
         _c("th", [_vm._v("Рабочая группа")]),
         _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
-        _vm._v(" "),
         _c("th", [_vm._v("Выполняемые задачи")]),
         _vm._v(" "),
         _c("th", [_vm._v("Редактировать")])
@@ -46146,8 +47368,6 @@ var staticRenderFns = [
     return _c("tfoot", [
       _c("tr", [
         _c("th", [_vm._v("Рабочая группа")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
         _vm._v(" "),
         _c("th", [_vm._v("Выполняемые задачи")]),
         _vm._v(" "),
@@ -46279,40 +47499,6 @@ var render = function() {
             ])
           ]),
           _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "col-sm-4 control-label" }, [
-              _vm._v("Уникальный slug процесса")
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.process.slug,
-                    expression: "process.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  required: "",
-                  placeholder: "Уникальный slug процесса"
-                },
-                domProps: { value: _vm.process.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.process, "slug", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
           _c("div", { staticClass: "row" }, [
             _c("div", { staticClass: "col-md-4" }, [
               _c("div", { staticClass: "form-group" }, [
@@ -46429,6 +47615,52 @@ var render = function() {
                 }),
                 _vm._v(" "),
                 _c("label", [_vm._v("Финальный процесс")])
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-md-4" }, [
+              _c("div", { staticClass: "form-group" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.processStatus,
+                      expression: "processStatus"
+                    }
+                  ],
+                  attrs: { type: "checkbox" },
+                  domProps: {
+                    checked: Array.isArray(_vm.processStatus)
+                      ? _vm._i(_vm.processStatus, null) > -1
+                      : _vm.processStatus
+                  },
+                  on: {
+                    change: function($event) {
+                      var $$a = _vm.processStatus,
+                        $$el = $event.target,
+                        $$c = $$el.checked ? true : false
+                      if (Array.isArray($$a)) {
+                        var $$v = null,
+                          $$i = _vm._i($$a, $$v)
+                        if ($$el.checked) {
+                          $$i < 0 && (_vm.processStatus = $$a.concat([$$v]))
+                        } else {
+                          $$i > -1 &&
+                            (_vm.processStatus = $$a
+                              .slice(0, $$i)
+                              .concat($$a.slice($$i + 1)))
+                        }
+                      } else {
+                        _vm.processStatus = $$c
+                      }
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c("label", { attrs: { for: "superCheckbox" } }, [
+                  _vm._v("Процесс используется")
+                ])
               ])
             ])
           ])
@@ -46576,6 +47808,7 @@ var render = function() {
                 staticClass: "form-control",
                 attrs: {
                   type: "text",
+                  disabled: "",
                   placeholder: "Название процесса обработки обращения"
                 },
                 domProps: { value: _vm.process.name },
@@ -46585,40 +47818,6 @@ var render = function() {
                       return
                     }
                     _vm.$set(_vm.process, "name", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "col-sm-4 control-label" }, [
-              _vm._v("Уникальный slug процесса")
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.process.slug,
-                    expression: "process.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  disabled: "",
-                  placeholder: "Уникальный slug процесса обработки обращения"
-                },
-                domProps: { value: _vm.process.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.process, "slug", $event.target.value)
                   }
                 }
               })
@@ -46743,6 +47942,52 @@ var render = function() {
                 _c("label", [_vm._v("Финальный процесс")])
               ])
             ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-4" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.processStatus,
+                    expression: "processStatus"
+                  }
+                ],
+                attrs: { type: "checkbox" },
+                domProps: {
+                  checked: Array.isArray(_vm.processStatus)
+                    ? _vm._i(_vm.processStatus, null) > -1
+                    : _vm.processStatus
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.processStatus,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.processStatus = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.processStatus = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.processStatus = $$c
+                    }
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c("label", { attrs: { for: "superCheckbox" } }, [
+                _vm._v("Процесс используется")
+              ])
+            ])
           ])
         ]),
         _vm._v(" "),
@@ -46822,6 +48067,8 @@ var render = function() {
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(process.sequence))]),
                 _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(process.is_active))]),
+                _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(process.is_super))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(process.is_final))]),
@@ -46897,6 +48144,8 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
         _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Процесс супервайзера")]),
         _vm._v(" "),
         _c("th", [_vm._v("Завершение процессов в маршруте")]),
@@ -46916,6 +48165,8 @@ var staticRenderFns = [
         _c("th", [_vm._v("Процесс")]),
         _vm._v(" "),
         _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
         _vm._v(" "),
         _c("th", [_vm._v("Процесс супервайзера")]),
         _vm._v(" "),
@@ -47399,7 +48650,7 @@ var render = function() {
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(route.description))]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(route.in_use))]),
+                _c("td", [_vm._v(_vm._s(route.is_active))]),
                 _vm._v(" "),
                 _c(
                   "td",
@@ -47453,7 +48704,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [
-        _vm._v("Маршруты обработки заявок клиента")
+        _vm._v("Маршруты движения обращений клиентов")
       ])
     ])
   },
@@ -47486,6 +48737,416 @@ var staticRenderFns = [
         _c("th", [_vm._v("id-маршрута")]),
         _vm._v(" "),
         _c("th", [_vm._v("Описание маршрута")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Редактировать")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20& ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.addTariff($event)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffName" }
+              },
+              [_vm._v("Название тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.name,
+                    expression: "tariff.name"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffName",
+                  required: "",
+                  placeholder: "Название тарифа"
+                },
+                domProps: { value: _vm.tariff.name },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "name", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffDesc" }
+              },
+              [_vm._v("Описание тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.description,
+                    expression: "tariff.description"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffDesc",
+                  placeholder: "Описание тарифа"
+                },
+                domProps: { value: _vm.tariff.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffSku" }
+              },
+              [_vm._v("SKU тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.sku,
+                    expression: "tariff.sku"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffSku",
+                  required: "",
+                  placeholder: "SKU тарифа"
+                },
+                domProps: { value: _vm.tariff.sku },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "sku", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffSku" }
+              },
+              [_vm._v("Прайс")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.price,
+                    expression: "tariff.price"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffSku",
+                  required: "",
+                  placeholder: "Прайс"
+                },
+                domProps: { value: _vm.tariff.price },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "price", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputGroupName" }
+              },
+              [_vm._v("Статус тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.isActive,
+                    expression: "isActive"
+                  }
+                ],
+                attrs: { type: "checkbox" },
+                domProps: {
+                  checked: Array.isArray(_vm.isActive)
+                    ? _vm._i(_vm.isActive, null) > -1
+                    : _vm.isActive
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.isActive,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.isActive = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.isActive = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.isActive = $$c
+                    }
+                  }
+                }
+              })
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "card-footer" },
+          [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Создать")
+            ]),
+            _vm._v(" "),
+            _c(
+              "router-link",
+              {
+                staticClass: "btn btn-default float-right",
+                attrs: { to: { name: "tariffs" } }
+              },
+              [_vm._v("Отмена")]
+            )
+          ],
+          1
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [_vm._v("Новый тариф")])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62&":
+/*!*****************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62& ***!
+  \*****************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c("div", { staticClass: "card-body table-responsive p-0" }, [
+      _c(
+        "table",
+        { staticClass: "table table-hover table-bordered table-striped" },
+        [
+          _vm._m(1),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            _vm._l(_vm.tariffs, function(tariff) {
+              return _c("tr", { key: tariff.id }, [
+                _c("td", [_vm._v(_vm._s(tariff.name))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(tariff.description))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(tariff.sku))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(tariff.price))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(tariff.is_active))]),
+                _vm._v(" "),
+                _c(
+                  "td",
+                  [
+                    _c(
+                      "router-link",
+                      {
+                        staticClass: "btn btn-xs btn-default",
+                        attrs: {
+                          to: {
+                            name: "tariff-update",
+                            params: { id: tariff.id }
+                          }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                            Edit\n                        "
+                        )
+                      ]
+                    )
+                  ],
+                  1
+                )
+              ])
+            }),
+            0
+          ),
+          _vm._v(" "),
+          _vm._m(2)
+        ]
+      )
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [_vm._v("Тарифы")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("Название тарифа")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Описание")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("SKU")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Прайс")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Статус")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Редактировать")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tfoot", [
+      _c("tr", [
+        _c("th", [_vm._v("Название тарифа")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Описание")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("SKU")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Прайс")]),
         _vm._v(" "),
         _c("th", [_vm._v("Статус")]),
         _vm._v(" "),
@@ -47939,34 +49600,32 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputTaskDesc" }
-              },
-              [_vm._v("Краткое описание")]
-            ),
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Первоначальный комментарий к новой задаче")
+            ]),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
+              _c("textarea", {
                 directives: [
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.task.description,
-                    expression: "task.description"
+                    value: _vm.task.comment,
+                    expression: "task.comment"
                   }
                 ],
                 staticClass: "form-control",
-                attrs: { type: "text", placeholder: "Краткое описание" },
-                domProps: { value: _vm.task.description },
+                staticStyle: { height: "300px" },
+                attrs: {
+                  placeholder: "Первоначальный комментарий к новой задаче "
+                },
+                domProps: { value: _vm.task.comment },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.task, "description", $event.target.value)
+                    _vm.$set(_vm.task, "comment", $event.target.value)
                   }
                 }
               })
@@ -48302,7 +49961,7 @@ var render = function() {
                 _vm._v(
                   "\n                                                       в процессе: "
                 ),
-                _c("b", [_vm._v(_vm._s(_vm.task.sequenceName))])
+                _c("b", [_vm._v(_vm._s(_vm.task.processName))])
               ])
             : _vm._e(),
           _vm._v(" "),
@@ -48323,14 +49982,6 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("label", [_vm._v(_vm._s(_vm.task.title))])
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "form-group" }, [
-          _c("label", { staticClass: "col-sm-4 control-label" }, [
-            _vm._v("Краткое описание:")
-          ]),
-          _vm._v(" "),
-          _c("label", [_vm._v(_vm._s(_vm.task.description))])
         ]),
         _vm._v(" "),
         _vm.visibleCommentCreate
@@ -48415,7 +50066,7 @@ var render = function() {
                       attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
-                          return _vm.storeNewComment(2)
+                          return _vm.updateTask(2)
                         }
                       }
                     },
@@ -48434,7 +50085,7 @@ var render = function() {
                       attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
-                          return _vm.storeNewComment(1)
+                          return _vm.updateTask(1)
                         }
                       }
                     },
@@ -48452,7 +50103,7 @@ var render = function() {
                   attrs: { disabled: _vm.isEmptyComment },
                   on: {
                     click: function($event) {
-                      return _vm.storeNewComment(4)
+                      return _vm.storeComment()
                     }
                   }
                 },
@@ -48467,7 +50118,7 @@ var render = function() {
                       attrs: { disabled: _vm.isEmptyComment },
                       on: {
                         click: function($event) {
-                          return _vm.storeNewComment(3)
+                          return _vm.updateTask(3)
                         }
                       }
                     },
@@ -48553,7 +50204,7 @@ var render = function() {
                   "router-link",
                   {
                     staticClass: "btn btn-xs btn-default",
-                    attrs: { to: { name: "task-create" } }
+                    attrs: { to: { name: "search-customer" } }
                   },
                   [
                     _vm._v(
@@ -49746,7 +51397,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
-      _c("h3", { staticClass: "card-title" }, [_vm._v("Заказы")])
+      _c("h3", { staticClass: "card-title" }, [_vm._v("Пользователи системы")])
     ])
   },
   function() {
@@ -66320,6 +67971,144 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/tariff/TariffCreate.vue":
+/*!*********************************************************!*\
+  !*** ./resources/js/components/tariff/TariffCreate.vue ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TariffCreate.vue?vue&type=template&id=ed6e0a20& */ "./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20&");
+/* harmony import */ var _TariffCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TariffCreate.vue?vue&type=script&lang=js& */ "./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _TariffCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/tariff/TariffCreate.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************!*\
+  !*** ./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./TariffCreate.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffCreate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffCreate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20& ***!
+  \****************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./TariffCreate.vue?vue&type=template&id=ed6e0a20& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffCreate.vue?vue&type=template&id=ed6e0a20&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffCreate_vue_vue_type_template_id_ed6e0a20___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/Tariffs.vue":
+/*!****************************************************!*\
+  !*** ./resources/js/components/tariff/Tariffs.vue ***!
+  \****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Tariffs.vue?vue&type=template&id=231c7a62& */ "./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62&");
+/* harmony import */ var _Tariffs_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Tariffs.vue?vue&type=script&lang=js& */ "./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _Tariffs_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/tariff/Tariffs.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************!*\
+  !*** ./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Tariffs_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./Tariffs.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/Tariffs.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Tariffs_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62&":
+/*!***********************************************************************************!*\
+  !*** ./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62& ***!
+  \***********************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./Tariffs.vue?vue&type=template&id=231c7a62& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/Tariffs.vue?vue&type=template&id=231c7a62&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Tariffs_vue_vue_type_template_id_231c7a62___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/task/CommentDetails.vue":
 /*!*********************************************************!*\
   !*** ./resources/js/components/task/CommentDetails.vue ***!
@@ -67180,18 +68969,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_customer_Customers__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./components/customer/Customers */ "./resources/js/components/customer/Customers.vue");
 /* harmony import */ var _components_customer_CustomerUpdate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/customer/CustomerUpdate */ "./resources/js/components/customer/CustomerUpdate.vue");
 /* harmony import */ var _components_customer_CustomerCreate__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/customer/CustomerCreate */ "./resources/js/components/customer/CustomerCreate.vue");
-/* harmony import */ var _components_process_Routes__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/process/Routes */ "./resources/js/components/process/Routes.vue");
-/* harmony import */ var _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/process/RouteUpdate */ "./resources/js/components/process/RouteUpdate.vue");
-/* harmony import */ var _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/process/RouteCreate */ "./resources/js/components/process/RouteCreate.vue");
-/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
-/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
-/* harmony import */ var _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/task/SearchCustomer */ "./resources/js/components/task/SearchCustomer.vue");
-/* harmony import */ var _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/task/ContractsForCustomer */ "./resources/js/components/task/ContractsForCustomer.vue");
-/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
-/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
-/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
-/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
-/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
+/* harmony import */ var _components_tariff_Tariffs__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/tariff/Tariffs */ "./resources/js/components/tariff/Tariffs.vue");
+/* harmony import */ var _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/tariff/TariffCreate */ "./resources/js/components/tariff/TariffCreate.vue");
+/* harmony import */ var _components_process_Routes__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/process/Routes */ "./resources/js/components/process/Routes.vue");
+/* harmony import */ var _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/process/RouteUpdate */ "./resources/js/components/process/RouteUpdate.vue");
+/* harmony import */ var _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/process/RouteCreate */ "./resources/js/components/process/RouteCreate.vue");
+/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
+/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
+/* harmony import */ var _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/SearchCustomer */ "./resources/js/components/task/SearchCustomer.vue");
+/* harmony import */ var _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/ContractsForCustomer */ "./resources/js/components/task/ContractsForCustomer.vue");
+/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
+/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
+/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
 
 
@@ -67217,9 +69008,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- //import Prices from './components/price/Prices';
-//import PriceUpdate from './components/price/PriceUpdate';
-//import PriceCreate from './components/price/PriceCreate';
+
+ //import TariffUpdate from './components/tariff/TariffUpdate';
+
 
 
 
@@ -67313,15 +69104,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'routes',
       name: 'routes',
-      component: _components_process_Routes__WEBPACK_IMPORTED_MODULE_23__["default"]
+      component: _components_process_Routes__WEBPACK_IMPORTED_MODULE_25__["default"]
     }, {
       path: 'route/:id',
       name: 'route-update',
-      component: _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_24__["default"]
+      component: _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_26__["default"]
     }, {
       path: 'route-new',
       name: 'route-create',
-      component: _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_25__["default"]
+      component: _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_27__["default"]
     }, {
       path: 'customers',
       name: 'customers',
@@ -67335,6 +69126,15 @@ __webpack_require__.r(__webpack_exports__);
       name: 'customer-create',
       component: _components_customer_CustomerCreate__WEBPACK_IMPORTED_MODULE_22__["default"]
     }, {
+      path: 'tariffs',
+      name: 'tariffs',
+      component: _components_tariff_Tariffs__WEBPACK_IMPORTED_MODULE_23__["default"]
+    }, //    { path: 'tariff/:id',  name: 'tariff-update', component: TariffUpdate },
+    {
+      path: 'tariff-new',
+      name: 'tariff-create',
+      component: _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_24__["default"]
+    }, {
       path: 'contracts',
       name: 'contracts',
       component: _components_contract_Contracts__WEBPACK_IMPORTED_MODULE_19__["default"]
@@ -67346,28 +69146,28 @@ __webpack_require__.r(__webpack_exports__);
     {
       path: 'tasks',
       name: 'tasks',
-      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_26__["default"]
+      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_28__["default"]
     }, {
       path: 'new',
       name: 'search-customer',
-      component: _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_28__["default"],
+      component: _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_30__["default"],
       children: [{
         path: 'customers/:customid',
         name: 'contracts-for-customer',
-        component: _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_29__["default"]
+        component: _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_31__["default"]
       }, {
         path: 'customer-notfound',
         name: 'customer-not-found',
-        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_31__["default"]
+        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_33__["default"]
       }]
     }, {
       path: 'new/contracts/:contractid',
       name: 'create-task-for-exists-contract',
-      component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_30__["default"]
+      component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_32__["default"]
     }, {
       path: 'task/:id',
       name: 'task-update',
-      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_27__["default"] //children: [
+      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_29__["default"] //children: [
       //{ path: 'comments',  name: 'comments', component: Comments },
       //{ path: 'comment/:commid',  name: 'comment-details', component: CommentDetails }
       //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
@@ -67376,15 +69176,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'comment/:commid',
       name: 'comment-details',
-      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_32__["default"]
+      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_34__["default"]
     }, {
       path: 'bot-setting',
       name: 'bot-setting',
-      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_33__["default"]
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_35__["default"]
     }, {
       path: 'bot-status',
       name: 'bot-status',
-      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_34__["default"]
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_36__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

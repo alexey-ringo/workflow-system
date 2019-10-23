@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-md-8">
           <h3 v-if="!isSequenceLast" class="card-title">Обработка заявки № <b>{{task.task}}</b>
-                                                         в процессе: <b>{{task.sequenceName}}</b></h3>
+                                                         в процессе: <b>{{task.processName}}</b></h3>
           <h3 v-if="isSequenceLast" class="card-title">Завершение заявки № {{task.task}}</h3>
         </div>
       </div>
@@ -16,11 +16,7 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название заявки:</label>
           <label>{{task.title}}</label>
-        </div>
-        <div class="form-group">
-          <label class="col-sm-4 control-label">Краткое описание:</label>
-          <label>{{task.description}}</label>
-        </div>
+        </div>        
         
         <div class="form-group" v-if="visibleCommentCreate">
           <textarea class="form-control" v-model="comment.comment" placeholder="введите несколько строчек" style="height: 300px">
@@ -47,10 +43,10 @@
       <!-- /.card-body -->
       <div class="card-footer">
         <div v-if="visibleCommentCreate">
-          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceFirst" @click="storeNewComment(2)">Назад в <b>{{task.prevProcessName}}</b></button>
-          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceLast" @click="storeNewComment(1)">Вперед в <b>{{task.nextProcessName}}</b></button>
-          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" @click="storeNewComment(4)">Просто комментарий</button>
-          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="isSequenceLast" @click="storeNewComment(3)">Закрыть заявку</button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceFirst" @click="updateTask(2)">Назад в <b>{{task.prevProcessName}}</b></button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="!isSequenceLast" @click="updateTask(1)">Вперед в <b>{{task.nextProcessName}}</b></button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" @click="storeComment()">Просто комментарий</button>
+          <button class="btn btn-primary" v-bind:disabled="isEmptyComment" v-if="isSequenceLast" @click="updateTask(3)">Закрыть заявку</button>
           <a href="#" class="btn btn-default float-right" v-on:click="closeNewComment">Отмена</a>
         </div>
         <div v-if="!visibleCommentCreate">
@@ -68,11 +64,8 @@
   export default {
     data(){
       return {
-        task: {
-          error: false,
-          message: ''
-        },
-        taskResponse: {},
+        task: {},                
+        message: '',        
         comments: [],
         comment: {},
         visibleCommentCreate: false
@@ -87,150 +80,122 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = `/api/tasks/${this.$route.params.id}`;
-      this.axios.get(uri).then((response) => {
-        if(!response.data.data) {
-          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к задаче", "error");
-          this.$router.push({name: 'tasks'});
-        }
-        this.task = response.data.data;
-        if(!this.task.hasOwnProperty('error')) {
-          this.getAllComments();
-        }
-        else {
-          swal("Ошибка", 'Задача № ' + this.task.task + ' "' + this.task.title + '" : ' + this.task.message, "error");
-          this.$router.push({name: 'tasks'});
-        }
-      })
-      .catch(e => {
-        //console.log(e);
-        if(e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-            this.$router.push({name: 'login'});
-          }
-          //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-        }
-        else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-          this.$router.push({name: 'tasks'});
-        }
-      });
+      this.getUpdatedTask();
     },
     methods: {
-      updateTaskToNext(){
-        this.task.currentProcessId = this.task.nextProcessId;
-        this.task.destination = 1;
+      getUpdatedTask() {
         let uri = `/api/tasks/${this.$route.params.id}`;
-        this.axios.patch(uri, this.task/*{}*/)
-          .then((response) => {
-            if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при передаче задачи в следующий процесс", "error");
-              this.$router.push({name: 'tasks'});
-            }
-            this.taskResponse = response.data.data;
-            if(!this.taskResponse.hasOwnProperty('error')) {
-              swal("Ошибка", "Неверный формат ответа сервера при передаче задачи в следующий процесс", "error");
-          	  this.$router.push({name: 'tasks'});
-            }
-            if(!this.taskResponse.error) {
-              //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.taskResponse.message, "success");
-              this.$router.push({name: 'tasks'});
-            }
-            else {
-            	swal("Ошибка", this.taskResponse.message, "error");
-            	this.$router.push({name: 'tasks'});
-            }
-          })
-          .catch(e => {
-          	if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.task = response.data.data;        
+            this.getAllComments();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'tasks'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой задаче", "error");
+            this.$router.push({name: 'tasks'});
+          }        
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-            }
-            else {
-              swal('Ошибка', "Внутренняя ошибка сервера", "error");
-              this.$router.push({name: 'tasks'});
-            }
-          });
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'tasks'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'tasks'});
+          }
+        });
       },
-      updateTaskToPrev(){
-        this.task.currentProcessId = this.task.prevProcessId;
-        this.task.destination = 2;
+      updateTask(destination) {
+        if(this.isEmptyComment) {
+          return;
+        }
+        
+        let errNoResponseMsg = '';
+        switch(destination) {
+          case 1:
+            this.task.currentProcessId = this.task.nextProcessId;
+            errNoResponseMsg = 'Нет ответа от сервера при передаче задачи в следующий процесс';
+          break;
+            
+          case 2:
+            this.task.currentProcessId = this.task.prevProcessId;
+            errNoResponseMsg = 'Нет ответа от сервера при возврате задачи в предидущий процесс';
+          break;
+              
+          case 3:
+            this.task.currentProcessId = this.task.nextProcessId;
+            errNoResponseMsg = 'Нет ответа от сервера при закрытии задачи';
+          break;
+          
+          default:
+          errNoResponseMsg = 'Неправильно указано направление движения процесса задачи';
+            swal("Ошибка", errNoResponseMsg, "error");
+            //this.closeNewComment();
+            //this.getAllComments();
+            this.$router.push({name: 'tasks'});
+          break;
+        }
+        
+        this.task.comment = this.comment.comment;
+        this.task.destination = destination;
+        
         let uri = `/api/tasks/${this.$route.params.id}`;
         this.axios.patch(uri, this.task/*{}*/)
           .then((response) => {
-            if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при возврате задачи в предидущий процесс", "error");
-              this.$router.push({name: 'tasks'});
-            }
-            this.taskResponse = response.data.data;
-            if(!this.taskResponse.hasOwnProperty('error')) {
-              swal("Ошибка", "Неверный формат ответа сервера при возврате задачи в предидущий процесс", "error");
-          	  this.$router.push({name: 'tasks'});
-            }
-            if(!this.taskResponse.error) {
-              //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.taskResponse.message, "success");
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'tasks'});
             }
             else {
-          	  swal("Ошибка", this.taskResponse.message, "error");
-          	  this.$router.push({name: 'tasks'});
-            }
+              swal("Ошибка", errNoResponseMsg, "error");
+              this.$router.push({name: 'tasks'});
+            }          
           })
-          .catch(e => {
-        	  if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'tasks'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
-              this.$router.push({name: 'tasks'});
-            }
-          });
-      },
-      updateTaskToClose(){
-        this.task.currentProcessId = this.task.nextProcessId;
-        this.task.destination = 3;
-        let uri = `/api/tasks/${this.$route.params.id}`;
-        this.axios.patch(uri, this.task/*{}*/)
-          .then((response) => {
-            if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при закрытии задачи", "error");
-              this.$router.push({name: 'tasks'});
-            }
-            this.taskResponse = response.data.data;
-            if(!this.taskResponse.hasOwnProperty('error')) {
-              swal("Ошибка", "Неверный формат ответа сервера при закрытии задачи", "error");
-          	  this.$router.push({name: 'tasks'});
-            }
-            if(!this.taskResponse.error) {
-              //this.$emit("changecartevent", 1);
-              swal("Сохранение изменений", this.taskResponse.message, "success");
-              this.$router.push({name: 'tasks'});
-            }
-            else {
-          	  swal("Ошибка", this.taskResponse.message, "error");
-          	  this.$router.push({name: 'tasks'});
-            }
-          })
-          .catch(e => {
-        	  if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
-              }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-            }
-            else {
-              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
               this.$router.push({name: 'tasks'});
             }
           });
@@ -239,69 +204,95 @@
         let commentsUri = `/api/comments?task=${this.task.id}`;
         this.axios.get(commentsUri)
       	  .then((response) => {
-      	    if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при доступе к комментариям", "error");
+      	    if(response.data.data) {
+      	      this.comments = response.data.data;
+        	    //this.meta = response.data.meta;
+      	    }
+      	    else if (response.data.message) {
+              this.message = response.data.message;
+              swal("Ошибка", this.message, "error");
+              this.$router.push({name: 'tasks'});
             }
-            this.comments = response.data.data;
-        	  //this.meta = response.data.meta;
+            else {
+              swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к комментариям по модифицируемой задаче", "error");
+              this.$router.push({name: 'tasks'});
+            }
+          })
+          .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'tasks'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'tasks'});
+          }
         });
       },
       createNewComment() {
         this.visibleCommentCreate = true;
       },
-      storeNewComment(destination) {
+      storeComment() {
         this.comment.taskId = this.task.id;
         let uri = '/api/comments';
         this.axios.post(uri, this.comment).then((response) => {
-          if(!response.data.data) {
-              swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
-              this.$router.push({name: 'tasks'});
-            }
-          this.taskResponse = response.data.data;
-          if(!this.taskResponse.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при сохранении комментария", "error");
-            this.$router.push({name: 'tasks'});
-          }
-          if(!this.taskResponse.error) {
-            switch(destination) {
-              case 1:
-                this.updateTaskToNext();
-              break;
-              
-              case 2:
-                this.updateTaskToPrev();
-              break;
-              
-              case 3:
-                this.updateTaskToClose();
-              break;
-              
-              case 4:
-                this.closeNewComment();
-                this.getAllComments();
-              break;
-              
-              default:
-                this.closeNewComment();
-              break;
-            }
+          if(response.data.message) {
+            this.message = response.data.message;
+            swal("Сохранение нового комментария", this.message, "success");
+            this.closeNewComment();
+            this.getAllComments();
           }
           else {
-            swal("Ошибка", this.taskResponse.message, "error");
+            swal("Ошибка", "Нет ответа от сервера при сохранении комментария", "error");
+            //this.$router.push({name: 'tasks'});
             this.closeNewComment();
+            this.getAllComments();
           }
         })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                //this.$router.push({name: 'tasks'});
+                this.closeNewComment();
+                this.getAllComments();
+              }
+            }//Ошибки валидации
+            else {
+              swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
+              this.closeNewComment();
+              this.getAllComments();
             }
-            //swal('Ошибка аутентификации', "Пользователь не зарегистрирован", "error");
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'tasks'});
+            //this.$router.push({name: 'tasks'});
+            this.closeNewComment();
+            this.getAllComments();
           }
         });
       },
@@ -310,7 +301,6 @@
         this.comment = {};
       },
       showComment(commentId) {
-        console.log(commentId);
         this.$router.push({name: 'comment-details', params: {commid: commentId} });
         //this.$router.push({path: `/comment/${commentId}`});
       },
@@ -322,6 +312,15 @@
         }
       return true;
       },
+      errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
+      },
     },
     computed: {
       isSequenceLast() {
@@ -329,8 +328,16 @@
       },
       isSequenceFirst() {
         return this.task.isSequenceFirst;
-      },
+      },      
       isEmptyComment() {
+      //  if(this.comment.hasOwnProperty('comment')) {
+      //    if(this.comment.comment.length == 0) {
+      //      return true;
+      //    }
+      //    return false;
+      //  }
+      //  return true;
+      
         if(this.isEmptyObject(this.comment)) {
           return true;
         }

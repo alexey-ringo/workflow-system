@@ -31,12 +31,12 @@ class SearchController extends Controller
     public function searchSurname(Request $request)
     {
         //$customer = Customer::where('surname', $request->keywords)->get();
-        $customer = Customer::where('surname', 'LIKE', '%' . $request->keywords . '%')->get();
-        if(!$customer->isEmpty()) {
-            return new CustomerCollection($customer);
+        $customers = Customer::where('surname', 'LIKE', '%' . $request->keywords . '%')->with('contracts')->get();
+        if($customers->isEmpty()) {
+            return response()->json(['data' => 0]);
         }
         else {
-            return response()->json(['data' => 0]);
+            return new CustomerCollection($customers);
         }
     }
 }

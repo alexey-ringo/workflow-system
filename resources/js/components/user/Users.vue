@@ -1,7 +1,7 @@
 <template>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Заказы</h3>
+            <h3 class="card-title">Пользователи системы</h3>
         </div>
         <!-- /.card-header -->
         <div class="card-body table-responsive p-0">
@@ -49,7 +49,8 @@
     export default {
         data: function () {
             return {
-                users: []
+                users: [],
+                message: ''
             }
         },
         mounted() {
@@ -58,39 +59,85 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/users';
-            this.axios.get(uri)
-            	.then((response) => {
-                	this.users = response.data.data;
-                })
-                .catch(e => {
-                	if(e == 'Error: Request failed with status code 401') {
-                        if (localStorage.getItem('jwt')) {
-                            localStorage.removeItem('jwt');
-                            this.$router.push({name: 'login'});
-                        }
-                        //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-                    }
-                    else {
-                        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-                    }
-                });
+            this.getUsers();
         },
         methods: {
+            getUsers() {
+                let uri = '/api/users';
+                this.axios.get(uri)
+            	    .then((response) => {
+            	        if(response.data.data) {
+                	        this.users = response.data.data;
+            	        }
+            	        else if (response.data.message) {
+                            this.message = response.data.message;
+                            swal("Ошибка", this.message, "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                        else {
+                            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку пользователей системы", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }        
+                    })
+                    .catch(error => {
+                        if(error.response) {
+                            if(error.response.data.message) {
+                                if(error.response.status == 401) {
+                                    if (localStorage.getItem('jwt')) {
+                                        localStorage.removeItem('jwt');
+                                        this.$router.push({name: 'login'});
+                                    }
+                                }
+                                else {
+                                    swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    this.$router.push({name: 'dashboard'});
+                                }
+                            }         
+                        }
+                        else if(error.request) {
+                        }
+                        else {
+                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                    });
+
+            },
             deleteUser(id) {
-                let uri = '/api/users/${id}';
+                let uri = `/api/users/${id}`;
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
-                            if(response.data) {
+                            if(response.data.data) {
                                 this.users.splice(this.users.indexOf(id), 1);
                             }
-                            else {
-                                console.log('could mot delete');
+                            else if (response.data.message) {
+                                this.message = response.data.message;
+                                swal("Ошибка", this.message, "error");
                             }
+                            else {
+                                swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного пользователя", "error");
+                            }        
                         })
-                        .catch(e => {
-                            alert("Could not delete this User");
+                        .catch(error => {
+                            if(error.response) {
+                                if(error.response.data.message) {
+                                    if(error.response.status == 401) {
+                                        if (localStorage.getItem('jwt')) {
+                                            localStorage.removeItem('jwt');
+                                            this.$router.push({name: 'login'});
+                                        }
+                                    }
+                                    else {
+                                        swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    }
+                                }         
+                            }
+                            else if(error.request) {
+                            }
+                            else {
+                                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            }
                         });
                 }
             }

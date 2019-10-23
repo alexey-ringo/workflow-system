@@ -7,41 +7,30 @@ use App\Models\Task;
 
 class TaskResponse
 {
-    private $error = false;
     private $task;
     private $message;
     
-    public function __construct(string $message, Task $task = null)
+    public function __construct(string $message, Task $task)
     {
-        if($task) {
-            $this->error = false;
-        }
-        else {
-            $this->error = true;
-        }
         $this->task = $task;
         $this->message = $message;
         
     }
     
-    public function hasError(): bool
-    {
-        return $this->error;
-    }
     
-    public function getTask(): ?Task
+    public function getTask(): Task
     {
         return $this->task;
     }
     
     public function getTaskId(): int
     {
-        return $this->task ? $this->task->id : 0;
+        return $this->task->id;
     }
     
     public function getTaskNum(): int
     {
-        return $this->task ? $this->task->task : 0;
+        return $this->task->task;
     }
     
     public function getMessage(): string 

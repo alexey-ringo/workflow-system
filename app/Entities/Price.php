@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Entities;
 
-use Illuminate\Database\Eloquent\Model;
-
-use App\Models\Contract;
-
-class Price extends Model
+class Price extends AbstractEntity
 {
     protected $table = 'prices';
     protected $fillable = [

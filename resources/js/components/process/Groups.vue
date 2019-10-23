@@ -9,7 +9,6 @@
                 <thead>
                     <tr>
                         <th>Рабочая группа</th>
-                        <th>SLUG</th>
                         <th>Выполняемые задачи</th>
                         <th>Редактировать</th>
                     </tr>
@@ -17,7 +16,6 @@
                 <tbody>
                     <tr v-for="group in groups" :key="group.id">
                         <td>{{ group.name  }}</td>
-                        <td>{{ group.slug  }}</td>
                         <td>{{ relatedProcesses(group.processes) }}</td>
                         <td>
                             <router-link :to="{name: 'group-update', params: {id: group.id}}" class="btn btn-xs btn-default">
@@ -30,7 +28,6 @@
                 <tfoot>
                     <tr>
                         <th>Рабочая группа</th>
-                        <th>SLUG</th>
                         <th>Выполняемые задачи</th>
                         <th>Редактировать</th>
                     </tr>
@@ -46,7 +43,8 @@
     export default {
         data: function () {
             return {
-                groups: []
+                groups: [],
+                message: ''
             }
         },
         mounted() {
@@ -55,31 +53,84 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/groups';
-            this.axios.get(uri)
-            	.then((response) => {
-                	this.groups = response.data.data;
-                })
-                .catch(e => {
-                	//console.log(e);
-                	swal('Ошибка', "Внутренняя ошибка сервера", "error");
-                });
+            this.getGroups();
         },
         methods: {
+            getGroups() {
+                let uri = '/api/groups';
+                this.axios.get(uri)
+            	    .then((response) => {
+            	        if(response.data.data) {
+                	        this.groups = response.data.data;
+            	        }
+            	        else if (response.data.message) {
+                            this.message = response.data.message;
+                            swal("Ошибка", this.message, "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                        else {
+                            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку рабочих групп", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }        
+                    })
+                    .catch(error => {
+                        if(error.response) {
+                            if(error.response.data.message) {
+                                if(error.response.status == 401) {
+                                    if (localStorage.getItem('jwt')) {
+                                        localStorage.removeItem('jwt');
+                                        this.$router.push({name: 'login'});
+                                    }
+                                }
+                                else {
+                                    swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    this.$router.push({name: 'dashboard'});
+                                }
+                            }         
+                        }
+                        else if(error.request) {
+                        }
+                        else {
+                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                    });
+            },
             deleteGroup(id) {
                 let uri = `/api/groups/${id}`;
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
-                            if(response.data) {
+                            if(response.data.data) {
                                 this.groups.splice(this.groups.indexOf(id), 1);
                             }
-                            else {
-                                swal("Удаление рабочей группы", "Что то пошло не так...", "error");
+                            else if (response.data.message) {
+                                this.message = response.data.message;
+                                swal("Ошибка", this.message, "error");
                             }
+                            else {
+                                swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранной группы", "error");
+                            }        
                         })
-                        .catch(e => {
-                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                        .catch(error => {
+                            if(error.response) {
+                                if(error.response.data.message) {
+                                    if(error.response.status == 401) {
+                                        if (localStorage.getItem('jwt')) {
+                                            localStorage.removeItem('jwt');
+                                            this.$router.push({name: 'login'});
+                                        }
+                                    }
+                                    else {
+                                        swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    }
+                                }         
+                            }
+                            else if(error.request) {
+                            }
+                            else {
+                                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            }
                         });
                 }
             },

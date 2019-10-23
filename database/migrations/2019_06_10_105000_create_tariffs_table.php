@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePricesTable extends Migration
+class CreateTariffsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,17 @@ class CreatePricesTable extends Migration
      */
     public function up()
     {
-        Schema::create('prices', function (Blueprint $table) {
+        Schema::create('tariffs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->boolean('is_material')->default(false);
             $table->string('name');
             $table->text('description')->nullable();
             $table->bigInteger('sku');
             $table->decimal('price', 10, 2);
-            $table->integer('status')->unsigned()->nullable();
+            $table->integer('is_active')->unsigned()->nullable();
             $table->timestamps();
             
-            $table->unique(['sku', 'status'], 'prices_sku_status_index');
+            $table->unique(['sku', 'is_active'], 'tariffs_sku_is_active_index');
         });
-        
     }
 
     /**
@@ -35,6 +33,6 @@ class CreatePricesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('prices');
+        Schema::dropIfExists('tariffs');
     }
 }

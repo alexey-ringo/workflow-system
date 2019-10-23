@@ -10,7 +10,7 @@
         <div class="form-group">
           <label for="inputUIPermission" class="col-sm-4 control-label">UI разрешения операции</label>
           <div class="col-sm-10">
-            <input type="text" v-model="permission.slug" class="form-control" id="inputUIPermission" disabled required placeholder="UI роли">
+            <input type="text" v-model="permission.slug" class="form-control" id="inputUIPermission" disabled placeholder="UI роли">
           </div>
         </div>
                   

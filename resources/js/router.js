@@ -34,9 +34,9 @@ import Customers from './components/customer/Customers';
 import CustomerUpdate from './components/customer/CustomerUpdate';
 import CustomerCreate from './components/customer/CustomerCreate';
 
-//import Prices from './components/price/Prices';
-//import PriceUpdate from './components/price/PriceUpdate';
-//import PriceCreate from './components/price/PriceCreate';
+import Tariffs from './components/tariff/Tariffs';
+//import TariffUpdate from './components/tariff/TariffUpdate';
+import TariffCreate from './components/tariff/TariffCreate';
 
 import Routes from './components/process/Routes';
 import RouteUpdate from './components/process/RouteUpdate';
@@ -110,6 +110,10 @@ export default new VueRouter({
                 { path: 'customers',  name: 'customers', component: Customers },
                 { path: 'customer/:id',  name: 'customer-update', component: CustomerUpdate },
                 { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
+                
+                { path: 'tariffs',  name: 'tariffs', component: Tariffs },
+            //    { path: 'tariff/:id',  name: 'tariff-update', component: TariffUpdate },
+                { path: 'tariff-new',  name: 'tariff-create', component: TariffCreate },
                 
                 { path: 'contracts',  name: 'contracts', component: Contracts },
             //    { path: 'contract/:id',  name: 'contract-update', component: ContractUpdate },

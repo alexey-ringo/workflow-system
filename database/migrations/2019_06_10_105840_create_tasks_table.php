@@ -19,29 +19,27 @@ class CreateTasksTable extends Migration
             $table->integer('task_sequence')->unsigned();
             $table->integer('route')->unsigned();
             $table->integer('process_sequence')->unsigned();
+            $table->integer('is_contractable')->unsigned()->nullable();
             $table->string('title')->nullable();
-            $table->text('description')->nullable();
             $table->integer('status')->unsigned();
-            $table->bigInteger('process_id')->unsigned()->nullable();
-            $table->foreign('process_id')->references('id')->on('processes')->onDelete('set null');
-            //$table->bigInteger('customer_id')->unsigned();
-            //$table->foreign('customer_id')->references('id')->on('customers');
+            $table->bigInteger('process_id')->unsigned();
+            $table->foreign('process_id')->references('id')->on('processes');
             $table->bigInteger('contract_id')->unsigned();
             $table->foreign('contract_id')->references('id')->on('contracts');
+            $table->bigInteger('tariff_id')->unsigned()->nullable();
             $table->bigInteger('creating_user_id')->unsigned()->nullable();
             $table->foreign('creating_user_id')->references('id')->on('users')->onDelete('set null');
             $table->bigInteger('closing_user_id')->unsigned()->nullable();
             $table->foreign('closing_user_id')->references('id')->on('users')->onDelete('set null');
-            $table->string('process_name');
-            $table->string('process_slug');
             $table->string('creating_user_name');
             $table->string('creating_user_email');
             $table->string('closing_user_name')->nullable();
             $table->string('closing_user_email')->nullable();
-            $table->date('deadline');
+            //$table->date('deadline');
             $table->timestamps();
             
-            $table->unique(['task', 'task_sequence'], 'tasks_task_task_seq_index');
+            $table->unique(['task', 'task_sequence'], 'tasks_task_task_sequence_index');
+            $table->unique(['is_contractable', 'contract_id', 'task_sequence', 'process_sequence',], 'tasks_unique_contractable_task_index');
             //$table->primary(['id', 'task', 'sequence']);
         });
         
@@ -58,7 +56,6 @@ class CreateTasksTable extends Migration
         //DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         Schema::table('tasks', function (Blueprint $table) {
             $table->dropForeign('tasks_process_id_foreign');
-            //$table->dropForeign('tasks_customer_id_foreign');
             $table->dropForeign('tasks_contract_id_foreign');
             $table->dropForeign('tasks_creating_user_id_foreign');
             $table->dropForeign('tasks_closing_user_id_foreign');

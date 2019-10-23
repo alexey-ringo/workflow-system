@@ -6,7 +6,7 @@
                     <h3 class="card-title">Обращения клиентов</h3>
                 </div>
                 <div class="col-md-4">
-                    <router-link :to="{name: 'task-create'}" class="btn btn-xs btn-default" v-if="visibleCreate">
+                    <router-link :to="{name: 'search-customer'}" class="btn btn-xs btn-default" v-if="visibleCreate">
                                 Новое обращение
                             </router-link>
                 </div>
@@ -58,6 +58,7 @@
         data: function () {
             return {
                 processes: [],
+                message: '',
                 //tasks: [],
                 meta: []
             }
@@ -68,29 +69,51 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/tasks';
-            this.axios.get(uri)
-            	.then((response) => {
-            	    this.processes = response.data.data;
-                	//this.tasks = response.data.data;
-                	this.meta = response.data.meta;
-                })
-                .catch(e => {
-                	//console.log(e);
-                    if(e == 'Error: Request failed with status code 401') {
-                        if (localStorage.getItem('jwt')) {
-                            localStorage.removeItem('jwt');
-                            this.$router.push({name: 'login'});
-                        }
-                        //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-                    }
-                    else {
-                        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-                    }
-                });
+            this.getTasks();
         },
         methods: {
-            
+            getTasks() {
+                let uri = '/api/tasks';
+                this.axios.get(uri)
+            	    .then((response) => {
+            	        if(response.data.data) {
+            	            this.processes = response.data.data;
+                	        //this.tasks = response.data.data;
+                	        this.meta = response.data.meta;
+            	        }
+            	        else if (response.data.message) {
+                            this.message = response.data.message;
+                            swal("Ошибка", this.message, "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                        else {
+                            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку задач", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }        
+                    })
+                    .catch(error => {
+                        if(error.response) {
+                            if(error.response.data.message) {
+                                if(error.response.status == 401) {
+                                    if (localStorage.getItem('jwt')) {
+                                        localStorage.removeItem('jwt');
+                                        this.$router.push({name: 'login'});
+                                    }
+                                }
+                                else {
+                                    swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    this.$router.push({name: 'dashboard'});
+                                }
+                            }         
+                        }
+                        else if(error.request) {
+                        }
+                        else {
+                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                    });
+            }
         },
         computed: {
             visibleCreate() {

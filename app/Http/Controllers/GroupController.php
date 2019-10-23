@@ -23,16 +23,6 @@ class GroupController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -40,24 +30,20 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        //$user = User::find($request->user()->id);
-        
-        $validator = $request->validate([
-            'slug' => 'required|string|max:255|unique:groups',
-            'name' => 'required|string|max:255|unique:groups',
-        ]);
-        
         $group = Group::create([
-            'slug' => $request->input('slug'),
             'name' => $request->input('name')
         ]);
+        
+        if(empty($group)) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при создании новой рабочей группы!'], 500);
+        }
         
         //Проверка на наличие полученного от формы значения поля с name="processes"
         if($request->input('processes')) :
             $group->processes()->attach($request->input('processes'));
         endif;
         
-        return new GroupResource($group);
+        return response()->json(['message' => 'Новый рабочая группа успешно создана']);
     }
 
     /**
@@ -66,23 +52,15 @@ class GroupController extends Controller
      * @param  \App\Group  $group
      * @return \Illuminate\Http\Response
      */
-    public function show(/*Group $group*/ int $id)
+    public function show(int $id)
     {
-        //return new GroupResource(Group::FindOrFail($id));
-        return new GroupRelationResource(Group::FindOrFail($id));
-        
-        //return new GroupResource($group);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Group  $group
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Group $group)
-    {
-        //
+        $group = Group::find($id);
+        if($group) {
+            return new GroupRelationResource($group);
+        }
+        else {
+            return response()->json(['message' => 'Рабочая группа с идентификатором id ' . $id . ' не найдена!'], 422);
+        }
     }
 
     /**
@@ -99,7 +77,10 @@ class GroupController extends Controller
         ]);
         
         $group->name = $request->input('name');
-        $group->save();
+        
+        if(empty($group->save())) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений новой рабочей группы!'], 500);
+        }
         
         //Если список разрешений операций пуст - отсоединяем
         $group->processes()->detach();
@@ -108,7 +89,7 @@ class GroupController extends Controller
             $group->processes()->attach($request->input('processes'));
         endif;
         
-        return new GroupResource($group);
+        return response()->json(['message' => 'Изменения для рабочей группы успешно применены']);
     }
 
     /**

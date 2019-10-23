@@ -59,7 +59,8 @@
   export default {
     data(){
       return {
-        user:{}
+        user:{},
+        message: ''
       }
     },
     mounted() {
@@ -72,25 +73,51 @@
       addUser(){
         let uri = '/api/users';
         this.axios.post(uri, this.user).then((response) => {
-          if(response.data) {
-            this.$router.push({name: 'users'});
+          if(response.data.message) {
+            this.message = response.data.message;                            
+            swal("Сохранение изменений", this.message, "success");
+            this.$router.push({name: 'users'});  
           }
           else {
-            swal("Создание нового пользователя", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при создании нового пользователя системы", "error");
           }
         })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'users'});
+              }
+            }//Ошибки валидации
+            else {
+              swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
             }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'users'});
           }
         });
+      },
+      errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
       },
     }
   }

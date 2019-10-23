@@ -22,17 +22,10 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название процесса</label>
           <div class="col-sm-10">
-            <input type="text" v-model="process.name" class="form-control" placeholder="Название процесса обработки обращения">
+            <input type="text" v-model="process.name" class="form-control" disabled placeholder="Название процесса обработки обращения">
           </div>
         </div>
-        
-        <div class="form-group">
-          <label class="col-sm-4 control-label">Уникальный slug процесса</label>
-          <div class="col-sm-10">
-            <input type="text" v-model="process.slug" class="form-control" disabled placeholder="Уникальный slug процесса обработки обращения">
-          </div>
-        </div>
-        
+                
         <div class="row">
           <div class="col-md-4">
             <div class="form-group">
@@ -53,6 +46,13 @@
             </div>
           </div>
         </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+              <input type="checkbox" v-model="processStatus">
+              <label for="superCheckbox">Процесс используется</label>
+            </div>
+          </div>
         
       </div>
       <!-- /.card-body -->
@@ -72,59 +72,122 @@
       return {
         process: {},
         routes: [],
+        message: '',
+        processStatus: false,
         selectRoute: null,
         superChecked: false,
         finalChecked: false,
       }
     },
+    /*
     created() {
+    },
+    */
+    mounted() {
       let token = localStorage.getItem('jwt')
 
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = '/api/routes';
-      this.axios.get(uri)
-      	.then((response) => {
-        	this.routes = response.data.data;
-        	this.getProcess();
+      this.getRoutes();
+    },
+    methods: {
+      getUpdatedProcess() {
+        let uri = `/api/processes/${this.$route.params.id}`;
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.process = response.data.data;
+            this.setRouteSelected();
+            this.setSuperChecked();
+            this.setFinalChecked();
+            this.setStatusChecked();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'processes'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому процессу", "error");
+            this.$router.push({name: 'processes'});
+          }
         })
-        .catch(e => {
-        	if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
-            }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'processes'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
             this.$router.push({name: 'processes'});
           }
         });
-    },
-    mounted() {
-      //let uri = `/api/processes/${this.$route.params.id}`;
-      //this.axios.get(uri).then((response) => {
-      //  this.process = response.data.data;
-      //});
-    },
-    methods: {
-      getProcess() {
-        let uri = `/api/processes/${this.$route.params.id}`;
-        this.axios.get(uri).then((response) => {
-          this.process = response.data.data;
-          this.setRouteSelected();
-          this.setSuperChecked();
-          this.setFinalChecked();
-        })
-        .catch(e => {
-          //console.log(e);
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-          
+      },
+      getRoutes() {
+        let uri = '/api/routes';
+        this.axios.get(uri)
+      	  .then((response) => {
+      	    if(response.data.data) {
+        	    this.routes = response.data.data;
+        	    this.getUpdatedProcess();
+      	    }
+      	    else if (response.data.message) {
+              this.message = response.data.message;
+              swal("Ошибка", this.message, "error");
+              this.$router.push({name: 'processes'});
+            }
+            else {
+              swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку всех маршрутов", "error");
+              this.$router.push({name: 'processes'});
+            }
+          })
+          .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'processes'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'processes'});
+          }
         });
       },
       updateProcess(/*event*/){
+        if(this.processStatus) {
+          this.process.is_active = 1;
+        }
+        else {
+          this.process.is_active = null;
+        }
+
         if(this.superChecked) {
           this.process.is_super = 1;
         }
@@ -144,24 +207,40 @@
         let uri = `/api/processes/${this.$route.params.id}`;
         this.axios.patch(uri, this.process/*{}*/)
           .then((response) => {
-            if(response.data) {
-              //this.$emit("changecartevent", 1);
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'processes'});
             }
             else {
-            	swal("Сохранение изменений", "Что то пошло не так...", "error");
+              swal("Ошибка", "Нет ответа от сервера при сохранении изменений в процессе", "error");
+              this.$router.push({name: 'processes'});
             }
           })
-          .catch(e => {
-          	if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'processes'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
               this.$router.push({name: 'processes'});
             }
           });
@@ -177,6 +256,18 @@
         },
         setFinalChecked() {
           this.finalChecked = this.process.is_final;
+        },
+        setStatusChecked() {
+          this.processStatus = this.process.is_active;
+        },
+        errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
         },
       },
     }

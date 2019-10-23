@@ -18,13 +18,14 @@ class CreateProcessesTable extends Migration
             $table->bigInteger('route_id')->unsigned();
             $table->foreign('route_id')->references('id')->on('routes');
             $table->string('name');
-            $table->string('slug')->unique();
+            //$table->string('slug')->unique();
             $table->tinyInteger('sequence')->unsigned()->nullable();
             $table->integer('is_super')->unsigned()->nullable();
             $table->integer('is_final')->unsigned()->nullable();
+            $table->integer('is_active')->unsigned()->nullable();
             $table->timestamps();
             
-            $table->unique(['route_id', 'sequence'], 'processes_route_id_sequence_index');
+            $table->unique(['route_id', 'sequence', 'is_active'], 'processes_route_id_sequence_index');
             $table->unique(['route_id', 'is_super'], 'processes_route_id_is_super_index');
             $table->unique(['route_id', 'is_final'], 'processes_route_id_is_final_index');
         });

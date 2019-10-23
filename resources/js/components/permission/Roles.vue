@@ -46,7 +46,8 @@
     export default {
         data: function () {
             return {
-                roles: []
+                roles: [],
+                message: ''
             }
         },
         mounted() {
@@ -55,31 +56,84 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
             
-            let uri = '/api/roles';
-            this.axios.get(uri)
-            	.then((response) => {
-                	this.roles = response.data.data;
-                })
-                .catch(e => {
-                	//console.log(e);
-                	swal('Ошибка', "Внутренняя ошибка сервера", "error");
-                });
+            this.getRoles();
         },
         methods: {
+            getRoles() {
+                let uri = '/api/roles';
+                this.axios.get(uri)
+            	    .then((response) => {
+            	        if(response.data.data) {
+                	        this.roles = response.data.data;
+            	        }
+            	        else if (response.data.message) {
+                            this.message = response.data.message;
+                            swal("Ошибка", this.message, "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                        else {
+                            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку всех политик безопасности", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }        
+                    })
+                    .catch(error => {
+                        if(error.response) {
+                            if(error.response.data.message) {
+                                if(error.response.status == 401) {
+                                    if (localStorage.getItem('jwt')) {
+                                        localStorage.removeItem('jwt');
+                                        this.$router.push({name: 'login'});
+                                    }
+                                }
+                                else {
+                                    swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    this.$router.push({name: 'dashboard'});
+                                }
+                            }         
+                        }
+                        else if(error.request) {
+                        }
+                        else {
+                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            this.$router.push({name: 'dashboard'});
+                        }
+                    });
+            },
             deleteRole(id) {
                 let uri = `/api/roles/${id}`;
                 if (confirm("Do you really want to delete it?")) {
                     this.axios.delete(uri)
                         .then((response) => {
-                            if(response.data) {
+                            if(response.data.data) {
                                 this.roles.splice(this.roles.indexOf(id), 1);
                             }
-                            else {
-                                swal("Удаление политики", "Что то пошло не так...", "error");
+                            else if (response.data.message) {
+                                this.message = response.data.message;
+                                swal("Ошибка", this.message, "error");
                             }
+                            else {
+                                swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранной политики", "error");
+                            }        
                         })
-                        .catch(e => {
-                            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                        .catch(error => {
+                            if(error.response) {
+                                if(error.response.data.message) {
+                                    if(error.response.status == 401) {
+                                        if (localStorage.getItem('jwt')) {
+                                            localStorage.removeItem('jwt');
+                                            this.$router.push({name: 'login'});
+                                        }
+                                    }
+                                    else {
+                                        swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                                    }
+                                }         
+                            }
+                            else if(error.request) {
+                            }
+                            else {
+                                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                            }
                         });
                 }
             },

@@ -14,6 +14,7 @@ use App\Models\Comment;
 use App\Services\CustomerResponse;
 use App\Services\ContractResponse;
 use App\Services\TaskResponse;
+use App\Services\CommentResponse;
 
 use Event;
 use App\Events\Customer\onCreateEvent as onCustomerCreateEvent;
@@ -24,29 +25,52 @@ use App\Events\Contract\onCloseEvent as onContractCloseEvent;
 use App\Events\Tasks\onCreateEvent as onTaskCreateEvent;
 use App\Events\Tasks\onUpdateEvent as onTaskUpdateEvent;
 
-use Exception;
-use ErrorException;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
+
 use App\Exceptions\WorkflowException;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
+
 
 class WorkflowService
 {
     private $user;
     
     private $request;
-    
+
+    /**
+     * @var Customer
+     */
     private $customer;
-    
+
+    /**
+     * @var Contract
+     */    
     private $contract;
     
-    private $task;
+    /**
+     * @var Task
+     */
+    private $firstTask;
+    private $nextTask;
+    private $existedTask;    
+    private $tmpTask;
     
-    private $closedTask;
+    /**
+     * @var Comment
+     */
+    private $comment;
+    
+    /**
+     * @var int
+     */
+    private $routeVal;
+    private $tariffId;
     
     private $error = false;
     
-    private $message;
+    private $message = '';
+    
+    private $commentMsg = null;
     
     public function __construct(Request $request)
     {
@@ -58,15 +82,17 @@ class WorkflowService
     /**
      * Create new Customer.
      * 
-     * @return \App\Services\CustomerResponse
+     * @return \App\Models\Customer
+     * 
+     * @throw \App\Exceptions\WorkflowException
      */
     public function createNewCustomer(): CustomerResponse
     {
-        if(empty($this->user)) {
-            $this->error = true;
-            $this->message = 'Невозможно создание нового клиента - Не найден текущий пользователь!';
-            return new CustomerResponse($this->message);
-        }
+//        if(empty($this->user)) {
+//            $this->error = true;
+//            $this->message = 'Невозможно создание нового клиента - Не найден текущий пользователь!';
+//            return new CustomerResponse($this->message);
+//        }
         
         try {
             $this->customer = Customer::create([
@@ -81,78 +107,49 @@ class WorkflowService
                 'email' => $this->request->input('email'),
                 'description' => $this->request->input('description'),
             ]);
-            if(empty($this->customer)) {
-                $this->error = true;
+            if(empty($this->customer)) {                
                 $this->message = 'Ошибка при создании нового клиента';
-                return new CustomerResponse($this->message);
+                throw new WorkflowException($this->message);
             }
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            $this->error = true;
-	        $this->message = 'Ошибка при создании нового клиента (исключение)!';
-            return new CustomerResponse($this->message);
+        catch(Exception $exception) {            
+            $this->message = 'Ошибка при создании нового клиента (исключение)!';
+            throw new WorkflowException($this->message);
 	    }
+	    
         
         try {
             $phone = Phone::create([
                 'customer_id' => $this->customer->id,
                 'phone' => $this->request->input('phone'),
             ]);
-            if(empty($phone)) {
-                $this->error = true;
+            if(empty($phone)) {                
                 $this->message = 'Ошибка при добавлении телефонов для клиента ' 
                                 . $this->customer->name . ' ' . $this->customer->surname;
-                $this->customer->delete();
-                return new CustomerResponse($this->message);
+                $this->deleteAndThrow();
             }
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            $this->error = true;
+        catch(Exception $exception) {            
 	        $this->message = 'Ошибка при добавлении телефонов для клиента ' 
 	                        . $this->customer->name . ' ' . $this->customer->surname . 
 	                        ' (исключение)!';
-	        $this->customer->delete();
-            return new CustomerResponse($this->message);
+            $this->deleteAndThrow();
 	    }
         
         Event::dispatch(new onCustomerCreateEvent($this->customer));
         
-        $this->request->request->add(['task_route' => 1]);
-        $this->request->request->add(['task_description' => 'Первоначальная задача при создании нового клиента']);
+        //$this->request->request->add(['task_route' => 1]);
+        $this->routeVal = 1;      
+               
+        //if(!$this->request->has('task_description')) {
+        //    $this->request->request->add(['task_description' => 'Задача по созданию нового клиента ' 
+        //                                . $this->customer->name . ' ' . $this->customer->surname]);
+        //}
       
         $this->createNewContract($this->customer);
-        if($this->error) {
-            $this->message = 'Ошибка при автоматическом создании контракта для клиента ' 
-                            . $this->customer->name . ' ' . $this->customer->surname . 
-                            '  ' . $this->error;
-            $this->customer->delete();
-            return new CustomerResponse($this->message);
-        }
-        $this->message = 'Новый клиент ' . $this->customer->name . ' ' . $this->customer->surname . ' успешно создан и ему автоматически добавлен новый контракт № ' . $this->contract->contract_num;
+        
+        $this->message = 'Новый клиент ' . $this->customer->name . ' ' . $this->customer->surname 
+                        . ' успешно создан и ему автоматически добавлен новый контракт № ' . $this->contract->contract_num;
         return new CustomerResponse($this->message, $this->customer);
     }
     
@@ -161,219 +158,191 @@ class WorkflowService
      * Create new Contract for Customer.
      * 
      * @param  \App\Models\Customer $customer
-     * @return \App\Services\ContractResponse
+     * 
+     * @return \App\Models\Contract
+     * 
+     * @throw \App\Exceptions\WorkflowException
      */
     public function createNewContract(Customer $customer): ContractResponse
     {
-        if(empty($this->user)) {
-            $this->error = true;
-            $this->message = 'Невозможно создание нового контракта - Не найден текущий пользователь системы!';
-            return new ContractResponse($this->message);
-        }
-        if(empty($this->customer)) {
-            $this->customer = $customer;
-        }
+        $this->setTariff();
+        if(empty($this->tariffId)) {
+            $this->message = 'Отсутствуют данные о тарифе для нового контракта для клиента ' 
+                            . $customer->name . ' ' . $customer->surname;
+            $this->deleteAndThrow();
+        }        
+                    
         $contractNum = $this->createContractNum();
-        if(empty($contractNum)) {
-            $this->error = true;
+        if(empty($contractNum)) {            
             $this->message = 'Ошибка выделения номера для нового контракта для клиента ' 
-                            . $this->customer->name . ' ' . $this->customer->surname;
-            return new ContractResponse($this->message);
+                            . $customer->name . ' ' . $customer->surname;
+            $this->deleteAndThrow();
         }
         
         try {
             $this->contract = Contract::create([
                 'contract_num' => $contractNum,
-                'customer_id' => $this->customer->id,
+                'customer_id' => $customer->id,
+                'tariff_id' => $this->tariffId,
             ]);
-            if(empty($this->contract)) {
-                $this->error - true;
+            if(empty($this->contract)) {                
                 $this->message = 'Ошибка при создании нового контракта для клиента ' 
-                                . $this->customer->name . ' ' . $this->customer->surname;
-                return new ContractResponse($this->message);
+                                . $customer->name . ' ' . $customer->surname;
+                $this->deleteAndThrow();
             }
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
+        catch(Exception $exception) {            
 	        $this->message = 'Ошибка при создании нового контракта для клиента ' 
-	                        . $this->customer->name . ' ' . $this->customer->surname 
-	                        . ' (исключение)';
-            return new ContractResponse($this->message);
+	                        . $customer->name . ' ' . $customer->surname 
+                            . ' (исключение)';
+            $this->deleteAndThrow();
 	    }
         
-       Event::dispatch(new onContractCreateEvent($this->contract));
+        Event::dispatch(new onContractCreateEvent($this->contract));
         
-        $this->firstTaskAdapter();
-        if($this->error) {
-            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта № ' 
-                            . $this->contract->contract_num . ' у клиента ' . $this->customer->name 
-                            . ' ' . $this->customer->surname . ' : ' . $this->message;
-            $this->contract->delete();
-            return new ContractResponse($this->message);
-        }
-        
+        //$this->request->request->add(['task_route' => 1]);
+        $this->routeVal = 1;
+
+        $this->setComment();
+                
         $this->createFirstTask();
-        if($this->error) {
-            $this->message = 'Ошибка при автоматическом создании новой задачи для контракта № ' 
-                            . $this->contract->contract_num . ' у клиента ' 
-                            . $this->customer->name . ' ' . $this->customer->surname . ' : "' 
-                            . $this->message . ' "';
-            $this->contract->delete();
-            return new CustomerResponse($this->message);
-        }
         
-        $this->message = 'Успешно создан новый контракт № ' . $this->contract->contract_num . ' для клиента ' . $this->customer->name . ' ' . $this->customer->surname;
-        return new ContractResponse($this->message, $this->contract);
+        $this->message = 'Успешно создан новый контракт № ' . $this->contract->contract_num 
+                        . ' для клиента ' . $customer->name . ' ' . $customer->surname;
+        return new ContractResponse($this->message, $this->contract);        
     }
     
     /**
      * Create first Task.
      * 
-     * @return \App\Services\TaskResponse
+     * @return \App\Models\Task
+     * 
+     * @throw \App\Exceptions\WorkflowException
      */
     public function createFirstTask(): TaskResponse
     {
-        if(empty($this->user)) {
-            $this->error = true;
-            $this->message = 'Невозможно создание новой задачи - Не найден текущий пользователь системы!';
-            return new TaskResponse($this->message);
-        }
         //После валидации будет излишним
         //if($this->request->input('route') != 1) {
         //    return null;
         //}
         //Првоерка на единичность задач по контракту с роутом = 1
-        
-        $route = Route::where('value', $this->request->route)->first();
+        if($this->routeVal) {
+            $route = Route::where('value', $this->routeVal)->first();
+            $contractableTask = 1;
+        }
+        else {
+            $route = Route::where('value', $this->request->input('route'))->first();
+            $contractableTask = null;
+        }
         if(empty($route)) {
-            $this->message = 'Маршрут обработки для новой задачи не найден!';
-            return new TaskResponse($this->message);
+            $this->message = 'Ошибка при создании задачи - нет информации о маршруте!';
+            $this->deleteAndThrow();
         }
         
-        $firstProcessSequence = 1;
+        $firstProcessSequence = 1; //Нужен метод в модели поиска первого процесса (с минимальным sequence)
         $process = Process::getProcess($route, $firstProcessSequence);
         if(empty($process)) {
             $this->message = 'Стартовый процесс в выбранном маршруте обработки задач не найден!';
-            return new TaskResponse($this->message);
+            $this->deleteAndThrow();
+        }
+        
+        if($this->contract) {
+            $contractId = $this->contract->id;
+            $tariffId = $this->contract->tariff_id;
+        }
+        else {
+            $contractId = $this->request->input('contract_id');            
+            $tariffId = null;
+        }
+        if(empty($contractId)) {
+            $this->message = 'Невозможно создать новую задачу - отсутствует информация о номере контракта!';
+            $this->deleteAndThrow();
         }
         
         try {
-            $this->task = Task::create([
+            $this->firstTask = Task::create([
                 'task' => $this->createTaskNum(),
-                'task_sequence' => $this->createTaskSeq(),
+                'task_sequence' => 1,
                 'route' => $route->value,
                 'process_sequence' => $firstProcessSequence,
+                'is_contractable' => $contractableTask,
                 'title' => $route->name,
-                'description' => $this->request->description,
+                //'description' => $this->request->input('description'),
                 'status' => 1,
                 'process_id' => $process->id,
-                'contract_id' => $this->request->contract_id,
-                'creating_user_id' => $this->user->id,
-                'process_name' => $process->name,
-                'process_slug' => $process->slug,
+                'contract_id' => $contractId,
+                'tariff_id' => $tariffId,
+                'creating_user_id' => $this->user->id,                
                 'creating_user_name' => $this->user->name,
                 'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$this->task) {
+            if(empty($this->firstTask)) {                
                 $this->message = 'Ошибка БД при создании новой задачи!';
-                return new TaskResponse($this->message);
+                $this->deleteAndThrow();
             }
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
+        catch(Exception $exception) {            
 	        $this->message = 'Ошибка БД при создании новой задачи (исключение)!';
-            return new TaskResponse($this->message);
-	    }
-        
-        $this->closeTask();
-        if($this->error) {
-            return new TaskResponse($this->message);
+	        $this->deleteAndThrow();
+	    }        
+              
+        if(isset($this->commentMsg)) {
+            $this->createComment();
+        }
+        else {
+            if($this->setComment()) {
+                $this->createComment();
+            }
         }
         
+        $this->closeTask();        
+                
         /** @var App\Models\Process $nextProcess */
-        $nextProcess = $this->closedTask->process->getNextProcess($route->id); //настройка работы исключений - убрать id!!!
-        if(empty($nextProcess)) {
-            $this->closedTask->delete();
+        $nextProcess = $this->firstTask->process->getNextProcess($route->id); //настройка работы исключений - убрать id!!!
+        if(empty($nextProcess)) {            
             $this->message = 'Не найден следующий процесс обработки данной задачи!';
-            return new TaskResponse($this->message);
+            $this->deleteAndThrow();
         }
         
         try {
-            $this->task = Task::create([
-                'task' => $this->closedTask->task,
+            $this->nextTask = Task::create([
+                'task' => $this->firstTask->task,
                 'task_sequence' => $this->createTaskSeq(),
-                'route' => $this->closedTask->route,
+                'route' => $this->firstTask->route,
                 'process_sequence' => $nextProcess->sequence,
-                'title' => $this->closedTask->title,
-                'description' => $this->request->description,
+                'is_contractable' => $this->firstTask->is_contractable,
+                'title' => $this->firstTask->title,
+                //'description' => $this->request->description,
                 'status' => 1,
                 'process_id' => $nextProcess->id,
-                'contract_id' => $this->closedTask->contract_id,
-                'creating_user_id' => $this->user->id,
-                'process_name' => $nextProcess->name,
-                'process_slug' => $nextProcess->slug,
+                'contract_id' => $this->firstTask->contract_id,
+                'tariff_id' => $this->firstTask->tariff_id,
+                'creating_user_id' => $this->user->id,                                
                 'creating_user_name' => $this->user->name,
                 'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$this->task) {
+            if(empty($this->nextTask)) {
                 $this->message = 'Ошибка БД при создании следующего процесса "' 
                                 . $nextProcess->name . '" для задачи № ' 
-                                . $this->closedTask->task;
-                return new TaskResponse($this->message);
+                                . $this->firstTask->task;
+                $this->deleteAndThrow();
             }
         }
         catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $this->closedTask->delete();
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-                $e = new WorkflowException;
-                $this->closedTask->delete();
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $this->closedTask->delete();
-                $e->report($exception);
-            }
-	        $this->message = 'Ошибка БД при создании следующего процесса "' 
+            $this->message = 'Ошибка БД при создании следующего процесса "' 
 	                        . $nextProcess->name . '" для задачи № ' 
-	                        . $this->closedTask->task . ' (Исключение)';
-            return new TaskResponse($this->message);
+	                        . $this->firstTask->task . ' (Исключение)';
+            $this->deleteAndThrow();
 	    }
 	    
-	    Event::dispatch(new onTaskCreateEvent($this->task));
+	    Event::dispatch(new onTaskCreateEvent($this->nextTask));
 	    
-        $this->message = 'Новая задача № ' . $this->task->task 
+        $this->message = 'Новая задача № ' . $this->nextTask->task 
                         . ' успешно создана и передана в следующий процесс обработки "' 
-                        . $this->task->process_name . '"';
-        return new TaskResponse($this->message, $this->task);
+                        . $this->nextTask->process_name . '"';
+        return new TaskResponse($this->message, $this->nextTask);
     }
     
     
@@ -387,108 +356,97 @@ class WorkflowService
                                    Process $process
                                 ): TaskResponse
     {
-        if(empty($this->user)) {
-            $this->error = true;
-            $this->message = 'Невозможна работа над задачой - Не найден текущий пользователь системы!';
-            return new TaskResponse($this->message);
-        }
-        $this->task = $task;
+        $this->existedTask = $task;        
         
+        if(!$this->setComment()) {
+            $this->message = 'Отсутствует текст обязательного коментария к задаче № ' . $this->existedTask . ' !';
+            throw new WorkflowException($this->message);
+        }        
+
+        $this->createComment();        
+
         //Закрытие предидущего или последнего sequence
         $this->closeTask();
-        if($this->error) {
-            $this->task->delete();
-            return new TaskResponse($this->message);
-        }
-        
+                
         if($this->request->input('destination') == 3) {
-            $this->message = 'Задача № ' . $this->closedTask->task 
+            $this->message = 'Задача № ' . $this->existedTask->task 
                             . ' успешно завершена и закрыта';
-            return new TaskResponse($this->message, $this->closedTask);
+            return new TaskResponse($this->message, $this->existedTask);
         }
         
+        if($this->existedTask->is_contractable) {
+            $currentTariffId = Contract::find($this->existedTask->contract_id)->tariff_id;
+        }
+        else {
+            $currentTariffId = null;
+        }
         
         try {
-            $this->task = Task::create([
-                'task' => $this->closedTask->task,
+            $this->nextTask = Task::create([
+                'task' => $this->existedTask->task,
                 'task_sequence' => $this->createTaskSeq(),
-                'route' => $this->closedTask->route,
+                'route' => $this->existedTask->route,
                 'process_sequence' => $process->sequence,
-                'title' => $this->closedTask->title,
-                'description' => $this->closedTask->description,
+                'is_contractable' => $this->existedTask->is_contractable,
+                'title' => $this->existedTask->title,                
                 'status' => 1,
                 'process_id' => $process->id,
-                'contract_id' =>$this->closedTask->contract_id,
-                'creating_user_id' => $this->user->id,
-                'process_name' => $process->name,
-                'process_slug' => $process->slug,
+                'contract_id' =>$this->existedTask->contract_id,
+                'tariff_id' => $currentTariffId,
+                'creating_user_id' => $this->user->id,                                
                 'creating_user_name' => $this->user->name,
                 'creating_user_email' => $this->user->email,
                 'deadline' => \Carbon\Carbon::now()->format('dmyHi')
             ]);
-            if(!$this->task) {
+            if(empty($this->nextTask)) {
                 switch ($this->request->input('destination')) {
                     case 1:
                         $this->message = 'Ошибка БД при создании следующего процесса "' 
                                         . $process->name . '" для задачи № ' 
-                                        . $this->closedTask->task;
-                        return new TaskResponse($this->message);
+                                        . $this->existedTask->task;
+                        throw new WorkflowException($this->message);
                         break;
                     case 2:
                         $this->message = 'Ошибка БД при возврате в предидущий процесс "' 
                                         . $process->name . '" для задачи № ' 
-                                        . $this->closedTask->task;
-                        return new TaskResponse($this->message);
+                                        . $this->existedTask->task;
+                        throw new WorkflowException($this->message);
                         break;
                     default:
                         $this->message = 'Ошибка БД при создании процесса "' 
                                         . $process->name . '" для задачи № ' 
-                                        . $this->closedTask->task;
-                        return new TaskResponse($this->message);
+                                        . $this->existedTask->task;
+                        throw new WorkflowException($this->message);
                 }
             }
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
+        catch(Exception $exception) {	        
 	        $this->message = 'Ошибка БД при создании процесса "' . $process->name 
-	                        . '" для задачи № ' . $this->closedTask->task;
-            return new TaskResponse($this->message);
+	                        . '" для задачи № ' . $this->existedTask->task;
+            throw new WorkflowException($this->message);
 	    }
         
-        Event::dispatch(new onTaskUpdateEvent($this->closedTask, $this->task));
+        Event::dispatch(new onTaskUpdateEvent($this->existedTask, $this->nextTask));        
         
         switch ($this->request->input('destination')) {
             case 1:
-                $this->message = 'Процесс "' . $this->closedTask->process_name 
-                                . '" по задаче № ' . $this->task->task 
+                $this->message = 'Процесс "' . $this->existedTask->process_name 
+                                . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача передана в следующий процесс обработки "' 
                                 . $process->name . '"';
-                return new TaskResponse($this->message, $this->task);
-                break;
+                return new TaskResponse($this->message, $this->nextTask);
             case 2:
-                $this->message = 'Процесс "' . $this->closedTask->process_name 
-                                . '" по задаче № ' . $this->task->task 
+                $this->message = 'Процесс "' . $this->existedTask->process_name 
+                                . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' 
                                 . $process->name . '"';
-                return new TaskResponse($this->message, $this->task);
-                break;
+                return new TaskResponse($this->message, $this->nextTask);
             default:
-                $this->message = 'Процесс "' . $this->closedTask->process_name 
-                                . '" по задаче № ' . $this->task->task 
+                $this->message = 'Процесс "' . $this->existedTask->process_name 
+                                . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача передана в процесс обработки "' 
                                 . $process->name . '"';
-                return new TaskResponse($this->message, $this->task);
+                return new TaskResponse($this->message, $this->nextTask);
         }
     }
     
@@ -498,136 +456,81 @@ class WorkflowService
      * 
      * @return \App\Services\TaskResponse
      */
-    public function createComment(Task $task): TaskResponse
+    public function createComment(Task $task = null): CommentResponse
     {
-        $this->task = $task;
+        if($task) {
+            $this->existedTask = $task;
+        }
+        
+        $this->defineTmpTask();
+        
+        if(empty($this->commentMsg)) {
+            $this->setComment();
+        }
+        
         try {
-            $comment = Comment::create([
-                'task_num' => $this->task->task,
-                'task_seq_num' => $this->task->task_sequence,
-                'task_id' => $this->task->id,
+            $this->comment = Comment::create([
+                'task_num' => $this->tmpTask->task,
+                'task_seq_num' => $this->tmpTask->task_sequence,
+                'task_id' => $this->tmpTask->id,
                 'comment_seq' => $this->createCommentSeq(),
                 'common_comment_seq' => $this->createCommonCommentSeq(),
-                'comment' => $this->request->input('comment'),
+                'comment' => $this->commentMsg,
                 'user_id' => $this->user->id,
                 'user_name' => $this->user->name,
                 'user_email' => $this->user->email
             ]);
-            if(!$comment) {
-                $this->message = 'Ошибка при добавлении комментария по задаче № ' 
-                                . $this->task->task;
-                return new TaskResponse($this->message);    
+            if(empty($this->comment)) {                
+                $this->message = 'Ошибка при добавлении комментария к задаче № ' 
+                                . $this->tmpTask->task;
+                $this->deleteAndThrow();
             }
-            $this->message = 'Комментарий по задаче № ' . $this->task->task 
-                            . ' был успешно добавлен';
-            return new TaskResponse($this->message, $this->task);
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            report($exception);
-            }
-            else {
-	            report($exception);
-            }
-	        $this->message = 'Ошибка (исключение) при добавлении комментария по задаче № ' 
-	                        . $this->task->task;
-            return new TaskResponse($this->message);
+        catch(Exception $exception) {            
+	        $this->message = 'Ошибка (исключение) при добавлении комментария к задаче № ' 
+                                . $this->tmpTask->task;
+            $this->deleteAndThrow();
 	    }
+	    
+	    $this->message = 'Комментарий к процессу "' . $this->tmpTask->process->name 
+                                . '" задачи № ' . $this->tmpTask->task 
+                                . ' успешно сохранен';
+        return new CommentResponse($this->message, $this->comment);
+	    
     }
     
     
     
     //--------------------------------------------------//
-    
-    
-    
-    
-    private function firstTaskAdapter()
-    {
-        if($this->request->has('task_route')) {
-            $this->request->request->add(['route' => $this->request->input('task_route')]);
-        }
-        else {
-            $this->error = true;
-            $this->message = 'Ошибка при создании задачи - нет информации о маршруте';
-        }
-        
-        if($this->request->request->has('task_description')) {
-            $this->request->request->add(['description' => $this->request->input('task_description')]);
-        }
-        else {
-            $this->error = true;
-            $this->message = 'Ошибка при создании задачи - в запросе отсутстует поле с описанием задачи';
-        }
-        
-        if($this->contract) {
-            $this->request->request->add(['contract_id' => $this->contract->id]);
-        }
-        else {
-            $this->error = true;
-            $this->message = 'Невозможно создать новую задачу - отсутствует информация о номере контракта!';
-        }
-    }
-    
     private function createContractNum(): ?int 
     {
-        try {
-            $lastContract = Contract::all()->max('contract_num');
-            
-            return $lastContract + 1;
-        }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            report($exception);
-            }
-            
-	        return null;
-	    }
+        $lastContract = Contract::all()->max('contract_num');
+            return $lastContract + 1 ?? null;
     }
     
     private function closeTask() 
-    {
-        try {
-            $this->closedTask = $this->task;
+    {           
+        $this->defineTmpTask();        
+        
+        try {            
             //Закрытие предидущего или последнего sequence
-            $this->closedTask->status = 0;
-            $this->closedTask->closing_user_id = $this->user->id;
-            $this->closedTask->closing_user_name = $this->user->name;
-            $this->closedTask->closing_user_email = $this->user->email;
-            if(empty($this->closedTask->save())) {
-                $this->error = true;
+            $this->tmpTask->status = 0;
+            $this->tmpTask->closing_user_id = $this->user->id;
+            $this->tmpTask->closing_user_name = $this->user->name;
+            $this->tmpTask->closing_user_email = $this->user->email;
+            if(!$this->tmpTask->save()) {                
                 $this->message = 'Ошибка БД при закрытии процесса "' 
-                                . $this->task->process_name . '" по задаче № '
-                                . $this->task->task;
-            }
-            $this->message = 'Процесс "' . $this->task->process_name . ' по задаче ' 
-                            . $this->task->task .'" успешно закрыт';
+                                . $this->tmpTask->process->name . '" по задаче № '
+                                . $this->tmpTask->task;
+                                ;
+                $this->deleteAndThrow();
+            }        
         }
-        catch(Exception $exception) {
-	        if ($exception instanceof ErrorException) {
-                $e = new WorkflowException;
-                $e->report($exception);
-            }
-            elseif($exception instanceof FatalThrowableError) {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            else {
-	            $e = new WorkflowException;
-                $e->report($exception);
-            }
-            $this->error = true;
-	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->task->process_name 
-	                        . '" по задаче № '. $this->task->task . ' (Исключение)';
-	    }
+        catch(Exception $exception) {            
+	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->tmpTask->process->name 
+                            . '" по задаче № '. $this->tmpTask->task . ' (Исключение)';
+            $this->deleteAndThrow();
+        }        
     }
     
     
@@ -639,19 +542,93 @@ class WorkflowService
     
     
     private function createTaskSeq(): int 
-    {
+    {        
         //Нужна проверка на существования соответствующего процесса
-        return $this->closedTask ? $this->closedTask->task_sequence + 1 : 1;
+        $this->defineTmpTask();
+        return $this->tmpTask->task_sequence + 1;
     }
+    
+    
+    private function defineTmpTask()
+    {
+        if(is_object($this->firstTask) && !is_object($this->existedTask)) {
+            $this->tmpTask = $this->firstTask;
+        }
+        else if(!is_object($this->firstTask) && is_object($this->existedTask)) {
+            $this->tmpTask = $this->existedTask;
+        }
+        else if(!is_object($this->firstTask) && !is_object($this->existedTask)) {
+            $this->message = 'Ошибка при закрытии задачи - не найдена предидущая задача!';
+            $this->deleteAndThrow();
+        }
+        else if(is_object($this->firstTask) && is_object($this->existedTask)) {
+            $this->message = 'Ошибка при закрытии задвчи - не определена однозначно предидущая задача!';
+            $this->deleteAndThrow();
+        }
+    }
+    
     
     private function createCommentSeq(): int 
     {
-        return $this->task->comments->count() + 1;
+        return $this->tmpTask->comments->count() + 1;
     }
     
     
     private function createCommonCommentSeq(): int
     {
-        return Comment::getAllCommentsForTask($this->task)->count() + 1;
+        return Comment::getAllCommentsForTask($this->tmpTask)->count() + 1;
+    }
+    
+    private function setComment(): bool
+    {
+        if($this->request->has('task_comment')) {
+            $this->commentMsg = $this->request->input('task_comment');
+            return true;
+        }
+        if($this->request->has('comment')) {
+            $this->commentMsg = $this->request->input('comment');
+            return true;
+        }
+        return false;
+    }
+
+    private function setTariff() {
+        if($this->request->has('contract_tariff_id') && !$this->request->has('tariff_id')) {
+            //$this->request->request->add(['tariff_id' => $this->request->input('contract_tariff_id')]);
+            $this->tariffId = $this->request->input('contract_tariff_id');
+        }
+        else if (!$this->request->has('contract_tariff_id') && $this->request->has('tariff_id')) {
+            $this->tariffId = $this->request->input('tariff_id');
+        }
+        else if ($this->request->has('contract_tariff_id') && $this->request->has('tariff_id')) {            
+            $this->message = 'Ошибка однозначного определения типа контракта для клиента (первый или последующий)!';
+            $this->deleteAndThrow();
+        }
+        else if (!$this->request->has('contract_tariff_id') && !$this->request->has('tariff_id')) {            
+            $this->message = 'Отсутствуют данные о тарифе для подключаемого клиента!';
+            $this->deleteAndThrow();
+        }
+    }
+
+    private function deleteAndThrow() {
+        if(is_object($this->nextTask)) {
+            $this->nextTask->delete();
+        }
+        
+        //потом убрать!!
+        if(is_object($this->comment)) {
+            $this->comment->delete();
+        }
+        
+        if(is_object($this->firstTask)) {
+            $this->firstTask->delete();
+        }
+        if(is_object($this->contract)) {
+            $this->contract->delete();
+        }
+        if(is_object($this->customer)) {
+            $this->customer->delete();
+        }          
+        throw new WorkflowException($this->message);
     }
 }

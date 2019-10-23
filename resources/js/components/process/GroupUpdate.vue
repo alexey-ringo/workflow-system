@@ -8,13 +8,6 @@
     <form class="form-horizontal" @submit.prevent="updateGroup">
       <div class="card-body">
         <div class="form-group">
-          <label for="inputUIGroup" class="col-sm-4 control-label">UI рабочей группы</label>
-          <div class="col-sm-10">
-            <input type="text" v-model="group.slug" class="form-control" id="inputUIGroup" disabled required placeholder="UI рабочей группы">
-          </div>
-        </div>
-                  
-        <div class="form-group">
           <label for="inputGroupName" class="col-sm-4 control-label">Имя рабочей группы</label>
           <div class="col-sm-10">
             <input type="text" v-model="group.name" class="form-control" id="inputGroupName" required placeholder="Имя рабочей группы">
@@ -49,47 +42,121 @@
     data(){
       return {
         group:{},
+        message: '',
         processesChecked: []
       }
     },
+    /*
     created() {
-      let uri = `/api/groups/${this.$route.params.id}`;
-      this.axios.get(uri).then((response) => {
-        this.group = response.data.data;
-        this.setProcessesChecked();
-      });
     },
+    */
     mounted() {
-      //let uri = `/api/groups/${this.$route.params.id}`;
-      //this.axios.get(uri).then((response) => {
-      //  this.group = response.data.data;
-      //this.setProcessesChecked();
-      //});
+      let token = localStorage.getItem('jwt')
+
+      this.axios.defaults.headers.common['Content-Type'] = 'application/json'
+      this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+      
+      this.getUpdatedGroup();
     },
     methods: {
+      getUpdatedGroup() {
+        let uri = `/api/groups/${this.$route.params.id}`;
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.group = response.data.data;
+            this.setProcessesChecked();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'groups'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой рабочей группе", "error");
+            this.$router.push({name: 'groups'});
+          }
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'groups'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'groups'});
+          }
+        });
+      },
       updateGroup(/*event*/){
         this.group.processes = this.processesChecked;
         let uri = `/api/groups/${this.$route.params.id}`;
         this.axios.patch(uri, this.group/*{}*/)
           .then((response) => {
-            if(response.data) {
-              //this.$emit("changecartevent", 1);
-              //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'groups'});
             }
             else {
-            	swal("Сохранение изменений", "Что то пошло не так...", "error");
+              swal("Ошибка", "Нет ответа от сервера при сохранении изменений в рабочей группе", "error");
+              this.$router.push({name: 'groups'});
             }
           })
-          .catch(e => {
-          	//console.log(e);
-            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'groups'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
+              }
+            }
+            else if(error.request) {
+              console.log(error.request.data);
+            }
+            else {
+              swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
+              this.$router.push({name: 'groups'});
+            }
           });
         },
         setProcessesChecked() {
           for(let i = 0; i < this.group.processes.length; i++) {
             Vue.set(this.processesChecked, i, this.group.processes[i].id);
     			}
+        },
+        errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
         },
       },
     }

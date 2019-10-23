@@ -11,7 +11,7 @@ class Route extends Model
 {
     protected $table = 'routes';
     protected $fillable = [
-        'name', 'value', 'description', 'in_use'
+        'name', 'value', 'description', 'is_active'
     ];
     
     public function processes() {

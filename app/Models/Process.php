@@ -24,7 +24,7 @@ class Process extends Model
      */
     protected $table = 'processes';
     protected $fillable = [
-        'route_id', 'name', 'slug', 'sequence', 'is_super', 'is_final'
+        'route_id', 'name', 'slug', 'sequence', 'is_super', 'is_final', 'is_active'
     ];
     
     public function groups() {

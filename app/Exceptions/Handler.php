@@ -4,6 +4,11 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
+use App\Exception\WorkflowException;
+use Log;
 
 class Handler extends ExceptionHandler
 {
@@ -34,6 +39,10 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
+        if ($exception instanceof WorkflowException) {
+            Log::info('Ошибка!', ['Текст ошибки: ' => $exception->getMessage()]);
+        }
+        
         parent::report($exception);
     }
 
@@ -46,6 +55,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+    //    if ($exception instanceof \App\Exceptions\WorkflowException)  {
+    //        return $exception->render($request);
+            
+        if ($exception instanceof ModelNotFoundException) {
+            return response()->json(['message' => 'Entry for '.str_replace('App\\', '', $exception->getModel()).' not found'], 404);
+        } /*else if ($exception instanceof FatalThrowableError) {
+            return response()->json(['message' => $exception->getMessage()], 500);
+        }*/ else if ($exception instanceof WorkflowException) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        } /*else if ($exception instanceof QueryException) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }*/
+        
         return parent::render($request, $exception);
     }
 }

@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Task;
 use App\Models\Customer;
-use App\Models\Price;
+use App\Models\Tariff;
 
 class Contract extends Model
 {
     protected $table = 'contracts';
     protected $fillable = [
-        /*'iteration', 'production', */'contract_num', 'customer_id', 'price_id', 'is_final'
+        'contract_num', 'customer_id', 'tariff_id'
     ];
     
-    public function task() {
-      return $this->hasMany(Task::class, 'task_id', 'id');
+    public function tasks() {
+      return $this->hasMany(Task::class, 'contract_id', 'id');
     }
     
     public function customer() {
@@ -24,8 +24,8 @@ class Contract extends Model
         return $this->belongsTo(Customer::class);
     }
     
-    public function price() {
-        //return $this->belongsTo(Price::class, 'id');
-        return $this->belongsTo(Price::class);
+    public function tariff() {
+        //return $this->belongsTo(Tariff::class, 'id');
+        return $this->belongsTo(Tariff::class);
     }
 }

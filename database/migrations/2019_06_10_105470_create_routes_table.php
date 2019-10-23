@@ -16,12 +16,12 @@ class CreateRoutesTable extends Migration
         Schema::create('routes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->unique();
-            $table->integer('value')->unsigned()->unique();
+            $table->integer('value')->unsigned();
             $table->text('description')->nullable();
-            $table->integer('in_use')->unsigned()->nullable();
+            $table->integer('is_active')->unsigned()->nullable();
             $table->timestamps();
             
-            $table->unique(['value', 'in_use'], 'routes_value_in_use_index');
+            $table->unique(['value', 'is_active'], 'routes_value_is_active_index');
         });
     }
 

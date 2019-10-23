@@ -21,7 +21,7 @@ class ContractController extends Controller
      */
     public function index()
     {
-        return new ContractCollection(Contract::with('customer', 'price')->get());
+        return new ContractCollection(Contract::with('customer', 'tariff')->get());
     }
 
     
@@ -33,40 +33,15 @@ class ContractController extends Controller
      */
     //В $request передаем данные о customer
     public function store(Request $request, WorkflowService $workflowService)
-    {
-        /*
-        $currentUser = User::find($request->user('api')->id);
-        if(!$currentUser) {
-            return response()->json(['data' => [
-                                        'error' => true,
-                                        'message' => 'Не определен пользователь, создающий новый контракт'
-                                    ]]);
-        }
-        */
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:processes',
-            'sequence' => 'required|unique:processes',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
-        
+    {        
         $customer = Customer::find($request->input('id'));
         if($customer) {
-            $newContract = $workflowService->createNewContract($customer);
-            return response()->json(['data' => [
-                                        'error' => $newContract->hasError(),
-                                        'contract' => $newContract->getContract(),
-                                        'message' => $newContract->getMessage()
-                                    ]]);
+            $createdContract = $workflowService->createNewContract($customer);
+
+            return response()->json(['message' => $createdContract->getMessage()]);
         }
         else {
-            return response()->json(['data' => [
-                                        'error' => true,
-                                        'contract' => null,
-                                        'message' => 'Клиент для создания нового контракта не найден'
-                                    ]]);
+            return response()->json(['message' => 'Клиент для создания нового контракта не найден!'], 422);
         }
     }
 
@@ -83,7 +58,7 @@ class ContractController extends Controller
             return new ContractRelationResource($contract);
         }
         else {
-            return new ContractResource($contract);
+            return response()->json(['message' => 'Контракт с идентификатором id ' . $id . ' не найден!'], 422);
         }
     }
 

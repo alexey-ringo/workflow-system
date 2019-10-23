@@ -53,6 +53,7 @@
     data(){
       return {
         route: {},
+        message: '',
         routeStatus: false
       }
     },
@@ -67,61 +68,111 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = `/api/routes/${this.$route.params.id}`;
-      this.axios.get(uri).then((response) => {
-        this.route = response.data.data;
-        this.setRouteStatus();
-      })
-      .catch(e => {
-        //console.log(e);
-        if(e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-            this.$router.push({name: 'login'});
-          }
-          //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-        }
-        else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-        }
-      });
+      this.getUpdatedRoute();
     },
     methods: {
+      getUpdatedRoute() {
+        let uri = `/api/routes/${this.$route.params.id}`;
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.route = response.data.data;
+            this.setRouteStatus();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'routes'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому маршруту", "error");
+            this.$router.push({name: 'routes'});
+          }
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'routes'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'routes'});
+          }
+        });
+      },
       updateRoute(/*event*/){
         if(this.routeStatus) {
-          this.route.in_use = 1;
+          this.route.is_active = 1;
         }
         else {
-          this.route.in_use = null;
+          this.route.is_active = null;
         }
         
         let uri = `/api/routes/${this.$route.params.id}`;
         this.axios.patch(uri, this.route/*{}*/)
           .then((response) => {
-            if(response.data.data) {
-              //this.$emit("changecartevent", 1);
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'routes'});
             }
             else {
-            	swal("Сохранение изменений", "Что то пошло не так...", "error");
+              swal("Ошибка", "Нет ответа от сервера при сохранении изменений в маршруте", "error");
+              this.$router.push({name: 'routes'});
             }
           })
-          .catch(e => {
-          	if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'routes'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
               this.$router.push({name: 'routes'});
             }
           });
         },
+        errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
+        },
         setRouteStatus() {
-          this.routeStatus = this.route.in_use;
+          this.routeStatus = this.route.is_active;
         },
       },
     }

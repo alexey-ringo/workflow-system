@@ -70,9 +70,30 @@
         </div>
         
         <div class="form-group">
-          <textarea class="form-control" v-model="customer.description" placeholder="Комментарии по клиенту" style="height: 300px">
-                      
-          </textarea>
+          <label class="col-sm-4 control-label">Тариф</label>
+          <div class="col-sm-10">
+            <select v-model="selectTariff" required>
+              <option v-for="tariff in tariffs" :value="tariff.id" :key="tariff.id">
+                {{ tariff.name + ' ' + tariff.price }}
+              </option>
+            </select>
+          </div>
+        </div>
+                     
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Порвоначальный комментарий к новой задаче по новому контракту</label>
+          <div class="col-sm-10">
+            <textarea class="form-control" v-model="customer.task_comment" placeholder="Комментарии по клиенту" style="height: 300px">
+            </textarea>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Комментарий по клиенту</label>
+          <div class="col-sm-10">
+            <textarea class="form-control" v-model="customer.description" placeholder="Комментарии по клиенту" style="height: 300px">
+            </textarea>
+          </div>
         </div>
         
       </div>
@@ -94,7 +115,9 @@
     data(){
       return {
         customer: {},
-        customerResponse: {},
+        tariffs: [],
+        message: '',
+        selectTariff: false,
         optionLeavePage: false
       }
     },
@@ -107,73 +130,110 @@
 
       this.axios.defaults.headers.common['Content-Type'] = 'application/json';
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+      
+      this.getTariffs();
     },
     methods: {
-      addCustomer(){
-        let uri = '/api/customers';
-        this.axios.post(uri, this.customer).then((response) => {
-          if(!response.data.data) {
-            swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+      getTariffs() {
+        let uri = '/api/tariffs';
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.tariffs = response.data.data;
           }
-          this.customerResponse = response.data.data;
-          if(!this.customerResponse.hasOwnProperty('error')) {
-            swal("Ошибка", "Неверный формат ответа сервера при создании нового клиента", "error");
-            this.$router.push({name: 'tasks'});
-          }
-          if(!this.customerResponse.error) {
-            //this.$emit("changecartevent", 1);
-            swal("Сохранение изменений", this.customerResponse.message, "success");
-            if(this.optionLeavePage) {
-              this.$router.push({name: 'contracts-for-customer', params: {customid: this.customerResponse.customer.id}});
-            }
-            else {
-              this.$router.push({name: 'customers'});
-            }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.leavePageRules();
           }
           else {
-            swal("Ошибка", this.customerResponse.message, "error");
-            this.$router.push({name: 'search-customer'});
-          }
-          
-          
-          //if(response.data.data.id) {
-          //  swal("Заказ", 'Новый клиент "' + this.customer.surname + ' ' + this.customer.name + '" успешно создан', "success");
-          //  if(this.optionLeavePage) {
-          //    this.$router.push({name: 'contracts-for-customer', params: {customid: this.customer.id}});
-          //  }
-          //  else {
-          //    this.$router.push({name: 'customers'});
-          //  }
-          //}
-          //else {
-          //  swal("Сохранение изменений", "Что то пошло не так...", "error");
-          //  if(this.optionLeavePage) {
-          //    this.$router.push({name: 'search-customer'});
-          //  }
-          //  else {
-          //    this.$router.push({name: 'customers'});
-          //  }
-          //}
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку тарифов", "error");
+            this.leavePageRules();
+          }        
         })
-        .catch(e => {
-          if(e == 'Error: Request failed with status code 401') {
-            if (localStorage.getItem('jwt')) {
-              localStorage.removeItem('jwt');
-              this.$router.push({name: 'login'});
-            }
-            //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.leavePageRules();
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            if(this.optionLeavePage) {
-              this.$router.push({name: 'search-customer'});
-            }
-            else {
-              this.$router.push({name: 'customers'});
-            }
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.leavePageRules();
           }
         });
       },
+      addCustomer(){
+        this.customer.contract_tariff_id = this.selectTariff;
+        
+        let uri = '/api/customers';
+        this.axios.post(uri, this.customer).then((response) => {
+          if(response.data.message) {
+            this.message = response.data.message;                            
+            swal("Сохранение изменений", this.message, "success");
+            this.leavePageRules();  
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+          }
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.leavePageRules();
+              }
+            }//Ошибки валидации
+            else {
+              swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
+            }
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.leavePageRules();
+          }
+        });
+      },
+      errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
+      },
+      leavePageRules() {
+        if(this.optionLeavePage) {
+          this.$router.push({name: 'search-customer'});
+        }
+        else {
+          this.$router.push({name: 'customers'});
+        }
+      }
     },
     beforeRouteEnter(to, from, next) {
       if(from.name == 'customer-not-found') {
