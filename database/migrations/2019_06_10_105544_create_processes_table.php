@@ -19,6 +19,7 @@ class CreateProcessesTable extends Migration
             $table->foreign('route_id')->references('id')->on('routes');
             $table->string('name');
             //$table->string('slug')->unique();
+            $table->integer('deadline')->unsigned();
             $table->tinyInteger('sequence')->unsigned()->nullable();
             $table->integer('is_super')->unsigned()->nullable();
             $table->integer('is_final')->unsigned()->nullable();

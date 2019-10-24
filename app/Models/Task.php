@@ -14,8 +14,8 @@ class Task extends Model
   protected $table = 'tasks';
   
   protected $fillable = [
-      'task', 'task_sequence', 'route', 'process_sequence', 'title', /*'description',*/ 
-      'status', 'process_id', 'contract_id', 'tariff', 'creating_user_id', 'closing_user_id',      
+      'task', 'task_sequence', 'route', 'process_sequence', 'is_contractable', 'title', 
+      'status', 'process_id', 'contract_id', 'tariff_id', 'creating_user_id', 'closing_user_id',      
       'creating_user_name', 'creating_user_email', 'closing_user_name', 'closing_user_email', 
       'deadline' 
   ];

@@ -5,11 +5,6 @@
       <h3 class="card-title">Все договора клиента {{ customer.name + ' ' + customer.surname }}</h3>
     </div>
     <!-- /.card-header -->
-   
-    
-    
-    
-    
     
       <div v-if="!isEmptyObject(customer)" class="card-body">
         
@@ -35,7 +30,6 @@
               </ul>
             </li>
           </ul>
-        
         
         <div class="col-sm-4 table-responsive p-0" v-if="!visibleTaskForNewContract">
             <table class="table table-hover table-bordered table-striped">
@@ -66,25 +60,29 @@
         
         <div v-if="visibleTaskForNewContract">
           <div class="form-group">
-            <label for="inputTaskDesc" class="col-sm-4 control-label">Краткое описание</label>
+            <label class="col-sm-4 control-label">Тариф</label>
             <div class="col-sm-10">
-              <input type="text" v-model="task.description" class="form-control" placeholder="Краткое описание">
+              <select v-model="selectTariff" required>
+                <option v-for="tariff in tariffs" :value="tariff.id" :key="tariff.id">
+                  {{ tariff.name + ' ' + tariff.price }}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-4 control-label">Порвоначальный комментарий к новой задаче по новому контракту</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" v-model="task.task_comment" placeholder="Первоначальный комментарий к задаче по новому контракту" style="height: 300px">
+              </textarea>
             </div>
           </div>
           <button class="btn btn-primary" @click="createContract">Новая задача для нового контракта</button>
           <button class="btn btn-default float-right" @click="setDefault">Отмена</button>
           
         </div>
-                  
-        
       </div>
       <!-- /.card-body -->
-      
-   
-    
-    
-    
-    
   </div>
   <!-- /.card -->
 </template>
@@ -98,8 +96,10 @@
       return {
         customer: {},
         task: {},
+        tariffs: [],
         message: '',
-        visibleTaskForNewContract: false
+        visibleTaskForNewContract: false,
+        selectTariff: false
       }
     },
     mounted() {
@@ -119,18 +119,29 @@
     },
     methods: {
       update() {
+        //Из за того, что в свойстве props можем передать только customer (customerProp),
+        //но не можем передать tariffs в свойстве props - все получаем через ajax
+        /*
         if(this.isEmptyObject(this.customerProp)) {
           this.getCustomer();
         }
         else {
           this.customer = this.customerProp;
         }
+        */
+        this.getCustomer();
+        this.getTariffs();
       },
       getCustomer() {
         let uri = `/api/customers/${this.$route.params.customid}`;
         this.axios.get(uri).then((response) => {
           if(response.data.data) {
             this.customer = response.data.data;
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'search-customer'});
           }
           else {
             swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к данным клиента", "error");
@@ -162,13 +173,54 @@
           }
         });
       },
+      getTariffs() {
+        let uri = '/api/tariffs';
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.tariffs = response.data.data;
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'search-customer'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку тарифов", "error");
+            this.$router.push({name: 'search-customer'});
+          }        
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.leavePageRules();
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.leavePageRules();
+          }
+        });
+      },
       addContract() {
         this.visibleTaskForNewContract = true;
       },
       createContract() {
         let uri = '/api/contracts';
-        
-        this.customer.task_description = this.task.description;
+        this.customer.contract_tariff_id = this.selectTariff;
+        this.customer.task_comment = this.task.task_comment;
         
         this.axios.post(uri, this.customer).then((response) => {
           if(response.data.message) {

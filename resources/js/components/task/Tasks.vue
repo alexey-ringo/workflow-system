@@ -21,7 +21,7 @@
                         <th>Номер заявки</th>
                         <th>Процесс</th>
                         <th>Шаг</th>
-                        <th>Название</th>
+                        <th>Тематика</th>
                         <th>Краткое описание</th>
                         <th>Получена от</th>
                         <th>Время поступления</th>
@@ -34,7 +34,7 @@
                         <td v-if="task.status">{{ task.process_sequence  }}</td>
                         <td v-if="task.status">{{ task.task_sequence  }}</td>
                         <td v-if="task.status">{{ task.title  }}</td>
-                        <td v-if="task.status">{{ task.description }}</td>
+                        <td v-if="task.status">{{ task.contract.customer.surname + ' ' + task.contract.customer.name + ' ' + task.contract.customer.second_name }}</td>
                         <td v-if="task.status">{{ task.creating_user_name }}</td>
                         <td v-if="task.status">{{ task.created_at }}</td>
                         <td v-if="task.status">

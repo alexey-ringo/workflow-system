@@ -23,8 +23,8 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $currentUser = $request->user('api');
-        
-        return (new TaskCollection(Process::with('tasks', 'groups.users')
+    //Рабочий вариант    
+        return (new TaskCollection(Process::with('tasks.contract.customer', 'groups.users')
                                         ->whereHas('groups.users', function($q) use($currentUser) {
                                             $q->where('users.id', $currentUser->id);
                                         }
@@ -34,6 +34,47 @@ class TaskController extends Controller
                                                             'canTaskCreate' => $currentUser->canFirstCreate()
                                                         ]
                                                 ]);
+    
+    
+    //Тесты
+    
+    //    return (new TaskCollection(Process::with('tasks'/*, 'groups.users'*/)
+    //                                    ->whereHas('tasks', function($q) {
+    //                                        $q->where('status', 1);
+    //                                        }
+    //                                    )
+    //                                    //->with('groups.users')
+    //                                    //->whereHas('groups.users', function($q) use($currentUser) {
+    //                                    //    $q->where('users.id', $currentUser->id);
+    //                                    //    }
+    //                                    //)
+    //                                    ->get()))
+    //                                    ->additional(['meta' => 
+    //                                                    [
+    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
+    //                                                    ]
+    //                                            ]);
+    //}
+    
+    
+    
+    //    return (new TaskCollection(Process::with([
+    //                                                'tasks' => function($q) { $q->where('status', 1); },
+    //                                            //    'groups.users' => function($q) use($currentUser) { $q->where('groups.users.id', $currentUser->id); }
+    //                                            ])
+    //                                        ->with('tasks.contract.customer', 'groups.users')
+    //                                    ->whereHas('groups.users', function($q) use($currentUser) {
+    //                                        $q->where('users.id', $currentUser->id);
+    //                                    }
+    //                                )
+    //                                ->get()))
+    //                                ->additional(['meta' => 
+    //                                                    [
+    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
+    //                                                    ]
+    //                                            ]);
+    //}
+    
     }
     
 

@@ -6134,8 +6134,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     customerProp: {}
@@ -6144,8 +6142,10 @@ __webpack_require__.r(__webpack_exports__);
     return {
       customer: {},
       task: {},
+      tariffs: [],
       message: '',
-      visibleTaskForNewContract: false
+      visibleTaskForNewContract: false,
+      selectTariff: false
     };
   },
   mounted: function mounted() {
@@ -6164,11 +6164,19 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     update: function update() {
-      if (this.isEmptyObject(this.customerProp)) {
+      //Из за того, что в свойстве props можем передать только customer (customerProp),
+      //но не можем передать tariffs в свойстве props - все получаем через ajax
+
+      /*
+      if(this.isEmptyObject(this.customerProp)) {
         this.getCustomer();
-      } else {
+      }
+      else {
         this.customer = this.customerProp;
       }
+      */
+      this.getCustomer();
+      this.getTariffs();
     },
     getCustomer: function getCustomer() {
       var _this = this;
@@ -6177,6 +6185,13 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.get(uri).then(function (response) {
         if (response.data.data) {
           _this.customer = response.data.data;
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'search-customer'
+          });
         } else {
           swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к данным клиента", "error");
 
@@ -6215,23 +6230,26 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    addContract: function addContract() {
-      this.visibleTaskForNewContract = true;
-    },
-    createContract: function createContract() {
+    getTariffs: function getTariffs() {
       var _this2 = this;
 
-      var uri = '/api/contracts';
-      this.customer.task_description = this.task.description;
-      this.axios.post(uri, this.customer).then(function (response) {
-        if (response.data.message) {
+      var uri = '/api/tariffs';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.tariffs = response.data.data;
+        } else if (response.data.message) {
           _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
 
-          _this2.setDefault();
-
-          swal("Сохранение изменений", _this2.message, "success");
+          _this2.$router.push({
+            name: 'search-customer'
+          });
         } else {
-          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку тарифов", "error");
+
+          _this2.$router.push({
+            name: 'search-customer'
+          });
         }
       })["catch"](function (error) {
         if (error.response) {
@@ -6246,10 +6264,55 @@ __webpack_require__.r(__webpack_exports__);
               }
             } else {
               swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.leavePageRules();
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.leavePageRules();
+        }
+      });
+    },
+    addContract: function addContract() {
+      this.visibleTaskForNewContract = true;
+    },
+    createContract: function createContract() {
+      var _this3 = this;
+
+      var uri = '/api/contracts';
+      this.customer.contract_tariff_id = this.selectTariff;
+      this.customer.task_comment = this.task.task_comment;
+      this.axios.post(uri, this.customer).then(function (response) {
+        if (response.data.message) {
+          _this3.message = response.data.message;
+
+          _this3.setDefault();
+
+          swal("Сохранение изменений", _this3.message, "success");
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при создании нового клиента", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
             }
           } //Ошибки валидации
           else {
-              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
             }
         } else if (error.request) {
           console.log(error.request.data);
@@ -6298,11 +6361,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
-//
-//
 //
 //
 //
@@ -6729,7 +6787,7 @@ __webpack_require__.r(__webpack_exports__);
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
 
           _this.$router.push({
-            name: 'tasks'
+            name: 'dashboard'
           });
         }
       });
@@ -49426,34 +49484,91 @@ var render = function() {
           _vm.visibleTaskForNewContract
             ? _c("div", [
                 _c("div", { staticClass: "form-group" }, [
-                  _c(
-                    "label",
-                    {
-                      staticClass: "col-sm-4 control-label",
-                      attrs: { for: "inputTaskDesc" }
-                    },
-                    [_vm._v("Краткое описание")]
-                  ),
+                  _c("label", { staticClass: "col-sm-4 control-label" }, [
+                    _vm._v("Тариф")
+                  ]),
                   _vm._v(" "),
                   _c("div", { staticClass: "col-sm-10" }, [
-                    _c("input", {
+                    _c(
+                      "select",
+                      {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.selectTariff,
+                            expression: "selectTariff"
+                          }
+                        ],
+                        attrs: { required: "" },
+                        on: {
+                          change: function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.selectTariff = $event.target.multiple
+                              ? $$selectedVal
+                              : $$selectedVal[0]
+                          }
+                        }
+                      },
+                      _vm._l(_vm.tariffs, function(tariff) {
+                        return _c(
+                          "option",
+                          { key: tariff.id, domProps: { value: tariff.id } },
+                          [
+                            _vm._v(
+                              "\n                " +
+                                _vm._s(tariff.name + " " + tariff.price) +
+                                "\n              "
+                            )
+                          ]
+                        )
+                      }),
+                      0
+                    )
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { staticClass: "col-sm-4 control-label" }, [
+                    _vm._v(
+                      "Порвоначальный комментарий к новой задаче по новому контракту"
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-sm-10" }, [
+                    _c("textarea", {
                       directives: [
                         {
                           name: "model",
                           rawName: "v-model",
-                          value: _vm.task.description,
-                          expression: "task.description"
+                          value: _vm.task.task_comment,
+                          expression: "task.task_comment"
                         }
                       ],
                       staticClass: "form-control",
-                      attrs: { type: "text", placeholder: "Краткое описание" },
-                      domProps: { value: _vm.task.description },
+                      staticStyle: { height: "300px" },
+                      attrs: {
+                        placeholder:
+                          "Первоначальный комментарий к задаче по новому контракту"
+                      },
+                      domProps: { value: _vm.task.task_comment },
                       on: {
                         input: function($event) {
                           if ($event.target.composing) {
                             return
                           }
-                          _vm.$set(_vm.task, "description", $event.target.value)
+                          _vm.$set(
+                            _vm.task,
+                            "task_comment",
+                            $event.target.value
+                          )
                         }
                       }
                     })
@@ -49601,7 +49716,7 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
             _c("label", { staticClass: "col-sm-4 control-label" }, [
-              _vm._v("Первоначальный комментарий к новой задаче")
+              _vm._v("Первоначальный комментарий к сервисной задаче")
             ]),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-10" }, [
@@ -49617,7 +49732,7 @@ var render = function() {
                 staticClass: "form-control",
                 staticStyle: { height: "300px" },
                 attrs: {
-                  placeholder: "Первоначальный комментарий к новой задаче "
+                  placeholder: "Первоначальный комментарий к сервисной задаче"
                 },
                 domProps: { value: _vm.task.comment },
                 on: {
@@ -50257,7 +50372,17 @@ var render = function() {
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
-                    ? _c("td", [_vm._v(_vm._s(task.description))])
+                    ? _c("td", [
+                        _vm._v(
+                          _vm._s(
+                            task.contract.customer.surname +
+                              " " +
+                              task.contract.customer.name +
+                              " " +
+                              task.contract.customer.second_name
+                          )
+                        )
+                      ])
                     : _vm._e(),
                   _vm._v(" "),
                   task.status
@@ -50327,7 +50452,7 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Шаг")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Название")]),
+        _c("th", [_vm._v("Тематика")]),
         _vm._v(" "),
         _c("th", [_vm._v("Краткое описание")]),
         _vm._v(" "),

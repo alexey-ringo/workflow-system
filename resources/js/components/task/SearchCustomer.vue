@@ -115,7 +115,7 @@
           }
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
-            this.$router.push({name: 'tasks'});
+            this.$router.push({name: 'dashboard'});
           }
         });
       },

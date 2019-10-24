@@ -63,7 +63,7 @@ class WorkflowService
     /**
      * @var int
      */
-    private $routeVal;
+    private $contractableRoute;
     private $tariffId;
     
     private $error = false;
@@ -138,13 +138,7 @@ class WorkflowService
         
         Event::dispatch(new onCustomerCreateEvent($this->customer));
         
-        //$this->request->request->add(['task_route' => 1]);
-        $this->routeVal = 1;      
-               
-        //if(!$this->request->has('task_description')) {
-        //    $this->request->request->add(['task_description' => 'Задача по созданию нового клиента ' 
-        //                                . $this->customer->name . ' ' . $this->customer->surname]);
-        //}
+        $this->contractableRoute = 1;
       
         $this->createNewContract($this->customer);
         
@@ -200,8 +194,7 @@ class WorkflowService
         
         Event::dispatch(new onContractCreateEvent($this->contract));
         
-        //$this->request->request->add(['task_route' => 1]);
-        $this->routeVal = 1;
+        $this->contractableRoute = 1;
 
         $this->setComment();
                 
@@ -226,8 +219,8 @@ class WorkflowService
         //    return null;
         //}
         //Првоерка на единичность задач по контракту с роутом = 1
-        if($this->routeVal) {
-            $route = Route::where('value', $this->routeVal)->first();
+        if($this->contractableRoute) {
+            $route = Route::where('value', $this->contractableRoute)->first();
             $contractableTask = 1;
         }
         else {
@@ -450,7 +443,6 @@ class WorkflowService
         }
     }
     
-    
     /**
      * Create Comment.
      * 
@@ -533,13 +525,11 @@ class WorkflowService
         }        
     }
     
-    
     private function createTaskNum(): int 
     {
         $lastTask = Task::all()->max('task');
         return $lastTask + 1;
     }
-    
     
     private function createTaskSeq(): int 
     {        
@@ -547,7 +537,6 @@ class WorkflowService
         $this->defineTmpTask();
         return $this->tmpTask->task_sequence + 1;
     }
-    
     
     private function defineTmpTask()
     {

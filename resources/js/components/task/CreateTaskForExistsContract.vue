@@ -6,11 +6,6 @@
     </div>
     <!-- /.card-header -->
     
-    
-    
-    
-    
-    
     <!-- form start -->
     <form class="form-horizontal" @submit.prevent="createTask(selectRoute)">
       <div class="card-body">
@@ -30,9 +25,9 @@
         </div>
         
         <div class="form-group">
-          <label class="col-sm-4 control-label">Первоначальный комментарий к новой задаче</label>
+          <label class="col-sm-4 control-label">Первоначальный комментарий к сервисной задаче</label>
           <div class="col-sm-10">
-            <textarea class="form-control" v-model="task.comment" placeholder="Первоначальный комментарий к новой задаче " style="height: 300px">
+            <textarea class="form-control" v-model="task.comment" placeholder="Первоначальный комментарий к сервисной задаче" style="height: 300px">
             </textarea>
           </div>
         </div>
