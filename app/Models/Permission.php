@@ -14,7 +14,7 @@ class Permission extends Model
      */
     protected $table = 'permissions';
     protected $fillable = [
-        'name', 'slug',
+        'title', 'name',
     ];
     
     public function roles() {

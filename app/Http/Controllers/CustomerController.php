@@ -12,6 +12,7 @@ use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Customer\CustomerRelationResource;
 use App\Http\Resources\Customer\CustomerCustomResource;
+use Gate;
 
 class CustomerController extends Controller
 {
@@ -22,6 +23,10 @@ class CustomerController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Customer::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка клиентов']);
+        }
+        
         return new CustomerCollection(Customer::with('phones')->get());
     }
 
@@ -34,6 +39,10 @@ class CustomerController extends Controller
      */
     public function store(CustomerStoreRequest $request, WorkflowService $workflowService)
     {
+        if(Gate::denies('store', Customer::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового клиента']);
+        }
+        
         /** @var App\Services\CustomerResponse $createdCustomer */
         $createdCustomer = $workflowService->createNewCustomer();
         
@@ -48,6 +57,10 @@ class CustomerController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Customer::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр информации о данном клиенте']);
+        }
+        
         $customer = Customer::find($id);
         if($customer) {
             $contracts = $customer->contracts()->get();
@@ -74,6 +87,10 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
+        if(Gate::denies('update', Customer::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного клиента']);
+        }
+        
         $customer->surname = $request->input('surname');
         $customer->name = $request->input('name');
         $customer->second_name = $request->input('second_name');
@@ -87,11 +104,11 @@ class CustomerController extends Controller
         
         //$process->update($request->all());
         
-        if($customer) {
-            return response()->json(['data' => 1]);
+        if($customer->save()) {
+            return response()->json(['message' => 'Изменения в карточке клиента "' . $customer->name . ' ' . $customer->surname . '" успешно применены']);
         }
         else {
-            return response()->json(['data' => 0]);
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений в карточке клиента!'], 500);
         }
         
     }
@@ -104,6 +121,10 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
+        if(Gate::denies('destroy', Customer::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного клиента']);
+        }
+        
         if($customer->delete()) {
             return response()->json(['data' => 1]);
         }

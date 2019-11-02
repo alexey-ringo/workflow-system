@@ -1,12 +1,10 @@
 <?php
-namespace App\Models\Traits;
 
-use App\Models\Permission;
-use App\Models\Role;
+namespace App\Traits;
 
-trait PermissionsTrait {
+trait RolePermissionTrait {
 
-   //$require = true - обязательное совпадение всех permission в массиве $permission (если от массив)
+    //$require = true - обязательное совпадение всех permission в массиве $permission (если от массив)
     //$require = false - достаточно совпадение хотя бы одного permission в $permission
     public function canDo($permission, $require = false) {
         //Если $permission - это массив:

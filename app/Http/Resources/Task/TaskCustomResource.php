@@ -47,7 +47,7 @@ class TaskCustomResource extends JsonResource
             'title' => $this->resource->title,
             'description' => $this->resource->description,
             'sequence' => $this->resource->process_sequence,
-            'processName' => $this->resource->process->name,
+            'processName' => $this->resource->process->title,
             'taskStatus' => $this->resource->status,
             'prevProcessId' => $this->prevProcessId,
             'nextProcessId' => $this->nextProcessId,

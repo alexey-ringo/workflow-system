@@ -15,7 +15,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="group in groups" :key="group.id">
-                        <td>{{ group.name  }}</td>
+                        <td>{{ group.title  }}</td>
                         <td>{{ relatedProcesses(group.processes) }}</td>
                         <td>
                             <router-link :to="{name: 'group-update', params: {id: group.id}}" class="btn btn-xs btn-default">
@@ -137,7 +137,7 @@
             relatedProcesses(relProcess) {
                 let processes = '';
     			for(let i = 0; i < relProcess.length; i++) {
-    				processes += relProcess[i].name + ', ';
+    				processes += relProcess[i].title + ', ';
     			}
 				return processes;
             }

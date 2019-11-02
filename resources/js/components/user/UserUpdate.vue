@@ -57,7 +57,7 @@
                        v-bind:value="role.id"
                        v-model="rolesChecked"
                        >
-                <label class="form-check-label" for="rolesCheckBox">{{ role.name }}</label>
+                <label class="form-check-label" for="rolesCheckBox">{{ role.title }}</label>
               </div>
             </div>  
           </div>
@@ -71,7 +71,7 @@
                        v-bind:value="group.id"
                        v-model="groupsChecked"
                        >
-                <label class="form-check-label" for="groupsCheckBox">{{ group.name }}</label>
+                <label class="form-check-label" for="groupsCheckBox">{{ group.title }}</label>
               </div>
             </div>  
           </div>
@@ -95,6 +95,7 @@
     data(){
       return {
         user:{},
+        message: '',
         rolesChecked: [],
         groupsChecked: []
       }
@@ -105,38 +106,93 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = `/api/users/${this.$route.params.id}`;
-      this.axios.get(uri).then((response) => {
-        this.user = response.data.data;
-        this.setRolesChecked();
-        this.setGroupsChecked();
-      });
+      this.getUpdatedUser();
     },
     methods: {
+      getUpdatedUser() {
+        let uri = `/api/users/${this.$route.params.id}`;
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.user = response.data.data;
+            this.setRolesChecked();
+            this.setGroupsChecked();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'users'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируему пользователю", "error");
+            this.$router.push({name: 'users'});
+          }
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'users'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'users'});
+          }
+        });
+      },
       updateUser(){
         this.user.roles = this.rolesChecked;
         this.user.groups = this.groupsChecked;
         let uri = `/api/users/${this.$route.params.id}`;
         this.axios.patch(uri, this.user/*{}*/)
           .then((response) => {
-            if(response.data) {
-              //this.$emit("changecartevent", 1);
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'users'});
             }
             else {
-            	swal("Изменение профиля пользователя", "Что то пошло не так...", "error");
+              swal("Ошибка", "Нет ответа от сервера при сохранении изменений данных пользователя", "error");
+              this.$router.push({name: 'users'});
             }
           })
-          .catch(e => {
-          	if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'users'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              //console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
+              this.$router.push({name: 'users'});
             }
           });
         },
@@ -149,6 +205,15 @@
           for(let i = 0; i < this.user.groups.length; i++) {
             Vue.set(this.groupsChecked, i, this.user.groups[i].id);
     			}
+        },
+        errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
         },
       }
     }

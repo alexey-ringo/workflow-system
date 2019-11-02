@@ -19,7 +19,7 @@ class GroupRelationResource extends JsonResource
         //return parent::toArray($request);
         return [
             'id' => $this->id,
-            'slug' => $this->slug,
+            'title' => $this->title,
             'name' => $this->name,
             'processes' => ProcessResource::collection($this->processes),
             'all_processes' => ProcessResource::collection(Process::all())

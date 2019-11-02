@@ -29,15 +29,6 @@ class PhoneController extends Controller
      */
     public function store(Request $request)
     {
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:processes',
-            'sequence' => 'required|unique:processes',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
-        
         $phone = Phone::create([
             'customer_id' => $request->input('customer_id'),
             'phone' => $request->input('phone'),
@@ -45,12 +36,11 @@ class PhoneController extends Controller
         //Illuminate\Database\QueryException
         
         if($phone) {
-            return response()->json(['data' => 1]);
+            return response()->json(['message' => 'Дополнительный телефон клиента успешно добавлен']);
         }
         else {
-            $this->destroy($customer);
-            return response()->json(['data' => 0]);
-        }  
+            return response()->json(['message' => 'Внутранняя ошибка при добавлении телефона!'], 500);
+        }
     }
 
     /**
@@ -92,7 +82,6 @@ class PhoneController extends Controller
             return response()->json(['data' => 1]);
         }
         else {
-            $this->destroy($customer);
             return response()->json(['data' => 0]);
         }  
         
@@ -110,7 +99,7 @@ class PhoneController extends Controller
             return response()->json(['data' => 1]);
         }
         else {
-            return response()->json(['data' => 0]);
+            return response()->json(['message' => 'Внутренняя ошибка при удалении телефона клиента!']);
         }  
     }
 }

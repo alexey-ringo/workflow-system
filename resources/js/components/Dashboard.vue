@@ -152,7 +152,7 @@
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['customer_find']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -170,7 +170,7 @@
             </ul>
           </li>     
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['task_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -185,7 +185,7 @@
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['customer_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -197,13 +197,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'customers'}"><i class="fa fa-circle-o nav-icon"></i><p>Все клиенты</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['customer_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'customer-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый клиент</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['contract_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -218,7 +218,7 @@
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['tariff_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -230,13 +230,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'tariffs'}"><i class="fa fa-circle-o nav-icon"></i><p>Все тарифы</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['tariff_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'tariff-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый тариф</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['user_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -248,13 +248,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'users'}"><i class="fa fa-circle-o nav-icon"></i><p>Все пользователи</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['user_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'user-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый пользователь</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['role_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -266,13 +266,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'roles'}"><i class="fa fa-circle-o nav-icon"></i><p>Все политики</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['role_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'role-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая политика</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['permission_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -284,13 +284,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'permissions'}"><i class="fa fa-circle-o nav-icon"></i><p>Все разрешения</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['permission_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'permission-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новое разрешение</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['group_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -302,13 +302,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'groups'}"><i class="fa fa-circle-o nav-icon"></i><p>Все группы</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['group_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'group-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новая группа</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['process_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -320,13 +320,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'processes'}"><i class="fa fa-circle-o nav-icon"></i><p>Все процессы</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['process_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'process-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый процесс</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['route_index']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -338,13 +338,13 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'routes'}"><i class="fa fa-circle-o nav-icon"></i><p>Все маршруты</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['route_store']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'route-create'}"><i class="fa fa-circle-o nav-icon"></i><p>Новый маршрут</p></router-link>
               </li>
             </ul>
           </li>
           
-          <li class="nav-item has-treeview">
+          <li v-if="permissionsView['telegram_view']" class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-dashboard"></i>
               <p>
@@ -356,16 +356,11 @@
               <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'bot-status'}"><i class="fa fa-circle-o nav-icon"></i><p>Статус</p></router-link>
               </li>
-              <li class="nav-item">
+              <li v-if="permissionsView['telegram_edit']" class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'bot-setting'}"><i class="fa fa-circle-o nav-icon"></i><p>Настройки</p></router-link>
               </li>
             </ul>
           </li>
-          
-          
-          
-          
-          
 
         </ul>
       </nav>
@@ -445,7 +440,8 @@
                 isLoggedIn : null,
                 name : null,
                 loggedUser : {},
-                loggedUserName2: ''
+                loggedUserName2: '',
+                permissionsView: []
             }
         },
         mounted() {
@@ -455,25 +451,84 @@
             this.axios.defaults.headers.common['Content-Type'] = 'application/json'
             this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.isLoggedIn
             
+            this.getLoggedUser();
+        },
+        methods: {
+          getLoggedUser() {
             let uri = '/api/logged-user';
             this.axios.get(uri)
             	.then((response) => {
-                	this.loggedUser = response.data.loggedUser;
-                	this.loggedUserName2 = response.data.loggedUser.name;
-                })
-                .catch(e => {
-                	//console.log(e);
-                    if(e == 'Error: Request failed with status code 401') {
-                        if (localStorage.getItem('jwt')) {
-                            localStorage.removeItem('jwt');
-                            this.$router.push({name: 'login'});
-                        }
-                        //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            	  if(response.data.data) {
+                	this.loggedUser = response.data.data;
+                	this.loggedUserName2 = response.data.data.name;
+                	
+                	this.getPermissionsView();
+            	  }
+            	  else if (response.data.message) {
+                  this.message = response.data.message;
+                  swal("Ошибка", this.message, "error");
+                }
+                else {
+                  swal("Ошибка", "Нет ответа от сервера при первоначальном входе в систему", "error");
+                }
+              })
+              .catch(error => {
+                if(error.response) {
+                  if(error.response.data.message) {
+                    if(error.response.status == 401) {
+                      if (localStorage.getItem('jwt')) {
+                        localStorage.removeItem('jwt');
+                        this.$router.push({name: 'login'});
+                      }
                     }
                     else {
-                        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                      swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
                     }
-                });
+                  }         
+                }
+                else if(error.request) {
+                }
+                else {
+                  swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                }
+              });
+          },
+          getPermissionsView() {
+            let uri = '/api/permissions-menu';
+            this.axios.get(uri)
+              .then((response) => {
+                if(response.data.data) {
+                  this.permissionsView = response.data.data;
+                }
+            	  else if (response.data.message) {
+                  this.message = response.data.message;
+                  swal("Ошибка", this.message, "error");
+                }
+                else {
+                  swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку разрешений доступа пользователей", "error");
+                }        
+              })
+              .catch(error => {
+                if(error.response) {
+                  if(error.response.data.message) {
+                    if(error.response.status == 401) {
+                      if (localStorage.getItem('jwt')) {
+                        localStorage.removeItem('jwt');
+                        this.$router.push({name: 'login'});
+                      }
+                    }
+                    else {
+                      swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                    }
+                  }         
+                }
+                else if(error.request) {
+              }
+              else {
+                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              }
+            });
+          }
         },
         computed: {
           loggedUserName() {

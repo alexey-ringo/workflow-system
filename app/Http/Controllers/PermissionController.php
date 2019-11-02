@@ -18,16 +18,7 @@ class PermissionController extends Controller
     {
         return new PermissionCollection(Permission::all());
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -38,16 +29,22 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $validator = $request->validate([
-            'slug' => 'required|string|max:255|unique:permissions',
-            'name' => 'required|string|max:255|unique:permissions',
+            'title' => 'required|string|max:50|unique:permissions',
+            'name' => 'required|string|max:50|unique:permissions',
         ]);
         
         $permission = Permission::create([
-            'slug' => $request->input('slug'),
+            'title' => $request->input('title'),
             'name' => $request->input('name'),
         ]);
         
-        return new PermissionResource($permission);
+        if($permission) {
+            return response()->json(['message' => 'Новая политика "' . $permission->title . '" успешно создана']);
+        }
+        else {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при создании нового разрешения операции!'], 500);
+        }
+        
     }
 
     /**
@@ -57,22 +54,17 @@ class PermissionController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    public function show(/*Permission $permission*/ int $id)
+    public function show(int $id)
     {
-        return new PermissionResource(Permission::FindOrFail($id));
-        //return new PermissionResource($permission);
+        $permission = Permission::find($id);
+        if($permission) {
+            return new PermissionResource($permission);
+        }
+        else {
+            return response()->json(['message' => 'Разрешение операции с идентификатором id ' . $id . ' не найдено!'], 422);
+        }
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Permission  $permission
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Permission $permission)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
@@ -84,13 +76,18 @@ class PermissionController extends Controller
     public function update(Request $request, Permission $permission)
     {
         $validator = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:50',
+            'name' => 'required|string|max:50',
         ]);
         
+        $permission->title = $request->input('title');
         $permission->name = $request->input('name');
-        $permission->save();
-        
-        return new PermissionResource($permission);
+        if($permission->save()) {
+            return response()->json(['message' => 'Изменения для разрешения операции "' . $permission->title . '" успешно применены']);
+        }
+        else {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений нового разрешения операции!'], 500);
+        }
     }
 
     /**

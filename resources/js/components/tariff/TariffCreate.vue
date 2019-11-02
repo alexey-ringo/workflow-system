@@ -11,7 +11,7 @@
         <div class="form-group">
           <label for="inputTariffName" class="col-sm-4 control-label">Название тарифа</label>
           <div class="col-sm-10">
-            <input type="text" v-model="tariff.name" class="form-control" id="inputTariffName" required placeholder="Название тарифа">
+            <input type="text" v-model="tariff.title" class="form-control" id="inputTariffName" required placeholder="Название тарифа">
           </div>
         </div>
         

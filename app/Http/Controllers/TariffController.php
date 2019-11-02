@@ -37,7 +37,7 @@ class TariffController extends Controller
         ]);
         
         if($tariff) {
-            return response()->json(['message' => 'Новый тариф ' . $tariff->name . ' успешно создан']);
+            return response()->json(['message' => 'Новый тариф ' . $tariff->title . ' успешно создан']);
         }
         else {
             return response()->json(['message' => 'Ошибка при создании нового тарифа']);

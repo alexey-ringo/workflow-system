@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-use App\Models\Traits\PermissionsTrait;
+use App\Models\Traits\RolePermissionsTrait;
 use Illuminate\Database\Eloquent\Collection;
 
 use App\Models\Group;
@@ -17,7 +17,7 @@ use App\Models\TelegramUser;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, PermissionsTrait;
+    use HasApiTokens, Notifiable, RolePermissionsTrait;
     
     protected $table = 'users';
 
@@ -70,15 +70,7 @@ class User extends Authenticatable
     }
     
     //-----------------------------------------------------//
-    
-    
-    public function scopeCurrentSequence() {
         
-    }
-    
-    public function scopeNextSequence() {
-        
-    }
     
     public function canFirstCreate(): bool 
     {

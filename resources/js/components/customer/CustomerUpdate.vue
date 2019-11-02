@@ -130,6 +130,7 @@
     data(){
       return {
         customer: {},
+        message: '',
         phones: [],
         phone: {},
         visibleAddPhone: false
@@ -146,49 +147,89 @@
       this.axios.defaults.headers.common['Content-Type'] = 'application/json'
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
-      let uri = `/api/customers/${this.$route.params.id}`;
-      this.axios.get(uri).then((response) => {
-        this.customer = response.data.data;
-        this.getPhones();
-      })
-      .catch(e => {
-        //console.log(e);
-        if(e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
-            this.$router.push({name: 'login'});
-          }
-          //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-        }
-        else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-        }
-      });
+      this.getUpdatedCustomer();
     },
     methods: {
+      getUpdatedCustomer() {
+        let uri = `/api/customers/${this.$route.params.id}`;
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.customer = response.data.data;
+            this.getPhones();
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'customers'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой карточке клиента", "error");
+            this.$router.push({name: 'customers'});
+          }
+        })
+        .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'customers'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'customers'});
+          }
+        });
+      },
       updateCustomer(/*event*/){
         let uri = `/api/customers/${this.$route.params.id}`;
         this.axios.patch(uri, this.customer/*{}*/)
           .then((response) => {
-            if(response.data.data) {
-              //this.$emit("changecartevent", 1);
+            if(response.data.message) {
+              this.message = response.data.message;
+              swal("Сохранение изменений", this.message, "success");
               this.$router.push({name: 'customers'});
             }
             else {
-            	swal("Сохранение изменений", "Что то пошло не так...", "error");
-            	this.$router.push({name: 'customers'});
+              swal("Ошибка", "Нет ответа от сервера при сохранении изменений в карточке клиента", "error");
+              this.$router.push({name: 'customers'});
             }
           })
-          .catch(e => {
-          	if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.$router.push({name: 'customers'});
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              //console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              console.log('Внутренняя ошибка: ' + error.message);
               this.$router.push({name: 'customers'});
             }
           });
@@ -210,24 +251,40 @@
           this.phone.customer_id = this.customer.id;
           let uri = '/api/phones';
           this.axios.post(uri, this.phone).then((response) => {
-            if(response.data.data) {
+            if(response.data.message) {
+              this.message = response.data.message;                            
+              swal("Сохранение изменений", this.message, "success");
               this.getPhones();
               this.phone = {};
-              this.visibleAddPhone = false;
+              this.visibleAddPhone = false;  
             }
             else {
-              swal("Сохранение изменений", "Что то пошло не так...", "error");
+              swal("Ошибка", "Нет ответа от сервера при добавлении телефона клиента", "error");
               this.phone = {};
               this.visibleAddPhone = false;
             }
           })
-          .catch(e => {
-            if(e == 'Error: Request failed with status code 401') {
-              if (localStorage.getItem('jwt')) {
-                localStorage.removeItem('jwt');
-                this.$router.push({name: 'login'});
+          .catch(error => {
+            if(error.response) {
+              if(error.response.data.message) {
+                if(error.response.status == 401) {
+                  if (localStorage.getItem('jwt')) {
+                    localStorage.removeItem('jwt');
+                    this.$router.push({name: 'login'});
+                  }
+                }
+                else {
+                  swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                  this.phone = {};
+                  this.visibleAddPhone = false;
+                }
+              }//Ошибки валидации
+              else {
+                swal('Ошибка - ' + error.response.status, this.errMessageToStr(error.response.data), "error");
               }
-              //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+            }
+            else if(error.request) {
+              //console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");
@@ -247,14 +304,44 @@
                 if(response.data.data) {
                   this.getPhones();
                 }
+                else if (response.data.message) {
+                  this.message = response.data.message;
+                  swal("Ошибка", this.message, "error");
+                }
                 else {
-                  swal("Удаление задачи", "Что то пошло не так...", "error");
+                  swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного телефона", "error");
                 }
               })
-              .catch(e => {
-                swal('Ошибка', "Внутренняя ошибка сервера", "error");
+              .catch(error => {
+                if(error.response) {
+                  if(error.response.data.message) {
+                    if(error.response.status == 401) {
+                      if (localStorage.getItem('jwt')) {
+                        localStorage.removeItem('jwt');
+                        this.$router.push({name: 'login'});
+                      }
+                    }
+                    else {
+                      swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                    }
+                  }         
+                }
+                else if(error.request) {
+                }
+                else {
+                  swal('Ошибка', "Внутренняя ошибка сервера", "error");
+                }
               });
             }
+        },
+        errMessageToStr(errors) {
+          let result = '';
+          for(let key in errors) {
+            errors[key].forEach(function(item){
+              result += item + '; ';
+            });
+          }
+          return result;
         },
       },
     }

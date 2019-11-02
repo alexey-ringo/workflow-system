@@ -23,16 +23,7 @@ class UserController extends Controller
         return new UserCollection(User::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -56,10 +47,14 @@ class UserController extends Controller
         $input['password'] = bcrypt($input['password']);
 
         $user = User::create($input);
+        if(empty($user)) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при создании нового пользователя!'], 500);
+        }
         $success['token'] = $user->createToken('MyApp')->accessToken;
         $success['name'] = $user->name;
 
-        return response()->json(['success' => $success]);
+        //return response()->json(['success' => $success]);
+        return response()->json(['message' => 'Новая пользователь "' . $user->name . ' ' . $user->surname . '" успешно создан']);
     }
 
     /**
@@ -68,23 +63,18 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user)
+    public function show(int $id)
     {
-        return new UserRelationResource($user);
-        //return response()->json(['user' => $user]);
+        $user = User::find($id);
+        if($user) {
+            return new UserRelationResource($user);
+        }
+        else {
+            return response()->json(['message' => 'Пользователь с идентификатором id ' . $id . ' не найден!'], 422);
+        }               
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
+    
     /**
      * Update the specified resource in storage.
      *
@@ -119,7 +109,10 @@ class UserController extends Controller
         $user->email = $request->input('email');
         //Если поле == null - в модель пароль не передавать, иначе - зашифровать перед передачей в модель
         $request->input('password') == null ?: $user->password = bcrypt($request['password']);
-        $user->save();
+        
+        if(empty($user->save())) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений данных пользователя!'], 500);
+        }
         
         //Если список ролей пуст - отсоединяем
         $user->roles()->detach();
@@ -133,10 +126,10 @@ class UserController extends Controller
         //Проверка на наличие полученного от формы значения поля с name="groups"
         if($request->input('groups')) :
             $user->groups()->attach($request->input('groups'));
-        endif;
+        endif;      
         
         
-        return new UserResource($user);
+        return response()->json(['message' => 'Изменения для пользователя "' . $user->name . ' ' . $user->surname . '" успешно применены']);
     }
 
     /**
@@ -150,8 +143,8 @@ class UserController extends Controller
         //Какой то непонятной магией Laravel восстанавливает объект $user из пришедшего в метод id !!!
         //$user = User::find($id);
         
-        $article->roles()->detach();
-        $article->groups()->detach();
+        $user->roles()->detach();
+        $user->groups()->detach();
         $user->delete();
 
         return new UserCollection(User::all());

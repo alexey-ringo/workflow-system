@@ -35,7 +35,7 @@ class CreateTasksTable extends Migration
             $table->string('creating_user_email');
             $table->string('closing_user_name')->nullable();
             $table->string('closing_user_email')->nullable();
-            //$table->date('deadline');
+            $table->integer('is_expiried')->unsigned()->nullable();
             $table->timestamps();
             
             $table->unique(['task', 'task_sequence'], 'tasks_task_task_sequence_index');

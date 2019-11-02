@@ -8,31 +8,26 @@
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Разрешение операций</th>
-                        <th>SLUG</th>
+                        <th>Разрешение операций</th>                        
                         <th>Политика безопасности</th>
-                        <th>Редактировать</th>
+                        <th>Удалить</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="permission in permissions" :key="permission.id">
-                        <td>{{ permission.name  }}</td>
-                        <td>{{ permission.slug  }}</td>
+                        <td>{{ permission.title  }}</td>                        
                         <td>Политики</td>
                         <td>
-                            <router-link :to="{name: 'permission-update', params: {id: permission.id}}" class="btn btn-xs btn-default">
-                                Edit
-                            </router-link>
+                            
                             <button class="btn btn-danger" @click.prevent = "deletePermission(permission.id)">Удалить</button>
                         </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th>Разрешение операций</th>
-                        <th>SLUG</th>
+                        <th>Разрешение операций</th>                        
                         <th>Политика безопасности</th>
-                        <th>Редактировать</th>
+                        <th>Удалить</th>
                     </tr>
                 </tfoot>
             </table>

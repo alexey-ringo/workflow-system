@@ -11,7 +11,7 @@
         <div class="form-group">
           <label for="inputGroupName" class="col-sm-4 control-label">Название рабочей группы</label>
           <div class="col-sm-10">
-            <input type="text" v-model="group.name" class="form-control" id="inputGroupName" required placeholder="Название рабочей группы">
+            <input type="text" v-model="group.title" class="form-control" id="inputGroupName" required placeholder="Название рабочей группы">
           </div>
         </div>
       </div>

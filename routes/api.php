@@ -25,8 +25,11 @@ Route::post('login', 'AuthController@login');
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/logout', 'AuthController@logout');
     Route::get('/logged-user', 'DashboardController@loggedUser');
+    Route::get('/permissions-menu', 'DashboardController@permissionsMenu');
     Route::get('/search-phone', 'SearchController@searchPhone');
     Route::get('/search-surname', 'SearchController@searchSurname');
+    Route::get('/frontrequest-deadlines', 'FrontRequestController@getDeadlines');
+    Route::get('/frontrequest-permission-names', 'FrontRequestController@getPermissionNames');
     Route::apiResource('/users','UserController');
     Route::apiResource('/roles','RoleController');
     Route::apiResource('/permissions','PermissionController');

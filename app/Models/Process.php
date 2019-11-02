@@ -24,7 +24,7 @@ class Process extends Model
      */
     protected $table = 'processes';
     protected $fillable = [
-        'route_id', 'name', 'slug', 'sequence', 'is_super', 'is_final', 'is_active'
+        'route_id', 'title', 'deadline', 'sequence', 'is_super', 'is_final', 'is_active'
     ];
     
     public function groups() {
@@ -32,6 +32,10 @@ class Process extends Model
     }
     
     public function tasks() {
+        return $this->hasMany(Task::class,'process_id')->where('status', 1);
+    }
+
+    public function alltasks() {
         return $this->hasMany(Task::class,'process_id');
     }
     

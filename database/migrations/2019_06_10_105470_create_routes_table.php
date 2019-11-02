@@ -15,7 +15,7 @@ class CreateRoutesTable extends Migration
     {
         Schema::create('routes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name')->unique();
+            $table->string('title')->unique();            
             $table->integer('value')->unsigned();
             $table->text('description')->nullable();
             $table->integer('is_active')->unsigned()->nullable();

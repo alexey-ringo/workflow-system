@@ -35,6 +35,18 @@ class TaskController extends Controller
                                                         ]
                                                 ]);
     
+    //$processesWithTasks = Process::with('tasks.contract.customer', 'groups.users')
+    //                                    ->whereHas('groups.users', function($q) use($currentUser) {
+    //                                            $q->where('users.id', $currentUser->id);
+    //                                    })->get();
+
+    //$processesWithActualTasks = $processesWithTasks->where('tasks.status', 1);
+
+    //return (new TaskCollection($processesWithActualTasks))->additional(['meta' => 
+    //                                                    [
+    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
+    //                                                    ]
+    //                                            ]);
     
     //Тесты
     
@@ -114,14 +126,14 @@ class TaskController extends Controller
         $nextProcess = $task->process->getNextProcess($task->route);
         
         if($isSequenceLast) {
-            return new TaskCustomResource($task, $prevProcess->id, $task->process_id, $prevProcess->name, $task->process->name, $isSequenceFirst, $isSequenceLast);
+            return new TaskCustomResource($task, $prevProcess->id, $task->process_id, $prevProcess->title, $task->process->title, $isSequenceFirst, $isSequenceLast);
         }
         
         if(!$nextProcess) {
             return response()->json(['message' => 'Для задачи № ' . $task->task . ' "' . $task->title . '" отсутствует следуюший процесс!'], 422);
         }
         
-        return new TaskCustomResource($task, $prevProcess->id, $nextProcess->id, $prevProcess->name, $nextProcess->name, $isSequenceFirst, $isSequenceLast);
+        return new TaskCustomResource($task, $prevProcess->id, $nextProcess->id, $prevProcess->title, $nextProcess->title, $isSequenceFirst, $isSequenceLast);
     }
     
 

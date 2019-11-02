@@ -10,7 +10,7 @@
         <div class="form-group">
           <label for="inputGroupName" class="col-sm-4 control-label">Имя рабочей группы</label>
           <div class="col-sm-10">
-            <input type="text" v-model="group.name" class="form-control" id="inputGroupName" required placeholder="Имя рабочей группы">
+            <input type="text" v-model="group.title" class="form-control" id="inputGroupName" required placeholder="Имя рабочей группы">
           </div>
         </div>
                   
@@ -21,7 +21,7 @@
                      v-bind:value="process.id"
                      v-model="processesChecked"
                      >
-              <label class="form-check-label" for="processCheckBox">{{ process.name }}</label>
+              <label class="form-check-label" for="processCheckBox">{{ process.title }}</label>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@
               }
             }
             else if(error.request) {
-              console.log(error.request.data);
+              //console.log(error.request.data);
             }
             else {
               swal('Ошибка', "Внутренняя ошибка сервера", "error");

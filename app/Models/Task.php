@@ -17,7 +17,8 @@ class Task extends Model
       'task', 'task_sequence', 'route', 'process_sequence', 'is_contractable', 'title', 
       'status', 'process_id', 'contract_id', 'tariff_id', 'creating_user_id', 'closing_user_id',      
       'creating_user_name', 'creating_user_email', 'closing_user_name', 'closing_user_email', 
-      'deadline' 
+      'is_expiried' 
+       
   ];
     
   public function user() {

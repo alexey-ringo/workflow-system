@@ -2170,11 +2170,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
 //import Products from './lteitems/Products.vue';
 //import Orders from './lteitems/Orders.vue';
 //import Purchases from './lteitems/Purchases.vue';
@@ -2188,36 +2183,88 @@ __webpack_require__.r(__webpack_exports__);
       isLoggedIn: null,
       name: null,
       loggedUser: {},
-      loggedUserName2: ''
+      loggedUserName2: '',
+      permissionsView: []
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     //console.log('AdminLte Component mounted.');
     this.isLoggedIn = localStorage.getItem('jwt');
     this.name = localStorage.getItem('user');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.isLoggedIn;
-    var uri = '/api/logged-user';
-    this.axios.get(uri).then(function (response) {
-      _this.loggedUser = response.data.loggedUser;
-      _this.loggedUserName2 = response.data.loggedUser.name;
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
+    this.getLoggedUser();
+  },
+  methods: {
+    getLoggedUser: function getLoggedUser() {
+      var _this = this;
 
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+      var uri = '/api/logged-user';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.loggedUser = response.data.data;
+          _this.loggedUserName2 = response.data.data.name;
 
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+          _this.getPermissionsView();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном входе в систему", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        }
+      });
+    },
+    getPermissionsView: function getPermissionsView() {
+      var _this2 = this;
+
+      var uri = '/api/permissions-menu';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.permissionsView = response.data.data;
+        } else if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку разрешений доступа пользователей", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+            }
+          }
+        } else if (error.request) {} else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        }
+      });
+    }
   },
   computed: {
     loggedUserName: function loggedUserName() {
@@ -2904,6 +2951,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       customer: {},
+      message: '',
       phones: [],
       phone: {},
       visibleAddPhone: false
@@ -2916,33 +2964,65 @@ __webpack_require__.r(__webpack_exports__);
   },
   */
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = "/api/customers/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      _this.customer = response.data.data;
-
-      _this.getPhones();
-    })["catch"](function (e) {
-      //console.log(e);
-      if (e == 'Error: Request failed with status code 401') {
-        if (localStorage.getItem('jwt')) {
-          localStorage.removeItem('jwt');
-
-          _this.$router.push({
-            name: 'login'
-          });
-        } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
-      } else {
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
-      }
-    });
+    this.getUpdatedCustomer();
   },
   methods: {
+    getUpdatedCustomer: function getUpdatedCustomer() {
+      var _this = this;
+
+      var uri = "/api/customers/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.customer = response.data.data;
+
+          _this.getPhones();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'customers'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой карточке клиента", "error");
+
+          _this.$router.push({
+            name: 'customers'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'customers'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'customers'
+          });
+        }
+      });
+    },
     updateCustomer: function updateCustomer()
     /*event*/
     {
@@ -2952,30 +3032,46 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.customer
       /*{}*/
       ).then(function (response) {
-        if (response.data.data) {
-          //this.$emit("changecartevent", 1);
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
           _this2.$router.push({
             name: 'customers'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в карточке клиента", "error");
 
           _this2.$router.push({
             name: 'customers'
           });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this2.$router.push({
+                name: 'customers'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
 
           _this2.$router.push({
             name: 'customers'
@@ -3003,26 +3099,40 @@ __webpack_require__.r(__webpack_exports__);
       this.phone.customer_id = this.customer.id;
       var uri = '/api/phones';
       this.axios.post(uri, this.phone).then(function (response) {
-        if (response.data.data) {
+        if (response.data.message) {
+          _this4.message = response.data.message;
+          swal("Сохранение изменений", _this4.message, "success");
+
           _this4.getPhones();
 
           _this4.phone = {};
           _this4.visibleAddPhone = false;
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при добавлении телефона клиента", "error");
           _this4.phone = {};
           _this4.visibleAddPhone = false;
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this4.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
-
+                _this4.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              _this4.phone = {};
+              _this4.visibleAddPhone = false;
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this4.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
           _this4.phone = {};
@@ -3043,13 +3153,43 @@ __webpack_require__.r(__webpack_exports__);
         this.axios["delete"](uri).then(function (response) {
           if (response.data.data) {
             _this5.getPhones();
+          } else if (response.data.message) {
+            _this5.message = response.data.message;
+            swal("Ошибка", _this5.message, "error");
           } else {
-            swal("Удаление задачи", "Что то пошло не так...", "error");
+            swal("Ошибка", "Нет ответа от сервера при попытке удаления выбранного телефона", "error");
           }
-        })["catch"](function (e) {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.data.message) {
+              if (error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+
+                  _this5.$router.push({
+                    name: 'login'
+                  });
+                }
+              } else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+              }
+            }
+          } else if (error.request) {} else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          }
         });
       }
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3230,28 +3370,46 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       permission: {},
-      message: ''
+      message: '',
+      permissionNames: [],
+      selectPermissionName: false
     };
   },
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getPermissionNames();
+  },
   methods: {
-    addPermission: function addPermission() {
+    getPermissionNames: function getPermissionNames() {
       var _this = this;
 
-      var uri = '/api/permissions';
-      this.axios.post(uri, this.permission).then(function (response) {
-        if (response.data.message) {
+      var uri = '/api/frontrequest-permission-names';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.permissionNames = response.data.data;
+        } else if (response.data.message) {
           _this.message = response.data.message;
-          swal("Сохранение изменений", _this.message, "success");
+          swal("Ошибка", _this.message, "error");
 
           _this.$router.push({
-            name: 'permissions'
+            name: 'processes'
           });
         } else {
-          swal("Ошибка", "Нет ответа от сервера при создании нового разрешения операций", "error");
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку имен разрешений", "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
         }
       })["catch"](function (error) {
         if (error.response) {
@@ -3268,23 +3426,71 @@ __webpack_require__.r(__webpack_exports__);
               swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
               _this.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
+    addPermission: function addPermission() {
+      var _this2 = this;
+
+      this.permission.name = this.selectPermissionName;
+      var uri = '/api/permissions';
+      this.axios.post(uri, this.permission).then(function (response) {
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
+          _this2.$router.push({
+            name: 'permissions'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при создании нового разрешения операций", "error");
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
                 name: 'permissions'
               });
             }
           } //Ошибки валидации
           else {
-              swal('Ошибка - ' + error.response.status, _this.errMessageToStr(error.response.data), "error");
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
             }
         } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
           console.log('Внутренняя ошибка: ' + error.message);
 
-          _this.$router.push({
+          _this2.$router.push({
             name: 'permissions'
           });
         }
       });
+    },
+    onPermissionNameSelect: function onPermissionNameSelect(event) {
+      this.permission.title = event.target.selectedOptions[0].text;
     },
     errMessageToStr: function errMessageToStr(errors) {
       var result = '';
@@ -3345,48 +3551,200 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      permission: {}
+      permission: {},
+      message: '',
+      permissionNames: [],
+      selectPermissionName: false
     };
   },
-  created: function created() {
-    var _this = this;
-
-    var uri = "/api/permissions/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      _this.permission = response.data.data;
-    });
-  },
-  mounted: function mounted() {//let uri = `/api/permissions/${this.$route.params.id}`;
-    //this.axios.get(uri).then((response) => {
-    //  this.permission = response.data.data;
-    //});
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getUpdatedPermission();
+    this.getPermissionNames();
   },
   methods: {
+    getUpdatedPermission: function getUpdatedPermission() {
+      var _this = this;
+
+      var uri = "/api/permissions/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.permission = response.data.data;
+
+          _this.setPermissionNameSelected();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому процессу", "error");
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
+    getPermissionNames: function getPermissionNames() {
+      var _this2 = this;
+
+      var uri = '/api/frontrequest-permission-names';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.permissionNames = response.data.data;
+        } else if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку имен разрешений", "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
     updatePermission: function updatePermission()
     /*event*/
     {
-      var _this2 = this;
+      var _this3 = this;
 
+      this.permission.name = this.selectPermissionName;
       var uri = "/api/permissions/".concat(this.$route.params.id);
       this.axios.patch(uri, this.permission
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
-          //this.$emit("changecartevent", 1);
-          //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
-          _this2.$router.push({
+        if (response.data.message) {
+          _this3.message = response.data.message;
+          swal("Сохранение изменений", _this3.message, "success");
+
+          _this3.$router.push({
             name: 'permissions'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в разрешении операции", "error");
+
+          _this3.$router.push({
+            name: 'permissions'
+          });
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this3.$router.push({
+                name: 'permissions'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //console.log('Внутренняя ошибка: ' + error.message);
+
+          _this3.$router.push({
+            name: 'permissions'
+          });
+        }
       });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
+    },
+    onPermissionNameSelect: function onPermissionNameSelect(event) {
+      this.permission.title = event.target.selectedOptions[0].text;
+    },
+    setPermissionNameSelected: function setPermissionNameSelected() {
+      this.selectPermissionName = this.permission.name;
     }
   }
 });
@@ -3402,11 +3760,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
-//
-//
 //
 //
 //
@@ -3594,19 +3947,17 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       role: {},
       message: ''
     };
+  },
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
   },
   methods: {
     addRole: function addRole() {
@@ -3721,17 +4072,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       role: {},
+      message: '',
       permissionsChecked: []
     };
   },
@@ -3745,39 +4090,137 @@ __webpack_require__.r(__webpack_exports__);
       _this.setPermissionsChecked();
     });
   },
-  mounted: function mounted() {//let uri = `/api/roles/${this.$route.params.id}`;
-    //this.axios.get(uri).then((response) => {
-    //  this.role = response.data.data;
-    //this.setPermissionsChecked();
-    //});
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getUpdatedRole();
   },
   methods: {
-    updateRole: function updateRole() {
+    getUpdatedRole: function getUpdatedRole() {
       var _this2 = this;
+
+      var uri = "/api/roles/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.role = response.data.data;
+
+          _this2.setPermissionsChecked();
+        } else if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
+
+          _this2.$router.push({
+            name: 'roles'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемой политике безопасности", "error");
+
+          _this2.$router.push({
+            name: 'roles'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'roles'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'roles'
+          });
+        }
+      });
+    },
+    updateRole: function updateRole() {
+      var _this3 = this;
 
       this.role.permissions = this.permissionsChecked;
       var uri = "/api/roles/".concat(this.$route.params.id);
       this.axios.patch(uri, this.role
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
-          //this.$emit("changecartevent", 1);
-          //swal("Сохранение изменений", "Политика безопасности успешно отредактирована!", "success");
-          _this2.$router.push({
+        if (response.data.message) {
+          _this3.message = response.data.message;
+          swal("Сохранение изменений", _this3.message, "success");
+
+          _this3.$router.push({
             name: 'roles'
           });
         } else {
-          swal("Сохранение изменений", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в рабочей группе", "error");
+
+          _this3.$router.push({
+            name: 'roles'
+          });
         }
-      })["catch"](function (e) {
-        //console.log(e);
-        swal('Ошибка', "Внутренняя ошибка сервера", "error");
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this3.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this3.$router.push({
+                name: 'groups'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this3.$router.push({
+            name: 'roles'
+          });
+        }
       });
     },
     setPermissionsChecked: function setPermissionsChecked() {
       for (var i = 0; i < this.role.permissions.length; i++) {
         Vue.set(this.permissionsChecked, i, this.role.permissions[i].id);
       }
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -3793,9 +4236,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
 //
 //
 //
@@ -3940,7 +4380,7 @@ __webpack_require__.r(__webpack_exports__);
       var permissions = '';
 
       for (var i = 0; i < relPerm.length; i++) {
-        permissions += relPerm[i].name + ', ';
+        permissions += relPerm[i].title + ', ';
       }
 
       return permissions;
@@ -4233,8 +4673,7 @@ __webpack_require__.r(__webpack_exports__);
           else {
               swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
             }
-        } else if (error.request) {
-          console.log(error.request.data);
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
           console.log('Внутренняя ошибка: ' + error.message);
@@ -4419,7 +4858,7 @@ __webpack_require__.r(__webpack_exports__);
       var processes = '';
 
       for (var i = 0; i < relProcess.length; i++) {
-        processes += relProcess[i].name + ', ';
+        processes += relProcess[i].title + ', ';
       }
 
       return processes;
@@ -4516,16 +4955,29 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       process: {},
       routes: [],
+      deadlines: [],
       message: '',
       processStatus: false,
       superChecked: false,
       finalChecked: false,
-      selectRoute: false
+      selectRoute: false,
+      selectDeadline: false
     };
   },
   mounted: function mounted() {
@@ -4533,6 +4985,7 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     this.getRoutes();
+    this.getDeadlines();
   },
   methods: {
     getRoutes: function getRoutes() {
@@ -4586,8 +5039,59 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    addProcess: function addProcess() {
+    getDeadlines: function getDeadlines() {
       var _this2 = this;
+
+      var uri = '/api/frontrequest-deadlines';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this2.deadlines = response.data.data;
+        } else if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Ошибка", _this2.message, "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку дедлайнов", "error");
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'processes'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
+    addProcess: function addProcess() {
+      var _this3 = this;
 
       if (this.processStatus) {
         this.process.is_active = 1;
@@ -4608,13 +5112,14 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       this.process.route_id = this.selectRoute;
+      this.process.deadline = this.selectDeadline;
       var uri = '/api/processes';
       this.axios.post(uri, this.process).then(function (response) {
         if (response.data.message) {
-          _this2.message = response.data.message;
-          swal("Сохранение изменений", _this2.message, "success");
+          _this3.message = response.data.message;
+          swal("Сохранение изменений", _this3.message, "success");
 
-          _this2.$router.push({
+          _this3.$router.push({
             name: 'processes'
           });
         } else {
@@ -4627,27 +5132,26 @@ __webpack_require__.r(__webpack_exports__);
               if (localStorage.getItem('jwt')) {
                 localStorage.removeItem('jwt');
 
-                _this2.$router.push({
+                _this3.$router.push({
                   name: 'login'
                 });
               }
             } else {
               swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
-              _this2.$router.push({
+              _this3.$router.push({
                 name: 'processes'
               });
             }
           } //Ошибки валидации
           else {
-              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
             }
         } else if (error.request) {//console.log(error.request.data);
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-          console.log('Внутренняя ошибка: ' + error.message);
+          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //console.log('Внутренняя ошибка: ' + error.message);
 
-          _this2.$router.push({
+          _this3.$router.push({
             name: 'processes'
           });
         }
@@ -4746,14 +5250,27 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       process: {},
       routes: [],
+      deadlines: [],
       message: '',
       processStatus: false,
       selectRoute: null,
+      selectDeadline: null,
       superChecked: false,
       finalChecked: false
     };
@@ -4768,6 +5285,8 @@ __webpack_require__.r(__webpack_exports__);
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     this.getRoutes();
+    this.getUpdatedProcess();
+    this.getDeadlines();
   },
   methods: {
     getUpdatedProcess: function getUpdatedProcess() {
@@ -4779,6 +5298,8 @@ __webpack_require__.r(__webpack_exports__);
           _this.process = response.data.data;
 
           _this.setRouteSelected();
+
+          _this.setDeadlineSelected();
 
           _this.setSuperChecked();
 
@@ -4836,8 +5357,6 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.get(uri).then(function (response) {
         if (response.data.data) {
           _this2.routes = response.data.data;
-
-          _this2.getUpdatedProcess();
         } else if (response.data.message) {
           _this2.message = response.data.message;
           swal("Ошибка", _this2.message, "error");
@@ -4882,43 +5401,22 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    updateProcess: function updateProcess()
-    /*event*/
-    {
+    getDeadlines: function getDeadlines() {
       var _this3 = this;
 
-      if (this.processStatus) {
-        this.process.is_active = 1;
-      } else {
-        this.process.is_active = null;
-      }
-
-      if (this.superChecked) {
-        this.process.is_super = 1;
-      } else {
-        this.process.is_super = null;
-      }
-
-      if (this.finalChecked) {
-        this.process.is_final = 1;
-      } else {
-        this.process.is_final = null;
-      }
-
-      this.process.route_id = this.selectRoute;
-      var uri = "/api/processes/".concat(this.$route.params.id);
-      this.axios.patch(uri, this.process
-      /*{}*/
-      ).then(function (response) {
-        if (response.data.message) {
+      var uri = '/api/frontrequest-deadlines';
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this3.deadlines = response.data.data;
+        } else if (response.data.message) {
           _this3.message = response.data.message;
-          swal("Сохранение изменений", _this3.message, "success");
+          swal("Ошибка", _this3.message, "error");
 
           _this3.$router.push({
             name: 'processes'
           });
         } else {
-          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в процессе", "error");
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку дедлайнов", "error");
 
           _this3.$router.push({
             name: 'processes'
@@ -4942,12 +5440,8 @@ __webpack_require__.r(__webpack_exports__);
                 name: 'processes'
               });
             }
-          } //Ошибки валидации
-          else {
-              swal('Ошибка - ' + error.response.status, _this3.errMessageToStr(error.response.data), "error");
-            }
-        } else if (error.request) {
-          console.log(error.request.data);
+          }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
           console.log('Внутренняя ошибка: ' + error.message);
@@ -4958,8 +5452,88 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
+    updateProcess: function updateProcess()
+    /*event*/
+    {
+      var _this4 = this;
+
+      if (this.processStatus) {
+        this.process.is_active = 1;
+      } else {
+        this.process.is_active = null;
+      }
+
+      if (this.superChecked) {
+        this.process.is_super = 1;
+      } else {
+        this.process.is_super = null;
+      }
+
+      if (this.finalChecked) {
+        this.process.is_final = 1;
+      } else {
+        this.process.is_final = null;
+      }
+
+      this.process.route_id = this.selectRoute;
+      this.process.deadline = this.selectDeadline;
+      var uri = "/api/processes/".concat(this.$route.params.id);
+      this.axios.patch(uri, this.process
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.message) {
+          _this4.message = response.data.message;
+          swal("Сохранение изменений", _this4.message, "success");
+
+          _this4.$router.push({
+            name: 'processes'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в процессе", "error");
+
+          _this4.$router.push({
+            name: 'processes'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this4.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this4.$router.push({
+                name: 'processes'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this4.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this4.$router.push({
+            name: 'processes'
+          });
+        }
+      });
+    },
     setRouteSelected: function setRouteSelected() {
       this.selectRoute = this.process.route_id;
+    },
+    setDeadlineSelected: function setDeadlineSelected() {
+      this.selectDeadline = this.process.deadline;
     },
     //setSequenceSelected() {
     //  this.sequenceNum = this.process.sequence;
@@ -4998,6 +5572,9 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
 //
 //
 //
@@ -7956,26 +8533,73 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       user: {},
+      message: '',
       rolesChecked: [],
       groupsChecked: []
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
     var token = localStorage.getItem('jwt');
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
     this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    var uri = "/api/users/".concat(this.$route.params.id);
-    this.axios.get(uri).then(function (response) {
-      _this.user = response.data.data;
-
-      _this.setRolesChecked();
-
-      _this.setGroupsChecked();
-    });
+    this.getUpdatedUser();
   },
   methods: {
+    getUpdatedUser: function getUpdatedUser() {
+      var _this = this;
+
+      var uri = "/api/users/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.user = response.data.data;
+
+          _this.setRolesChecked();
+
+          _this.setGroupsChecked();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'users'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируему пользователю", "error");
+
+          _this.$router.push({
+            name: 'users'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'users'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'users'
+          });
+        }
+      });
+    },
     updateUser: function updateUser() {
       var _this2 = this;
 
@@ -7985,26 +8609,50 @@ __webpack_require__.r(__webpack_exports__);
       this.axios.patch(uri, this.user
       /*{}*/
       ).then(function (response) {
-        if (response.data) {
-          //this.$emit("changecartevent", 1);
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
           _this2.$router.push({
             name: 'users'
           });
         } else {
-          swal("Изменение профиля пользователя", "Что то пошло не так...", "error");
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений данных пользователя", "error");
+
+          _this2.$router.push({
+            name: 'users'
+          });
         }
-      })["catch"](function (e) {
-        if (e == 'Error: Request failed with status code 401') {
-          if (localStorage.getItem('jwt')) {
-            localStorage.removeItem('jwt');
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
 
-            _this2.$router.push({
-              name: 'login'
-            });
-          } //swal('Ошибка аутентификации', "Ползователь не зарегистрирован", "error");
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
+              _this2.$router.push({
+                name: 'users'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {//console.log(error.request.data);
         } else {
           swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'users'
+          });
         }
       });
     },
@@ -8017,6 +8665,17 @@ __webpack_require__.r(__webpack_exports__);
       for (var i = 0; i < this.user.groups.length; i++) {
         Vue.set(this.groupsChecked, i, this.user.groups[i].id);
       }
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
     }
   }
 });
@@ -43553,495 +44212,581 @@ var render = function() {
                 }
               },
               [
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(3),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["customer_find"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(3),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "search-customer" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Поиск по клиенту")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "search-customer" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Поиск по клиенту")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "search-customer" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Поиск по договору")])
-                          ]
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "search-customer" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Поиск по договору")])
+                              ]
+                            )
+                          ],
+                          1
                         )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(4),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["task_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(4),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "tasks" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Мои задачи")])
-                          ]
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "tasks" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Мои задачи")])
+                              ]
+                            )
+                          ],
+                          1
                         )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(5),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["customer_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(5),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "customers" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все клиенты")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "customer-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новый клиент")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "customers" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все клиенты")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["customer_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "customer-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новый клиент")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(6),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["contract_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(6),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "contracts" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все контракты")])
-                          ]
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "contracts" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все контракты")])
+                              ]
+                            )
+                          ],
+                          1
                         )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(7),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["tariff_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(7),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "tariffs" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все тарифы")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "tariff-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новый тариф")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "tariffs" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все тарифы")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["tariff_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "tariff-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новый тариф")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(8),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["user_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(8),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "users" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все пользователи")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "user-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новый пользователь")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "users" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все пользователи")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["user_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "user-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новый пользователь")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(9),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["role_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(9),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "roles" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все политики")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "role-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новая политика")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "roles" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все политики")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["role_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "role-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новая политика")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(10),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["permission_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(10),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "permissions" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все разрешения")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "permission-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новое разрешение")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "permissions" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все разрешения")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["permission_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "permission-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новое разрешение")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(11),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["group_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(11),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "groups" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все группы")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "group-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новая группа")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "groups" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все группы")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["group_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "group-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новая группа")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(12),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["process_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(12),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "processes" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все процессы")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "process-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новый процесс")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "processes" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все процессы")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["process_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "process-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новый процесс")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(13),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["route_index"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(13),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "routes" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Все маршруты")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "route-create" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Новый маршрут")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ]),
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "routes" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Все маршруты")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["route_store"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "route-create" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Новый маршрут")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e(),
                 _vm._v(" "),
-                _c("li", { staticClass: "nav-item has-treeview" }, [
-                  _vm._m(14),
-                  _vm._v(" "),
-                  _c("ul", { staticClass: "nav nav-treeview" }, [
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
+                _vm.permissionsView["telegram_view"]
+                  ? _c("li", { staticClass: "nav-item has-treeview" }, [
+                      _vm._m(14),
+                      _vm._v(" "),
+                      _c("ul", { staticClass: "nav nav-treeview" }, [
                         _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "bot-status" } }
-                          },
+                          "li",
+                          { staticClass: "nav-item" },
                           [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Статус")])
-                          ]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "li",
-                      { staticClass: "nav-item" },
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            staticClass: "nav-link",
-                            attrs: { to: { name: "bot-setting" } }
-                          },
-                          [
-                            _c("i", { staticClass: "fa fa-circle-o nav-icon" }),
-                            _c("p", [_vm._v("Настройки")])
-                          ]
-                        )
-                      ],
-                      1
-                    )
-                  ])
-                ])
+                            _c(
+                              "router-link",
+                              {
+                                staticClass: "nav-link",
+                                attrs: { to: { name: "bot-status" } }
+                              },
+                              [
+                                _c("i", {
+                                  staticClass: "fa fa-circle-o nav-icon"
+                                }),
+                                _c("p", [_vm._v("Статус")])
+                              ]
+                            )
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _vm.permissionsView["telegram_edit"]
+                          ? _c(
+                              "li",
+                              { staticClass: "nav-item" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "nav-link",
+                                    attrs: { to: { name: "bot-setting" } }
+                                  },
+                                  [
+                                    _c("i", {
+                                      staticClass: "fa fa-circle-o nav-icon"
+                                    }),
+                                    _c("p", [_vm._v("Настройки")])
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          : _vm._e()
+                      ])
+                    ])
+                  : _vm._e()
               ]
             )
           ])
@@ -46126,8 +46871,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.permission.name,
-                    expression: "permission.name"
+                    value: _vm.permission.title,
+                    expression: "permission.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -46135,15 +46880,16 @@ var render = function() {
                   type: "text",
                   id: "inputPermission",
                   required: "",
+                  disabled: "",
                   placeholder: "Название разрешения"
                 },
-                domProps: { value: _vm.permission.name },
+                domProps: { value: _vm.permission.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.permission, "name", $event.target.value)
+                    _vm.$set(_vm.permission, "title", $event.target.value)
                   }
                 }
               })
@@ -46151,41 +46897,57 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIPermission" }
-              },
-              [_vm._v("UI разрешения")]
-            ),
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("UI разрешения операции")
+            ]),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.permission.slug,
-                    expression: "permission.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIPermission",
-                  placeholder: "UI разрешения"
-                },
-                domProps: { value: _vm.permission.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectPermissionName,
+                      expression: "selectPermissionName"
                     }
-                    _vm.$set(_vm.permission, "slug", $event.target.value)
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: [
+                      function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.selectPermissionName = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      },
+                      function($event) {
+                        return _vm.onPermissionNameSelect($event)
+                      }
+                    ]
                   }
-                }
-              })
+                },
+                _vm._l(_vm.permissionNames, function(permissionName, index) {
+                  return _c(
+                    "option",
+                    { key: index, domProps: { value: permissionName } },
+                    [
+                      _vm._v(
+                        "\n              " + _vm._s(index) + "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
             ])
           ])
         ]),
@@ -46267,46 +47029,6 @@ var render = function() {
               "label",
               {
                 staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIPermission" }
-              },
-              [_vm._v("UI разрешения операции")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.permission.slug,
-                    expression: "permission.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIPermission",
-                  disabled: "",
-                  placeholder: "UI роли"
-                },
-                domProps: { value: _vm.permission.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.permission, "slug", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
                 attrs: { for: "inputPermissionName" }
               },
               [_vm._v("Название разрешения операции")]
@@ -46318,8 +47040,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.permission.name,
-                    expression: "permission.name"
+                    value: _vm.permission.title,
+                    expression: "permission.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -46329,16 +47051,71 @@ var render = function() {
                   required: "",
                   placeholder: "Название роли"
                 },
-                domProps: { value: _vm.permission.name },
+                domProps: { value: _vm.permission.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.permission, "name", $event.target.value)
+                    _vm.$set(_vm.permission, "title", $event.target.value)
                   }
                 }
               })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("UI разрешения операции")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectPermissionName,
+                      expression: "selectPermissionName"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: [
+                      function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.selectPermissionName = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      },
+                      function($event) {
+                        return _vm.onPermissionNameSelect($event)
+                      }
+                    ]
+                  }
+                },
+                _vm._l(_vm.permissionNames, function(permissionName, index) {
+                  return _c(
+                    "option",
+                    { key: index, domProps: { value: permissionName } },
+                    [
+                      _vm._v(
+                        "\n              " + _vm._s(index) + "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
             ])
           ])
         ]),
@@ -46416,49 +47193,25 @@ var render = function() {
             "tbody",
             _vm._l(_vm.permissions, function(permission) {
               return _c("tr", { key: permission.id }, [
-                _c("td", [_vm._v(_vm._s(permission.name))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(permission.slug))]),
+                _c("td", [_vm._v(_vm._s(permission.title))]),
                 _vm._v(" "),
                 _c("td", [_vm._v("Политики")]),
                 _vm._v(" "),
-                _c(
-                  "td",
-                  [
-                    _c(
-                      "router-link",
-                      {
-                        staticClass: "btn btn-xs btn-default",
-                        attrs: {
-                          to: {
-                            name: "permission-update",
-                            params: { id: permission.id }
-                          }
+                _c("td", [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-danger",
+                      on: {
+                        click: function($event) {
+                          $event.preventDefault()
+                          return _vm.deletePermission(permission.id)
                         }
-                      },
-                      [
-                        _vm._v(
-                          "\n                            Edit\n                        "
-                        )
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "button",
-                      {
-                        staticClass: "btn btn-danger",
-                        on: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            return _vm.deletePermission(permission.id)
-                          }
-                        }
-                      },
-                      [_vm._v("Удалить")]
-                    )
-                  ],
-                  1
-                )
+                      }
+                    },
+                    [_vm._v("Удалить")]
+                  )
+                ])
               ])
             }),
             0
@@ -46489,11 +47242,9 @@ var staticRenderFns = [
       _c("tr", [
         _c("th", [_vm._v("Разрешение операций")]),
         _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
-        _vm._v(" "),
         _c("th", [_vm._v("Политика безопасности")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Редактировать")])
+        _c("th", [_vm._v("Удалить")])
       ])
     ])
   },
@@ -46505,11 +47256,9 @@ var staticRenderFns = [
       _c("tr", [
         _c("th", [_vm._v("Разрешение операций")]),
         _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
-        _vm._v(" "),
         _c("th", [_vm._v("Политика безопасности")]),
         _vm._v(" "),
-        _c("th", [_vm._v("Редактировать")])
+        _c("th", [_vm._v("Удалить")])
       ])
     ])
   }
@@ -46556,7 +47305,7 @@ var render = function() {
               "label",
               {
                 staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputRoleName" }
+                attrs: { for: "inputRoleTitle" }
               },
               [_vm._v("Название политики безопасности")]
             ),
@@ -46567,8 +47316,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.role.name,
-                    expression: "role.name"
+                    value: _vm.role.title,
+                    expression: "role.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -46578,52 +47327,13 @@ var render = function() {
                   required: "",
                   placeholder: "Название политики безопасности"
                 },
-                domProps: { value: _vm.role.name },
+                domProps: { value: _vm.role.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.role, "name", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIRole" }
-              },
-              [_vm._v("UI политики безопасности")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.role.slug,
-                    expression: "role.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIRole",
-                  placeholder: "UI политики безопасности"
-                },
-                domProps: { value: _vm.role.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.role, "slug", $event.target.value)
+                    _vm.$set(_vm.role, "title", $event.target.value)
                   }
                 }
               })
@@ -46708,46 +47418,6 @@ var render = function() {
               "label",
               {
                 staticClass: "col-sm-4 control-label",
-                attrs: { for: "inputUIRole" }
-              },
-              [_vm._v("UI политики безопасности")]
-            ),
-            _vm._v(" "),
-            _c("div", { staticClass: "col-sm-10" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.role.slug,
-                    expression: "role.slug"
-                  }
-                ],
-                staticClass: "form-control",
-                attrs: {
-                  type: "text",
-                  id: "inputUIRole",
-                  disabled: "",
-                  placeholder: "UI политики безопасности"
-                },
-                domProps: { value: _vm.role.slug },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.role, "slug", $event.target.value)
-                  }
-                }
-              })
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c(
-              "label",
-              {
-                staticClass: "col-sm-4 control-label",
                 attrs: { for: "inputRoleName" }
               },
               [_vm._v("Имя политики безопасности")]
@@ -46759,8 +47429,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.role.name,
-                    expression: "role.name"
+                    value: _vm.role.title,
+                    expression: "role.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -46770,13 +47440,13 @@ var render = function() {
                   required: "",
                   placeholder: "Имя политики безопасности"
                 },
-                domProps: { value: _vm.role.name },
+                domProps: { value: _vm.role.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.role, "name", $event.target.value)
+                    _vm.$set(_vm.role, "title", $event.target.value)
                   }
                 }
               })
@@ -46839,7 +47509,7 @@ var render = function() {
                         staticClass: "form-check-label",
                         attrs: { for: "permissionCheckBox" }
                       },
-                      [_vm._v(_vm._s(permission.name))]
+                      [_vm._v(_vm._s(permission.title))]
                     )
                   ]
                 )
@@ -46922,9 +47592,7 @@ var render = function() {
             "tbody",
             _vm._l(_vm.roles, function(role) {
               return _c("tr", { key: role.id }, [
-                _c("td", [_vm._v(_vm._s(role.name))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(role.slug))]),
+                _c("td", [_vm._v(_vm._s(role.title))]),
                 _vm._v(" "),
                 _c("td", [
                   _vm._v(_vm._s(_vm.relatedPermissions(role.permissions)))
@@ -46994,8 +47662,6 @@ var staticRenderFns = [
       _c("tr", [
         _c("th", [_vm._v("Политика безопасности")]),
         _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
-        _vm._v(" "),
         _c("th", [_vm._v("Разрешенные операции")]),
         _vm._v(" "),
         _c("th", [_vm._v("Редактировать")])
@@ -47009,8 +47675,6 @@ var staticRenderFns = [
     return _c("tfoot", [
       _c("tr", [
         _c("th", [_vm._v("Роль")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("SLUG")]),
         _vm._v(" "),
         _c("th", [_vm._v("Разрешенные операции")]),
         _vm._v(" "),
@@ -47072,8 +47736,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.group.name,
-                    expression: "group.name"
+                    value: _vm.group.title,
+                    expression: "group.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -47083,13 +47747,13 @@ var render = function() {
                   required: "",
                   placeholder: "Название рабочей группы"
                 },
-                domProps: { value: _vm.group.name },
+                domProps: { value: _vm.group.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.group, "name", $event.target.value)
+                    _vm.$set(_vm.group, "title", $event.target.value)
                   }
                 }
               })
@@ -47183,8 +47847,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.group.name,
-                    expression: "group.name"
+                    value: _vm.group.title,
+                    expression: "group.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -47194,13 +47858,13 @@ var render = function() {
                   required: "",
                   placeholder: "Имя рабочей группы"
                 },
-                domProps: { value: _vm.group.name },
+                domProps: { value: _vm.group.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.group, "name", $event.target.value)
+                    _vm.$set(_vm.group, "title", $event.target.value)
                   }
                 }
               })
@@ -47263,7 +47927,7 @@ var render = function() {
                         staticClass: "form-check-label",
                         attrs: { for: "processCheckBox" }
                       },
-                      [_vm._v(_vm._s(process.name))]
+                      [_vm._v(_vm._s(process.title))]
                     )
                   ]
                 )
@@ -47343,7 +48007,7 @@ var render = function() {
             "tbody",
             _vm._l(_vm.groups, function(group) {
               return _c("tr", { key: group.id }, [
-                _c("td", [_vm._v(_vm._s(group.name))]),
+                _c("td", [_vm._v(_vm._s(group.title))]),
                 _vm._v(" "),
                 _c("td", [
                   _vm._v(_vm._s(_vm.relatedProcesses(group.processes)))
@@ -47512,7 +48176,7 @@ var render = function() {
                     [
                       _vm._v(
                         "\n              " +
-                          _vm._s(route.name) +
+                          _vm._s(route.title) +
                           "\n            "
                       )
                     ]
@@ -47534,8 +48198,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.process.name,
-                    expression: "process.name"
+                    value: _vm.process.title,
+                    expression: "process.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -47544,16 +48208,66 @@ var render = function() {
                   required: "",
                   placeholder: "Название процесса"
                 },
-                domProps: { value: _vm.process.name },
+                domProps: { value: _vm.process.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.process, "name", $event.target.value)
+                    _vm.$set(_vm.process, "title", $event.target.value)
                   }
                 }
               })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Норматив времени выполнения, час.")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectDeadline,
+                      expression: "selectDeadline"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectDeadline = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
+                },
+                _vm._l(_vm.deadlines, function(deadline, index) {
+                  return _c(
+                    "option",
+                    { key: index, domProps: { value: deadline } },
+                    [
+                      _vm._v(
+                        "\n              " + _vm._s(index) + "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
             ])
           ]),
           _vm._v(" "),
@@ -47837,7 +48551,7 @@ var render = function() {
                     [
                       _vm._v(
                         "\n              " +
-                          _vm._s(route.name) +
+                          _vm._s(route.title) +
                           "\n            "
                       )
                     ]
@@ -47859,8 +48573,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.process.name,
-                    expression: "process.name"
+                    value: _vm.process.title,
+                    expression: "process.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -47869,16 +48583,66 @@ var render = function() {
                   disabled: "",
                   placeholder: "Название процесса обработки обращения"
                 },
-                domProps: { value: _vm.process.name },
+                domProps: { value: _vm.process.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.process, "name", $event.target.value)
+                    _vm.$set(_vm.process, "title", $event.target.value)
                   }
                 }
               })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { staticClass: "col-sm-4 control-label" }, [
+              _vm._v("Норматив времени выполнения, час.")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectDeadline,
+                      expression: "selectDeadline"
+                    }
+                  ],
+                  attrs: { required: "" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectDeadline = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
+                },
+                _vm._l(_vm.deadlines, function(deadline, index) {
+                  return _c(
+                    "option",
+                    { key: index, domProps: { value: deadline } },
+                    [
+                      _vm._v(
+                        "\n              " + _vm._s(index) + "\n            "
+                      )
+                    ]
+                  )
+                }),
+                0
+              )
             ])
           ]),
           _vm._v(" "),
@@ -48119,11 +48883,13 @@ var render = function() {
             "tbody",
             _vm._l(_vm.processes, function(process) {
               return _c("tr", { key: process.id }, [
-                _c("td", [_vm._v(_vm._s(process.route.name))]),
+                _c("td", [_vm._v(_vm._s(process.route.title))]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(process.name))]),
+                _c("td", [_vm._v(_vm._s(process.title))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(process.sequence))]),
+                _vm._v(" "),
+                _c("td", [_vm._v(_vm._s(process.deadline))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(process.is_active))]),
                 _vm._v(" "),
@@ -48202,6 +48968,8 @@ var staticRenderFns = [
         _vm._v(" "),
         _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
         _vm._v(" "),
+        _c("th", [_vm._v("Норматив времени")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Статус")]),
         _vm._v(" "),
         _c("th", [_vm._v("Процесс супервайзера")]),
@@ -48223,6 +48991,8 @@ var staticRenderFns = [
         _c("th", [_vm._v("Процесс")]),
         _vm._v(" "),
         _c("th", [_vm._v("Очередность выполнения процесса в маршруте")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Норматив времени")]),
         _vm._v(" "),
         _c("th", [_vm._v("Статус")]),
         _vm._v(" "),
@@ -48283,8 +49053,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.route.name,
-                    expression: "route.name"
+                    value: _vm.route.title,
+                    expression: "route.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -48293,13 +49063,13 @@ var render = function() {
                   required: "",
                   placeholder: "Название маршрута"
                 },
-                domProps: { value: _vm.route.name },
+                domProps: { value: _vm.route.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.route, "name", $event.target.value)
+                    _vm.$set(_vm.route, "title", $event.target.value)
                   }
                 }
               })
@@ -48500,8 +49270,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.route.name,
-                    expression: "route.name"
+                    value: _vm.route.title,
+                    expression: "route.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -48510,13 +49280,13 @@ var render = function() {
                   required: "",
                   placeholder: "Название маршрута"
                 },
-                domProps: { value: _vm.route.name },
+                domProps: { value: _vm.route.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.route, "name", $event.target.value)
+                    _vm.$set(_vm.route, "title", $event.target.value)
                   }
                 }
               })
@@ -48702,7 +49472,7 @@ var render = function() {
             "tbody",
             _vm._l(_vm.routes, function(route) {
               return _c("tr", { key: route.id }, [
-                _c("td", [_vm._v(_vm._s(route.name))]),
+                _c("td", [_vm._v(_vm._s(route.title))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(route.value))]),
                 _vm._v(" "),
@@ -48856,8 +49626,8 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.tariff.name,
-                    expression: "tariff.name"
+                    value: _vm.tariff.title,
+                    expression: "tariff.title"
                   }
                 ],
                 staticClass: "form-control",
@@ -48867,13 +49637,13 @@ var render = function() {
                   required: "",
                   placeholder: "Название тарифа"
                 },
-                domProps: { value: _vm.tariff.name },
+                domProps: { value: _vm.tariff.title },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.tariff, "name", $event.target.value)
+                    _vm.$set(_vm.tariff, "title", $event.target.value)
                   }
                 }
               })
@@ -49119,7 +49889,7 @@ var render = function() {
             "tbody",
             _vm._l(_vm.tariffs, function(tariff) {
               return _c("tr", { key: tariff.id }, [
-                _c("td", [_vm._v(_vm._s(tariff.name))]),
+                _c("td", [_vm._v(_vm._s(tariff.title))]),
                 _vm._v(" "),
                 _c("td", [_vm._v(_vm._s(tariff.description))]),
                 _vm._v(" "),
@@ -51312,7 +52082,7 @@ var render = function() {
                             staticClass: "form-check-label",
                             attrs: { for: "rolesCheckBox" }
                           },
-                          [_vm._v(_vm._s(role.name))]
+                          [_vm._v(_vm._s(role.title))]
                         )
                       ]
                     )
@@ -51381,7 +52151,7 @@ var render = function() {
                             staticClass: "form-check-label",
                             attrs: { for: "groupsCheckBox" }
                           },
-                          [_vm._v(_vm._s(group.name))]
+                          [_vm._v(_vm._s(group.title))]
                         )
                       ]
                     )

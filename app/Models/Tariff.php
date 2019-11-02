@@ -11,7 +11,7 @@ class Tariff extends Model
 {
     protected $table = 'tariffs';
     protected $fillable = [
-        'name', 'description', 'sku', 'price', 'is_active'
+        'title', 'description', 'sku', 'price', 'is_active'
     ];
     
     public function customers() {

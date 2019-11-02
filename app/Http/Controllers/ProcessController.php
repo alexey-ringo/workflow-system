@@ -39,8 +39,8 @@ class ProcessController extends Controller
         
         $process = Process::create([
             'route_id' => $request->input('route_id'),
-            'name' => $request->input('name'),
-            //'slug' => $request->input('slug'),
+            'title' => $request->input('title'),
+            'deadline' => $request->input('deadline'),           
             'sequence' => $request->input('sequence'),
             'is_super' => $request->input('is_super'),
             'is_final' => $request->input('is_final'),
@@ -90,8 +90,9 @@ class ProcessController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $process->name = $request->input('route_id');
-        $process->name = $request->input('name');
+        $process->route_id = $request->input('route_id');
+        $process->title = $request->input('title');
+        $process->deadline = $request->input('deadline');
         $process->sequence = $request->input('sequence');
         $process->is_super = $request->input('is_super');
         $process->is_final = $request->input('is_final');

@@ -21,16 +21,7 @@ class RoleController extends Controller
         return RoleResource::collection(Role::with('permissions')->get());
         //return RoleResource::collection(Role::all());
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -40,24 +31,24 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        //$user = User::find($request->user()->id);
-        
         $validator = $request->validate([
-            'slug' => 'required|string|max:255|unique:roles',
-            'name' => 'required|string|max:255|unique:roles',
+            'title' => 'required|string|max:50|unique:roles'
         ]);
         
         $role = Role::create([
-            'slug' => $request->input('slug'),
-            'name' => $request->input('name')
+            'title' => $request->input('title')
         ]);
+        
+        if(empty($role)) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при создании новой политики безопасности!'], 500);
+        }
         
         //Проверка на наличие полученного от формы значения поля с name="permissions"
         if($request->input('permissions')) :
             $role->permissions()->attach($request->input('permissions'));
         endif;
         
-        return new RoleResource($role);
+        return response()->json(['message' => 'Новая политика безопасности "' . $role->title . '" успешно создана']);
     }
 
     /**
@@ -67,24 +58,17 @@ class RoleController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    public function show(/*Role $role*/ int $id)
+    public function show(int $id)
     {
-        //return new RoleResource(Role::FindOrFail($id));
-        return new RoleRelationResource(Role::FindOrFail($id));
-        
-        //return new RoleResource($role);
+        $role = Role::find($id);
+        if($role) {
+            return new RoleRelationResource($role);
+        }
+        else {
+            return response()->json(['message' => 'Политика безопасности с идентификатором id ' . $id . ' не найдена!'], 422);
+        }
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Role  $role
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Role $role)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
@@ -96,11 +80,14 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validator = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:50',
         ]);
         
-        $role->name = $request->input('name');
-        $role->save();
+        $role->title = $request->input('title');
+        
+        if(empty($role->save())) {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений новой политики безопасности!'], 500);
+        }
         
         //Если список разрешений операций пуст - отсоединяем
         $role->permissions()->detach();
@@ -109,7 +96,7 @@ class RoleController extends Controller
             $role->permissions()->attach($request->input('permissions'));
         endif;
         
-        return new RoleResource($role);
+        return response()->json(['message' => 'Изменения для политики безопасности "' . $role->title . '" успешно применены']);
     }
 
     /**

@@ -259,7 +259,7 @@ class WorkflowService
                 'route' => $route->value,
                 'process_sequence' => $firstProcessSequence,
                 'is_contractable' => $contractableTask,
-                'title' => $route->name,
+                'title' => $route->title,
                 //'description' => $this->request->input('description'),
                 'status' => 1,
                 'process_id' => $process->id,
@@ -318,14 +318,14 @@ class WorkflowService
             ]);
             if(empty($this->nextTask)) {
                 $this->message = 'Ошибка БД при создании следующего процесса "' 
-                                . $nextProcess->name . '" для задачи № ' 
+                                . $nextProcess->title . '" для задачи № ' 
                                 . $this->firstTask->task;
                 $this->deleteAndThrow();
             }
         }
         catch(Exception $exception) {
             $this->message = 'Ошибка БД при создании следующего процесса "' 
-	                        . $nextProcess->name . '" для задачи № ' 
+	                        . $nextProcess->title . '" для задачи № ' 
 	                        . $this->firstTask->task . ' (Исключение)';
             $this->deleteAndThrow();
 	    }
@@ -395,26 +395,26 @@ class WorkflowService
                 switch ($this->request->input('destination')) {
                     case 1:
                         $this->message = 'Ошибка БД при создании следующего процесса "' 
-                                        . $process->name . '" для задачи № ' 
+                                        . $process->title . '" для задачи № ' 
                                         . $this->existedTask->task;
                         throw new WorkflowException($this->message);
                         break;
                     case 2:
                         $this->message = 'Ошибка БД при возврате в предидущий процесс "' 
-                                        . $process->name . '" для задачи № ' 
+                                        . $process->title . '" для задачи № ' 
                                         . $this->existedTask->task;
                         throw new WorkflowException($this->message);
                         break;
                     default:
                         $this->message = 'Ошибка БД при создании процесса "' 
-                                        . $process->name . '" для задачи № ' 
+                                        . $process->title . '" для задачи № ' 
                                         . $this->existedTask->task;
                         throw new WorkflowException($this->message);
                 }
             }
         }
         catch(Exception $exception) {	        
-	        $this->message = 'Ошибка БД при создании процесса "' . $process->name 
+	        $this->message = 'Ошибка БД при создании процесса "' . $process->title 
 	                        . '" для задачи № ' . $this->existedTask->task;
             throw new WorkflowException($this->message);
 	    }
@@ -426,19 +426,19 @@ class WorkflowService
                 $this->message = 'Процесс "' . $this->existedTask->process_name 
                                 . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача передана в следующий процесс обработки "' 
-                                . $process->name . '"';
+                                . $process->title . '"';
                 return new TaskResponse($this->message, $this->nextTask);
             case 2:
                 $this->message = 'Процесс "' . $this->existedTask->process_name 
                                 . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача возвращена в предидущий процесс обработки "' 
-                                . $process->name . '"';
+                                . $process->title . '"';
                 return new TaskResponse($this->message, $this->nextTask);
             default:
                 $this->message = 'Процесс "' . $this->existedTask->process_name 
                                 . '" по задаче № ' . $this->nextTask->task 
                                 . ' успешно выполнен и задача передана в процесс обработки "' 
-                                . $process->name . '"';
+                                . $process->title . '"';
                 return new TaskResponse($this->message, $this->nextTask);
         }
     }
@@ -484,7 +484,7 @@ class WorkflowService
             $this->deleteAndThrow();
 	    }
 	    
-	    $this->message = 'Комментарий к процессу "' . $this->tmpTask->process->name 
+	    $this->message = 'Комментарий к процессу "' . $this->tmpTask->process->title 
                                 . '" задачи № ' . $this->tmpTask->task 
                                 . ' успешно сохранен';
         return new CommentResponse($this->message, $this->comment);
@@ -512,14 +512,14 @@ class WorkflowService
             $this->tmpTask->closing_user_email = $this->user->email;
             if(!$this->tmpTask->save()) {                
                 $this->message = 'Ошибка БД при закрытии процесса "' 
-                                . $this->tmpTask->process->name . '" по задаче № '
+                                . $this->tmpTask->process->title . '" по задаче № '
                                 . $this->tmpTask->task;
                                 ;
                 $this->deleteAndThrow();
             }        
         }
         catch(Exception $exception) {            
-	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->tmpTask->process->name 
+	        $this->message = 'Ошибка БД при закрытии процесса "' . $this->tmpTask->process->title 
                             . '" по задаче № '. $this->tmpTask->task . ' (Исключение)';
             $this->deleteAndThrow();
         }        

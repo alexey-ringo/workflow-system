@@ -18,7 +18,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="tariff in tariffs" :key="tariff.id">
-                        <td>{{ tariff.name }}</td>
+                        <td>{{ tariff.title }}</td>
                         <td>{{ tariff.description }}</td>
                         <td>{{ tariff.sku }}</td>
                         <td>{{ tariff.price }}</td>

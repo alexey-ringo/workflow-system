@@ -17,7 +17,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="route in routes" :key="route.id">
-                        <td>{{ route.name  }}</td>
+                        <td>{{ route.title  }}</td>
                         <td>{{ route.value  }}</td>
                         <td>{{ route.description  }}</td>
                         <td>{{ route.is_active  }}</td>

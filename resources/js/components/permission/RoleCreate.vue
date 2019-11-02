@@ -9,16 +9,9 @@
     <form class="form-horizontal" @submit.prevent="addRole">
       <div class="card-body">
         <div class="form-group">
-          <label for="inputRoleName" class="col-sm-4 control-label">Название политики безопасности</label>
+          <label for="inputRoleTitle" class="col-sm-4 control-label">Название политики безопасности</label>
           <div class="col-sm-10">
-            <input type="text" v-model="role.name" class="form-control" id="inputRoleName" required placeholder="Название политики безопасности">
-          </div>
-        </div>
-                  
-        <div class="form-group">
-          <label for="inputUIRole" class="col-sm-4 control-label">UI политики безопасности</label>
-          <div class="col-sm-10">
-            <input type="text" v-model="role.slug" class="form-control" id="inputUIRole" placeholder="UI политики безопасности">
+            <input type="text" v-model="role.title" class="form-control" id="inputRoleName" required placeholder="Название политики безопасности">
           </div>
         </div>
       </div>
@@ -40,6 +33,12 @@
         role:{},
         message: ''
       }
+    },
+    mounted() {
+      let token = localStorage.getItem('jwt')
+
+      this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+      this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     },
     methods: {
       addRole(){

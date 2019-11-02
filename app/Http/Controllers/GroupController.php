@@ -31,7 +31,7 @@ class GroupController extends Controller
     public function store(Request $request)
     {
         $group = Group::create([
-            'name' => $request->input('name')
+            'title' => $request->input('title')
         ]);
         
         if(empty($group)) {
@@ -43,7 +43,7 @@ class GroupController extends Controller
             $group->processes()->attach($request->input('processes'));
         endif;
         
-        return response()->json(['message' => 'Новый рабочая группа успешно создана']);
+        return response()->json(['message' => 'Новая рабочая группа "' . $group->title . '" успешно создана']);
     }
 
     /**
@@ -73,10 +73,10 @@ class GroupController extends Controller
     public function update(Request $request, Group $group)
     {
         $validator = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:50',
         ]);
         
-        $group->name = $request->input('name');
+        $group->title = $request->input('title');
         
         if(empty($group->save())) {
             return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений новой рабочей группы!'], 500);
@@ -89,7 +89,7 @@ class GroupController extends Controller
             $group->processes()->attach($request->input('processes'));
         endif;
         
-        return response()->json(['message' => 'Изменения для рабочей группы успешно применены']);
+        return response()->json(['message' => 'Изменения для рабочей группы "' . $group->title . '" успешно применены']);
     }
 
     /**

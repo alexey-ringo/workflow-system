@@ -8,16 +8,14 @@
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Политика безопасности</th>
-                        <th>SLUG</th>
+                        <th>Политика безопасности</th>                        
                         <th>Разрешенные операции</th>
                         <th>Редактировать</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="role in roles" :key="role.id">
-                        <td>{{ role.name  }}</td>
-                        <td>{{ role.slug  }}</td>
+                        <td>{{ role.title  }}</td>                        
                         <td>{{ relatedPermissions(role.permissions) }}</td>
                         <td>
                             <router-link :to="{name: 'role-update', params: {id: role.id}}" class="btn btn-xs btn-default">
@@ -29,8 +27,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th>Роль</th>
-                        <th>SLUG</th>
+                        <th>Роль</th>                        
                         <th>Разрешенные операции</th>
                         <th>Редактировать</th>
                     </tr>
@@ -140,7 +137,7 @@
             relatedPermissions(relPerm) {
                 let permissions = '';
     			for(let i = 0; i < relPerm.length; i++) {
-    				permissions += relPerm[i].name + ', ';
+    				permissions += relPerm[i].title + ', ';
     			}
 				return permissions;
             }

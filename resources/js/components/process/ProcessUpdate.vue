@@ -13,7 +13,7 @@
           <div class="col-sm-10">
             <select v-model="selectRoute" required>
               <option v-for="route in routes" :value="route.id" :key="route.id">
-                {{ route.name }}
+                {{ route.title }}
               </option>
             </select>
           </div>
@@ -22,7 +22,18 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название процесса</label>
           <div class="col-sm-10">
-            <input type="text" v-model="process.name" class="form-control" disabled placeholder="Название процесса обработки обращения">
+            <input type="text" v-model="process.title" class="form-control" disabled placeholder="Название процесса обработки обращения">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-4 control-label">Норматив времени выполнения, час.</label>
+          <div class="col-sm-10">
+            <select v-model="selectDeadline" required>
+              <option v-for="(deadline, index) in deadlines" :value="deadline" :key="index">
+                {{ index }}
+              </option>
+            </select>
           </div>
         </div>
                 
@@ -72,9 +83,11 @@
       return {
         process: {},
         routes: [],
+        deadlines: [],
         message: '',
         processStatus: false,
         selectRoute: null,
+        selectDeadline: null,
         superChecked: false,
         finalChecked: false,
       }
@@ -90,6 +103,8 @@
       this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
       
       this.getRoutes();
+      this.getUpdatedProcess();
+      this.getDeadlines();
     },
     methods: {
       getUpdatedProcess() {
@@ -98,6 +113,7 @@
           if(response.data.data) {
             this.process = response.data.data;
             this.setRouteSelected();
+            this.setDeadlineSelected();
             this.setSuperChecked();
             this.setFinalChecked();
             this.setStatusChecked();
@@ -143,7 +159,6 @@
       	  .then((response) => {
       	    if(response.data.data) {
         	    this.routes = response.data.data;
-        	    this.getUpdatedProcess();
       	    }
       	    else if (response.data.message) {
               this.message = response.data.message;
@@ -156,6 +171,47 @@
             }
           })
           .catch(error => {
+          if(error.response) {
+            if(error.response.data.message) {
+              if(error.response.status == 401) {
+                if (localStorage.getItem('jwt')) {
+                  localStorage.removeItem('jwt');
+                  this.$router.push({name: 'login'});
+                }
+              }
+              else {
+                swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+                this.$router.push({name: 'processes'});
+              }
+            }         
+          }
+          else if(error.request) {
+            //console.log(error.request.data);
+          }
+          else {
+            swal('Ошибка', "Внутренняя ошибка сервера", "error");
+            console.log('Внутренняя ошибка: ' + error.message);
+            this.$router.push({name: 'processes'});
+          }
+        });
+      },
+      getDeadlines() {
+        let uri = '/api/frontrequest-deadlines';
+        this.axios.get(uri).then((response) => {
+          if(response.data.data) {
+            this.deadlines = response.data.data;
+          }
+          else if (response.data.message) {
+            this.message = response.data.message;
+            swal("Ошибка", this.message, "error");
+            this.$router.push({name: 'processes'});
+          }
+          else {
+            swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к списку дедлайнов", "error");
+            this.$router.push({name: 'processes'});
+          }        
+        })
+        .catch(error => {
           if(error.response) {
             if(error.response.data.message) {
               if(error.response.status == 401) {
@@ -203,6 +259,7 @@
         }
         
         this.process.route_id = this.selectRoute;
+        this.process.deadline = this.selectDeadline;
         
         let uri = `/api/processes/${this.$route.params.id}`;
         this.axios.patch(uri, this.process/*{}*/)
@@ -247,6 +304,9 @@
         },
         setRouteSelected() {
           this.selectRoute = this.process.route_id;
+        },
+        setDeadlineSelected() {
+          this.selectDeadline = this.process.deadline;
         },
         //setSequenceSelected() {
         //  this.sequenceNum = this.process.sequence;

@@ -7,6 +7,7 @@ use App\Models\Process;
 use Illuminate\Http\Request;
 use App\Http\Resources\Route\RouteCollection;
 use App\Http\Resources\Route\RouteResource;
+use Gate;
 
 class RouteController extends Controller
 {
@@ -17,6 +18,9 @@ class RouteController extends Controller
      */
     public function index(Request $request)
     {
+        if(Gate::denies('index', Route::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка маршрутов']);
+        }
         if($request->has('filter')) {
             return new RouteCollection(Route::where('value', '>', 1)->get());
         }
@@ -33,9 +37,13 @@ class RouteController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {        
+    {
+        if(Gate::denies('store', Route::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового маршрута']);
+        }
+        
         $route = Route::create([
-            'name' => $request->input('name'),
+            'title' => $request->input('title'),
             'value' => $request->input('value'),
             'description' => $request->input('description'),
             'is_active' => $request->input('is_active'),
@@ -57,6 +65,10 @@ class RouteController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Route::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного маршрута']);
+        }
+        
         $route = Route::find($id);
         if($route) {
             return new RouteResource($route);
@@ -77,6 +89,9 @@ class RouteController extends Controller
      */
     public function update(Request $request, Route $route)
     {
+        if(Gate::denies('update', Route::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного маршрута']);
+        }
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255',
@@ -85,7 +100,7 @@ class RouteController extends Controller
             'is_final' => 'required',
         ]);
         */
-        $route->name = $request->input('name');
+        $route->title = $request->input('title');
         $route->value = $request->input('value');
         $route->description = $request->input('description');
         $route->is_active = $request->input('is_active');
@@ -109,6 +124,10 @@ class RouteController extends Controller
      */
     public function destroy(Route $route)
     {
+        if(Gate::denies('destroy', Route::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного маршрута']);
+        }
+        
         $processes = Process::where('route_id', $route->id)->get();
         
         foreach($processes as $processItem) {

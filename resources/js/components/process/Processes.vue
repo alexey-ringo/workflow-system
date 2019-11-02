@@ -11,6 +11,7 @@
                         <th>Маршрут</th>
                         <th>Процесс</th>
                         <th>Очередность выполнения процесса в маршруте</th>
+                        <th>Норматив времени</th>
                         <th>Статус</th>
                         <th>Процесс супервайзера</th>
                         <th>Завершение процессов в маршруте</th>
@@ -19,12 +20,13 @@
                 </thead>
                 <tbody>
                     <tr v-for="process in processes" :key="process.id">
-                        <td>{{ process.route.name }}</td>
-                        <td>{{ process.name  }}</td>
-                        <td>{{ process.sequence  }}</td>
-                        <td>{{ process.is_active  }}</td>
-                        <td>{{ process.is_super  }}</td>
-                        <td>{{ process.is_final  }}</td>
+                        <td>{{ process.route.title }}</td>
+                        <td>{{ process.title }}</td>
+                        <td>{{ process.sequence }}</td>
+                        <td>{{ process.deadline }}</td>
+                        <td>{{ process.is_active }}</td>
+                        <td>{{ process.is_super }}</td>
+                        <td>{{ process.is_final }}</td>
                         <td>
                             <router-link :to="{name: 'process-update', params: {id: process.id}}" class="btn btn-xs btn-default">
                                 Edit
@@ -38,6 +40,7 @@
                         <th>Маршрут</th>
                         <th>Процесс</th>
                         <th>Очередность выполнения процесса в маршруте</th>
+                        <th>Норматив времени</th>
                         <th>Статус</th>
                         <th>Процесс супервайзера</th>
                         <th>Завершение процессов в маршруте</th>

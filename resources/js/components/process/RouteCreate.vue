@@ -12,7 +12,7 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название маршрута</label>
           <div class="col-sm-10">
-            <input type="text" v-model="route.name" class="form-control" required placeholder="Название маршрута">
+            <input type="text" v-model="route.title" class="form-control" required placeholder="Название маршрута">
           </div>
         </div>
         
