@@ -31,7 +31,7 @@
                             <router-link :to="{name: 'process-update', params: {id: process.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
-                            <button class="btn btn-danger" @click.prevent = "deleteProcess(process.id)">Удалить</button>
+                            <!-- <button class="btn btn-danger" @click.prevent = "deleteProcess(process.id)">Удалить</button> -->
                         </td>
                     </tr>
                 </tbody>

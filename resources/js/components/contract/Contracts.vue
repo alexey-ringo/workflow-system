@@ -22,7 +22,9 @@
                             <router-link :to="{name: 'contract-update', params: {id: contract.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
+                            <!--
                             <button class="btn btn-danger" @click.prevent = "deleteContract(contract.id)">Удалить</button>
+                            -->
                         </td>
                     </tr>
                 </tbody>

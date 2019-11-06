@@ -11,6 +11,7 @@ use App\Services\WorkflowService;
 use App\Http\Resources\Contract\ContractCollection;
 use App\Http\Resources\Contract\ContractResource;
 use App\Http\Resources\Contract\ContractRelationResource;
+use Gate;
 
 class ContractController extends Controller
 {
@@ -21,6 +22,9 @@ class ContractController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Contract::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка контрактов!']);
+        }
         return new ContractCollection(Contract::with('customer', 'tariff')->get());
     }
 
@@ -33,8 +37,13 @@ class ContractController extends Controller
      */
     //В $request передаем данные о customer
     public function store(Request $request, WorkflowService $workflowService)
-    {        
+    {
+        if(Gate::denies('store', Contract::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового контракта!']);
+        }
+        
         $customer = Customer::find($request->input('id'));
+        
         if($customer) {
             $createdContract = $workflowService->createNewContract($customer);
 
@@ -48,11 +57,15 @@ class ContractController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Contract  $contract
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(/*Contract $contract*/int $id)
+    public function show(int $id)
     {
+        if(Gate::denies('show', Contract::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного контракта!']);
+        }
+        
         $contract = Contract::find($id);
         if($contract) {
             return new ContractRelationResource($contract);
@@ -73,6 +86,9 @@ class ContractController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
+        if(Gate::denies('update', Contract::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного контракта!']);
+        }
         /*
         $validator = $request->validate([
             'name' => 'required|string|max:255',
@@ -83,21 +99,5 @@ class ContractController extends Controller
         */
         
         
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Customer  $customer
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Contract $contract)
-    {
-        if($contract->delete()) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }  
     }
 }

@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Tariff;
 use Illuminate\Http\Request;
+use App\Http\Requests\TariffCreateRequest;
+use App\Http\Requests\TariffUpdateRequest;
 use App\Http\Resources\Tariff\TariffCollection;
 use App\Http\Resources\Tariff\TariffResource;
+use Gate;
 
 class TariffController extends Controller
 {
@@ -16,6 +19,10 @@ class TariffController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Tariff::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка тарифов!']);
+        }
+        
         return new TariffCollection(Tariff::all());        
     }
 
@@ -26,15 +33,13 @@ class TariffController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(TariffCreateRequest $request)
     {
-        $tariff = Tariff::create([
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'sku' => $request->input('sku'),
-            'price' => $request->input('price'),
-            'is_active' => $request->input('is_active'),
-        ]);
+        if(Gate::denies('store', Tariff::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового тарифа!']);
+        }
+        
+        $tariff = Tariff::create($request->only(['title', 'description', 'sku', 'price', 'is_active']));
         
         if($tariff) {
             return response()->json(['message' => 'Новый тариф ' . $tariff->title . ' успешно создан']);
@@ -52,7 +57,12 @@ class TariffController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Tariff::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного тарифа!']);
+        }
+        
         $tariff = Tariff::find($id);
+        
         if($tariff) {
             return new TariffResource($tariff);
         }
@@ -67,23 +77,20 @@ class TariffController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Route  $route
+     * @param  \App\Tariff  $tariff
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Route $route)
+    public function update(TariffUpdateRequest $request, Tariff $tariff)
     {
+        if(Gate::denies('update', Tariff::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного тарифа!']);
+        }
         
-        
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Route  $route
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Route $route)
-    {
-        
+        if($tariff->update($request->only(['description', 'is_active']))) {
+            return response()->json(['message' => 'Изменения для маршрута успешно применены']);
+        }
+        else {
+            return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений в тарифе!'], 500);
+        }  
     }
 }

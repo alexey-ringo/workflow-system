@@ -25,9 +25,7 @@ use App\Events\Contract\onCloseEvent as onContractCloseEvent;
 use App\Events\Tasks\onCreateEvent as onTaskCreateEvent;
 use App\Events\Tasks\onUpdateEvent as onTaskUpdateEvent;
 
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\JsonResponse;
-
+use Exception;
 use App\Exceptions\WorkflowException;
 
 
@@ -65,8 +63,6 @@ class WorkflowService
      */
     private $contractableRoute;
     private $tariffId;
-    
-    private $error = false;
     
     private $message = '';
     

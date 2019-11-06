@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use App\Services\WorkflowService;
 use App\Http\Requests\CustomerStoreRequest;
+use App\Http\Requests\CustomerUpdateRequest;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Customer\CustomerRelationResource;
@@ -85,26 +86,13 @@ class CustomerController extends Controller
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Customer $customer)
+    public function update(CustomerUpdateRequest $request, Customer $customer)
     {
         if(Gate::denies('update', Customer::class)) {
             return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного клиента']);
         }
         
-        $customer->surname = $request->input('surname');
-        $customer->name = $request->input('name');
-        $customer->second_name = $request->input('second_name');
-        $customer->city = $request->input('city');
-        $customer->region = $request->input('region');
-        $customer->street = $request->input('street');
-        $customer->building = $request->input('building');
-        $customer->flat = $request->input('flat');
-        $customer->description = $request->input('description');
-        $customer->save();
-        
-        //$process->update($request->all());
-        
-        if($customer->save()) {
+        if($customer->update($request->only(['surname', 'name', 'second_name', 'city', 'region', 'street', 'building', 'flat', 'description']))) {
             return response()->json(['message' => 'Изменения в карточке клиента "' . $customer->name . ' ' . $customer->surname . '" успешно применены']);
         }
         else {

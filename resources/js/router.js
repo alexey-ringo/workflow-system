@@ -35,7 +35,7 @@ import CustomerUpdate from './components/customer/CustomerUpdate';
 import CustomerCreate from './components/customer/CustomerCreate';
 
 import Tariffs from './components/tariff/Tariffs';
-//import TariffUpdate from './components/tariff/TariffUpdate';
+import TariffUpdate from './components/tariff/TariffUpdate';
 import TariffCreate from './components/tariff/TariffCreate';
 
 import Routes from './components/process/Routes';
@@ -112,7 +112,7 @@ export default new VueRouter({
                 { path: 'customer-new',  name: 'customer-create', component: CustomerCreate },
                 
                 { path: 'tariffs',  name: 'tariffs', component: Tariffs },
-            //    { path: 'tariff/:id',  name: 'tariff-update', component: TariffUpdate },
+                { path: 'tariff/:id',  name: 'tariff-update', component: TariffUpdate },
                 { path: 'tariff-new',  name: 'tariff-create', component: TariffCreate },
                 
                 { path: 'contracts',  name: 'contracts', component: Contracts },

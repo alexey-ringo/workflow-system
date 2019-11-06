@@ -25,7 +25,7 @@
                             <router-link :to="{name: 'route-update', params: {id: route.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
-                            <button class="btn btn-danger" @click.prevent = "deleteRoute(route.id)">Удалить</button>
+                            <!-- <button class="btn btn-danger" @click.prevent = "deleteRoute(route.id)">Удалить</button> -->
                         </td>
                     </tr>
                 </tbody>

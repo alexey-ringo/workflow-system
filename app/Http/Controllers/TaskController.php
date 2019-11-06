@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Task\TaskResource;
 use App\Http\Resources\Task\TaskCustomResource;
 use App\Http\Resources\Task\TaskCollection;
+use Gate;
 
 class TaskController extends Controller
 {
@@ -22,6 +23,9 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
+        if(Gate::denies('index', Task::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка задач!']);
+        }
         $currentUser = $request->user('api');
     //Рабочий вариант    
         return (new TaskCollection(Process::with('tasks.contract.customer', 'groups.users')
@@ -97,7 +101,11 @@ class TaskController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, WorkflowService $workflowService)
-    {        
+    {
+        if(Gate::denies('store', Task::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание новой задачи!']);
+        }
+        
         $createdTask = $workflowService->createFirstTask();
         
         return response()->json(['message' => $createdTask->getMessage()]);
@@ -111,6 +119,10 @@ class TaskController extends Controller
      */
     public function show($id)
     {
+        if(Gate::denies('show', Task::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной задачи!']);
+        }
+        
         $task = Task::find($id);
         if(!$task) {
             return response()->json(['message' => 'Запрашиваемая задача с идентификатором id ' . $id . ' не найдена!'], 422);
@@ -146,6 +158,10 @@ class TaskController extends Controller
      */
     public function update(Request $request, /*Task $task, */WorkflowService $workflowService)
     {
+        if(Gate::denies('update', Task::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной задачи!']);
+        }
+        
         $task = Task::find($request['id']);
         if(!$task) {
             return response()->json(['message' => 'Не определена текущая задача!'], 422);                                        
@@ -156,22 +172,8 @@ class TaskController extends Controller
             return response()->json(['message' => 'Не определен текущий процесс!'], 422);                                        
         }
        
-        $updatedTask = $workflowService->createNextTask(
-                                                        $task,
-                                                        $currentProcess
-                                                        );
+        $updatedTask = $workflowService->createNextTask($task, $currentProcess);
 
         return response()->json(['message' => $updatedTask->getMessage()]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Task  $task
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Task $task)
-    {
-        //
     }
 }

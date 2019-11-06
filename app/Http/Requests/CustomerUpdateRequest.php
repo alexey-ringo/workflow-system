@@ -6,9 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\JsonResponse;
+use App\Models\Customer;
 
-
-class CustomerStoreRequest extends FormRequest
+class CustomerUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,6 +27,8 @@ class CustomerStoreRequest extends FormRequest
      */
     public function rules()
     {
+        $customer = Customer::find($this->input('id'));
+        
         return [
             'name' => 'required|string|max:50',
             'second_name' => 'required|string|max:50',
@@ -35,7 +37,11 @@ class CustomerStoreRequest extends FormRequest
             'street' => 'required|string|max:50',
             'building' => 'required|string|max:25',
             'flat' => 'required|string|max:25',
-            'phone' => 'required|digits:11|unique:phones',
+            'phone' => [
+                'required',
+                'digits:11',
+                \Illuminate\Validation\Rule::unique('phones')->ignore($customer->id),
+                ],
             'email' => 'required|email:rfc,dns',            
             'task_comment' => 'string|max:250',
             'contract_tariff_id' => 'required|numeric',
@@ -54,8 +60,6 @@ class CustomerStoreRequest extends FormRequest
             'building.required' => 'Информация о номере дома проживания клиента должна быть заполнена!',
             'flat.required' => 'Информация о квартире проживания клиента должна быть заполнена!',
             'phone.required' => 'Телефон клиента должен быть заполнен',
-            'phone.digits' => 'Телефон клиента должен состоять из 11 цифр и начинаться на 7 или 8',
-            'phone.unique' => 'Телефон клиента :attribute уже был внесен в базу ранее!',
             'email.required' => 'Email клиента должно быть заполнен!',
             //'comment.max' => 'Максимальная длина коммента [:max]'
         ];
@@ -66,20 +70,5 @@ class CustomerStoreRequest extends FormRequest
         throw new HttpResponseException(
             new JsonResponse($validator->messages(), 422)
         );
-        //throw new WorkflowException(new JsonResponse($validator->messages(), 422));
-        
-        
-        
-        //if ($validator->fails()) {    
-            //response()->json($validator->errors(), 200);
-        //}
-        /*
-        if ($this->wantsJson()) {
-            // flatten all the message
-            $collection  = collect($validator->errors())->flatten()->values()->all();
-            throw new HttpResponseException(Response::error('Validation Error', $collection));
-        }
-        parent::failedValidation($validator);
-        */
     }
 }

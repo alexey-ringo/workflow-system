@@ -74,14 +74,14 @@
           <div class="col-sm-10">
             <select v-model="selectTariff" required>
               <option v-for="tariff in tariffs" :value="tariff.id" :key="tariff.id">
-                {{ tariff.name + ' ' + tariff.price }}
+                {{ tariff.title + ' ' + tariff.price }}
               </option>
             </select>
           </div>
         </div>
                      
         <div class="form-group">
-          <label class="col-sm-4 control-label">Порвоначальный комментарий к новой задаче по новому контракту</label>
+          <label class="col-sm-4 control-label">Первоначальный комментарий к новой задаче по новому контракту</label>
           <div class="col-sm-10">
             <textarea class="form-control" v-model="customer.task_comment" placeholder="Комментарии по клиенту" style="height: 300px">
             </textarea>

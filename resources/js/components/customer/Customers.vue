@@ -33,7 +33,9 @@
                             <router-link :to="{name: 'customer-update', params: {id: customer.id}}" class="btn btn-xs btn-default">
                                 Edit
                             </router-link>
+                            <!--
                             <button class="btn btn-danger" @click.prevent = "deleteCustomer(customer.id)">Удалить</button>
+                            -->
                         </td>
                     </tr>
                 </tbody>

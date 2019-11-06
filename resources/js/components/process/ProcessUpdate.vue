@@ -22,7 +22,7 @@
         <div class="form-group">
           <label class="col-sm-4 control-label">Название процесса</label>
           <div class="col-sm-10">
-            <input type="text" v-model="process.title" class="form-control" disabled placeholder="Название процесса обработки обращения">
+            <input type="text" v-model="process.title" class="form-control" required placeholder="Название процесса обработки обращения">
           </div>
         </div>
 

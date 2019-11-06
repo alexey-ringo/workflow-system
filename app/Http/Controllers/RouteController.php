@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Route;
 use App\Models\Process;
 use Illuminate\Http\Request;
+use App\Http\Requests\RouteStoreRequest;
+use App\Http\Requests\RouteUpdateRequest;
 use App\Http\Resources\Route\RouteCollection;
 use App\Http\Resources\Route\RouteResource;
 use Gate;
@@ -19,7 +21,7 @@ class RouteController extends Controller
     public function index(Request $request)
     {
         if(Gate::denies('index', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка маршрутов']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка маршрутов!']);
         }
         if($request->has('filter')) {
             return new RouteCollection(Route::where('value', '>', 1)->get());
@@ -36,18 +38,13 @@ class RouteController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(RouteStoreRequest $request)
     {
         if(Gate::denies('store', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание нового маршрута']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового маршрута!']);
         }
         
-        $route = Route::create([
-            'title' => $request->input('title'),
-            'value' => $request->input('value'),
-            'description' => $request->input('description'),
-            'is_active' => $request->input('is_active'),
-        ]);
+        $route = Route::create($request->only(['title', 'value', 'description', 'is_active']));
         
         if($route) {
             return response()->json(['message' => 'Новый маршрут успешно создан']);
@@ -60,13 +57,13 @@ class RouteController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Route  $route
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show(int $id)
     {
         if(Gate::denies('show', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного маршрута']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного маршрута!']);
         }
         
         $route = Route::find($id);
@@ -87,28 +84,13 @@ class RouteController extends Controller
      * @param  \App\Route  $route
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Route $route)
+    public function update(RouteUpdateRequest $request, Route $route)
     {
         if(Gate::denies('update', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного маршрута']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного маршрута!']);
         }
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255',
-            'sequence' => 'required',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
-        $route->title = $request->input('title');
-        $route->value = $request->input('value');
-        $route->description = $request->input('description');
-        $route->is_active = $request->input('is_active');
         
-        
-        //$process->update($request->all());
-        
-        if($route->save()) {
+        if($route->update($request->only(['title', 'value', 'description', 'is_active']))) {
             return response()->json(['message' => 'Изменения для маршрута успешно применены']);
         }
         else {
@@ -122,23 +104,23 @@ class RouteController extends Controller
      * @param  \App\Route  $route
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Route $route)
-    {
-        if(Gate::denies('destroy', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного маршрута']);
-        }
+    //public function destroy(Route $route)
+    //{
+    //    if(Gate::denies('destroy', Route::class)) {
+    //        return response()->json(['message' => 'У Вас недостаточно прав на удаление данного маршрута!']);
+    //    }
         
-        $processes = Process::where('route_id', $route->id)->get();
+            //    $processes = Process::where('route_id', $route->id)->get();
+            //    
+            //    foreach($processes as $processItem) {
+            //        $processItem->groups()->detach();
+            //    }
         
-        foreach($processes as $processItem) {
-            $processItem->groups()->detach();
-        }
-        
-        if($route->delete()) {
-            return response()->json(['data' => 1]);
-        }
-        else {
-            return response()->json(['data' => 0]);
-        }  
-    }
+    //    if($route->delete()) {
+    //        return response()->json(['data' => 1]);
+    //    }
+    //    else {
+    //        return response()->json(['data' => 0]);
+    //    }  
+    //}
 }

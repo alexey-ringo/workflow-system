@@ -2484,6 +2484,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -3145,6 +3147,7 @@ __webpack_require__.r(__webpack_exports__);
 
       if (this.phones.length == 1) {
         swal("Ошибка удаления номера", "Клиента нельзя оставлять совсем без телефонных номеров!", "error");
+        return false;
       }
 
       var uri = "/api/phones/".concat(id);
@@ -3205,6 +3208,8 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
 //
 //
 //
@@ -3999,8 +4004,7 @@ __webpack_require__.r(__webpack_exports__);
             }
         } else if (error.request) {//console.log(error.request.data);
         } else {
-          swal('Ошибка', "Внутренняя ошибка сервера", "error");
-          console.log('Внутренняя ошибка: ' + error.message);
+          swal('Ошибка', "Внутренняя ошибка сервера", "error"); //console.log('Внутренняя ошибка: ' + error.message);
 
           _this.$router.push({
             name: 'roles'
@@ -6380,7 +6384,7 @@ __webpack_require__.r(__webpack_exports__);
               swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
 
               _this.$router.push({
-                name: 'groups'
+                name: 'tariffs'
               });
             }
           } //Ошибки валидации
@@ -6393,7 +6397,7 @@ __webpack_require__.r(__webpack_exports__);
           console.log('Внутренняя ошибка: ' + error.message);
 
           _this.$router.push({
-            name: 'groups'
+            name: 'tariffs'
           });
         }
       });
@@ -6408,6 +6412,226 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return result;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      tariff: {},
+      message: '',
+      tariffStatus: false
+    };
+  },
+
+  /*
+  created() {
+    
+  },
+  */
+  mounted: function mounted() {
+    var token = localStorage.getItem('jwt');
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    this.getUpdatedTariff();
+  },
+  methods: {
+    getUpdatedTariff: function getUpdatedTariff() {
+      var _this = this;
+
+      var uri = "/api/tariffs/".concat(this.$route.params.id);
+      this.axios.get(uri).then(function (response) {
+        if (response.data.data) {
+          _this.tariff = response.data.data;
+
+          _this.setTariffStatus();
+        } else if (response.data.message) {
+          _this.message = response.data.message;
+          swal("Ошибка", _this.message, "error");
+
+          _this.$router.push({
+            name: 'tariffs'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при первоначальном доступе к модифицируемому маршруту", "error");
+
+          _this.$router.push({
+            name: 'tariffs'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this.$router.push({
+                name: 'tariffs'
+              });
+            }
+          }
+        } else if (error.request) {//console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this.$router.push({
+            name: 'tariffs'
+          });
+        }
+      });
+    },
+    updateTariff: function updateTariff()
+    /*event*/
+    {
+      var _this2 = this;
+
+      if (this.tariffStatus) {
+        this.tariff.is_active = 1;
+      } else {
+        this.tariff.is_active = null;
+      }
+
+      var uri = "/api/tariffs/".concat(this.$route.params.id);
+      this.axios.patch(uri, this.tariff
+      /*{}*/
+      ).then(function (response) {
+        if (response.data.message) {
+          _this2.message = response.data.message;
+          swal("Сохранение изменений", _this2.message, "success");
+
+          _this2.$router.push({
+            name: 'tariffs'
+          });
+        } else {
+          swal("Ошибка", "Нет ответа от сервера при сохранении изменений в тарифе", "error");
+
+          _this2.$router.push({
+            name: 'tariffs'
+          });
+        }
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.data.message) {
+            if (error.response.status == 401) {
+              if (localStorage.getItem('jwt')) {
+                localStorage.removeItem('jwt');
+
+                _this2.$router.push({
+                  name: 'login'
+                });
+              }
+            } else {
+              swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
+
+              _this2.$router.push({
+                name: 'tariffs'
+              });
+            }
+          } //Ошибки валидации
+          else {
+              swal('Ошибка - ' + error.response.status, _this2.errMessageToStr(error.response.data), "error");
+            }
+        } else if (error.request) {
+          console.log(error.request.data);
+        } else {
+          swal('Ошибка', "Внутренняя ошибка сервера", "error");
+          console.log('Внутренняя ошибка: ' + error.message);
+
+          _this2.$router.push({
+            name: 'tariffs'
+          });
+        }
+      });
+    },
+    errMessageToStr: function errMessageToStr(errors) {
+      var result = '';
+
+      for (var key in errors) {
+        errors[key].forEach(function (item) {
+          result += item + '; ';
+        });
+      }
+
+      return result;
+    },
+    setTariffStatus: function setTariffStatus() {
+      this.tariffStatus = this.tariff.is_active;
     }
   }
 });
@@ -45593,20 +45817,6 @@ var render = function() {
                           "\n                            Edit\n                        "
                         )
                       ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "button",
-                      {
-                        staticClass: "btn btn-danger",
-                        on: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            return _vm.deleteContract(contract.id)
-                          }
-                        }
-                      },
-                      [_vm._v("Удалить")]
                     )
                   ],
                   1
@@ -46022,7 +46232,7 @@ var render = function() {
                     [
                       _vm._v(
                         "\n              " +
-                          _vm._s(tariff.name + " " + tariff.price) +
+                          _vm._s(tariff.title + " " + tariff.price) +
                           "\n            "
                       )
                     ]
@@ -46036,7 +46246,7 @@ var render = function() {
           _c("div", { staticClass: "form-group" }, [
             _c("label", { staticClass: "col-sm-4 control-label" }, [
               _vm._v(
-                "Порвоначальный комментарий к новой задаче по новому контракту"
+                "Первоначальный комментарий к новой задаче по новому контракту"
               )
             ]),
             _vm._v(" "),
@@ -46727,20 +46937,6 @@ var render = function() {
                           "\n                            Edit\n                        "
                         )
                       ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "button",
-                      {
-                        staticClass: "btn btn-danger",
-                        on: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            return _vm.deleteCustomer(customer.id)
-                          }
-                        }
-                      },
-                      [_vm._v("Удалить")]
                     )
                   ],
                   1
@@ -48580,7 +48776,7 @@ var render = function() {
                 staticClass: "form-control",
                 attrs: {
                   type: "text",
-                  disabled: "",
+                  required: "",
                   placeholder: "Название процесса обработки обращения"
                 },
                 domProps: { value: _vm.process.title },
@@ -48916,20 +49112,6 @@ var render = function() {
                           "\n                            Edit\n                        "
                         )
                       ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "button",
-                      {
-                        staticClass: "btn btn-danger",
-                        on: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            return _vm.deleteProcess(process.id)
-                          }
-                        }
-                      },
-                      [_vm._v("Удалить")]
                     )
                   ],
                   1
@@ -49496,20 +49678,6 @@ var render = function() {
                           "\n                            Edit\n                        "
                         )
                       ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "button",
-                      {
-                        staticClass: "btn btn-danger",
-                        on: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            return _vm.deleteRoute(route.id)
-                          }
-                        }
-                      },
-                      [_vm._v("Удалить")]
                     )
                   ],
                   1
@@ -49851,6 +50019,289 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
       _c("h3", { staticClass: "card-title" }, [_vm._v("Новый тариф")])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d& ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "card card-info" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        staticClass: "form-horizontal",
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.updateTariff($event)
+          }
+        }
+      },
+      [
+        _c("div", { staticClass: "card-body" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffName" }
+              },
+              [_vm._v("Название тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.title,
+                    expression: "tariff.title"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffName",
+                  disabled: "",
+                  placeholder: "Название тарифа"
+                },
+                domProps: { value: _vm.tariff.title },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "title", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffDesc" }
+              },
+              [_vm._v("Описание тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.description,
+                    expression: "tariff.description"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffDesc",
+                  placeholder: "Описание тарифа"
+                },
+                domProps: { value: _vm.tariff.description },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "description", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffSku" }
+              },
+              [_vm._v("SKU тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.sku,
+                    expression: "tariff.sku"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffSku",
+                  disabled: "",
+                  placeholder: "SKU тарифа"
+                },
+                domProps: { value: _vm.tariff.sku },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "sku", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputTariffSku" }
+              },
+              [_vm._v("Прайс")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariff.price,
+                    expression: "tariff.price"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "inputTariffSku",
+                  disabled: "",
+                  placeholder: "Прайс"
+                },
+                domProps: { value: _vm.tariff.price },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(_vm.tariff, "price", $event.target.value)
+                  }
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c(
+              "label",
+              {
+                staticClass: "col-sm-4 control-label",
+                attrs: { for: "inputGroupName" }
+              },
+              [_vm._v("Статус тарифа")]
+            ),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-sm-10" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.tariffStatus,
+                    expression: "tariffStatus"
+                  }
+                ],
+                attrs: { type: "checkbox" },
+                domProps: {
+                  checked: Array.isArray(_vm.tariffStatus)
+                    ? _vm._i(_vm.tariffStatus, null) > -1
+                    : _vm.tariffStatus
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.tariffStatus,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = null,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.tariffStatus = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.tariffStatus = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.tariffStatus = $$c
+                    }
+                  }
+                }
+              })
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "card-footer" },
+          [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("Применить")
+            ]),
+            _vm._v(" "),
+            _c(
+              "router-link",
+              {
+                staticClass: "btn btn-default float-right",
+                attrs: { to: { name: "tariffs" } }
+              },
+              [_vm._v("Отмена")]
+            )
+          ],
+          1
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", { staticClass: "card-title" }, [
+        _vm._v("Редактирование статуса тарифа")
+      ])
     ])
   }
 ]
@@ -68935,6 +69386,75 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/tariff/TariffUpdate.vue":
+/*!*********************************************************!*\
+  !*** ./resources/js/components/tariff/TariffUpdate.vue ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TariffUpdate.vue?vue&type=template&id=2608e43d& */ "./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d&");
+/* harmony import */ var _TariffUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TariffUpdate.vue?vue&type=script&lang=js& */ "./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _TariffUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/tariff/TariffUpdate.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************!*\
+  !*** ./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./TariffUpdate.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffUpdate.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffUpdate_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d& ***!
+  \****************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./TariffUpdate.vue?vue&type=template&id=2608e43d& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/tariff/TariffUpdate.vue?vue&type=template&id=2608e43d&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_TariffUpdate_vue_vue_type_template_id_2608e43d___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/tariff/Tariffs.vue":
 /*!****************************************************!*\
   !*** ./resources/js/components/tariff/Tariffs.vue ***!
@@ -69865,19 +70385,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_customer_CustomerUpdate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/customer/CustomerUpdate */ "./resources/js/components/customer/CustomerUpdate.vue");
 /* harmony import */ var _components_customer_CustomerCreate__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/customer/CustomerCreate */ "./resources/js/components/customer/CustomerCreate.vue");
 /* harmony import */ var _components_tariff_Tariffs__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./components/tariff/Tariffs */ "./resources/js/components/tariff/Tariffs.vue");
-/* harmony import */ var _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/tariff/TariffCreate */ "./resources/js/components/tariff/TariffCreate.vue");
-/* harmony import */ var _components_process_Routes__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/process/Routes */ "./resources/js/components/process/Routes.vue");
-/* harmony import */ var _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/process/RouteUpdate */ "./resources/js/components/process/RouteUpdate.vue");
-/* harmony import */ var _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/process/RouteCreate */ "./resources/js/components/process/RouteCreate.vue");
-/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
-/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
-/* harmony import */ var _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/SearchCustomer */ "./resources/js/components/task/SearchCustomer.vue");
-/* harmony import */ var _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/ContractsForCustomer */ "./resources/js/components/task/ContractsForCustomer.vue");
-/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
-/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
-/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
-/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
-/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
+/* harmony import */ var _components_tariff_TariffUpdate__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/tariff/TariffUpdate */ "./resources/js/components/tariff/TariffUpdate.vue");
+/* harmony import */ var _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/tariff/TariffCreate */ "./resources/js/components/tariff/TariffCreate.vue");
+/* harmony import */ var _components_process_Routes__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/process/Routes */ "./resources/js/components/process/Routes.vue");
+/* harmony import */ var _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/process/RouteUpdate */ "./resources/js/components/process/RouteUpdate.vue");
+/* harmony import */ var _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/process/RouteCreate */ "./resources/js/components/process/RouteCreate.vue");
+/* harmony import */ var _components_task_Tasks__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/task/Tasks */ "./resources/js/components/task/Tasks.vue");
+/* harmony import */ var _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/task/TaskUpdate */ "./resources/js/components/task/TaskUpdate.vue");
+/* harmony import */ var _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/task/SearchCustomer */ "./resources/js/components/task/SearchCustomer.vue");
+/* harmony import */ var _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/task/ContractsForCustomer */ "./resources/js/components/task/ContractsForCustomer.vue");
+/* harmony import */ var _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/task/CreateTaskForExistsContract */ "./resources/js/components/task/CreateTaskForExistsContract.vue");
+/* harmony import */ var _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/task/CustomerNotFound */ "./resources/js/components/task/CustomerNotFound.vue");
+/* harmony import */ var _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/task/CommentDetails */ "./resources/js/components/task/CommentDetails.vue");
+/* harmony import */ var _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/telegram/BotSetting */ "./resources/js/components/telegram/BotSetting.vue");
+/* harmony import */ var _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./components/telegram/BotStatus */ "./resources/js/components/telegram/BotStatus.vue");
  //Импорт компонента
 
 
@@ -69904,7 +70425,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- //import TariffUpdate from './components/tariff/TariffUpdate';
+
 
 
 
@@ -69999,15 +70520,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'routes',
       name: 'routes',
-      component: _components_process_Routes__WEBPACK_IMPORTED_MODULE_25__["default"]
+      component: _components_process_Routes__WEBPACK_IMPORTED_MODULE_26__["default"]
     }, {
       path: 'route/:id',
       name: 'route-update',
-      component: _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_26__["default"]
+      component: _components_process_RouteUpdate__WEBPACK_IMPORTED_MODULE_27__["default"]
     }, {
       path: 'route-new',
       name: 'route-create',
-      component: _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_27__["default"]
+      component: _components_process_RouteCreate__WEBPACK_IMPORTED_MODULE_28__["default"]
     }, {
       path: 'customers',
       name: 'customers',
@@ -70024,11 +70545,14 @@ __webpack_require__.r(__webpack_exports__);
       path: 'tariffs',
       name: 'tariffs',
       component: _components_tariff_Tariffs__WEBPACK_IMPORTED_MODULE_23__["default"]
-    }, //    { path: 'tariff/:id',  name: 'tariff-update', component: TariffUpdate },
-    {
+    }, {
+      path: 'tariff/:id',
+      name: 'tariff-update',
+      component: _components_tariff_TariffUpdate__WEBPACK_IMPORTED_MODULE_24__["default"]
+    }, {
       path: 'tariff-new',
       name: 'tariff-create',
-      component: _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_24__["default"]
+      component: _components_tariff_TariffCreate__WEBPACK_IMPORTED_MODULE_25__["default"]
     }, {
       path: 'contracts',
       name: 'contracts',
@@ -70041,28 +70565,28 @@ __webpack_require__.r(__webpack_exports__);
     {
       path: 'tasks',
       name: 'tasks',
-      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_28__["default"]
+      component: _components_task_Tasks__WEBPACK_IMPORTED_MODULE_29__["default"]
     }, {
       path: 'new',
       name: 'search-customer',
-      component: _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_30__["default"],
+      component: _components_task_SearchCustomer__WEBPACK_IMPORTED_MODULE_31__["default"],
       children: [{
         path: 'customers/:customid',
         name: 'contracts-for-customer',
-        component: _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_31__["default"]
+        component: _components_task_ContractsForCustomer__WEBPACK_IMPORTED_MODULE_32__["default"]
       }, {
         path: 'customer-notfound',
         name: 'customer-not-found',
-        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_33__["default"]
+        component: _components_task_CustomerNotFound__WEBPACK_IMPORTED_MODULE_34__["default"]
       }]
     }, {
       path: 'new/contracts/:contractid',
       name: 'create-task-for-exists-contract',
-      component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_32__["default"]
+      component: _components_task_CreateTaskForExistsContract__WEBPACK_IMPORTED_MODULE_33__["default"]
     }, {
       path: 'task/:id',
       name: 'task-update',
-      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_29__["default"] //children: [
+      component: _components_task_TaskUpdate__WEBPACK_IMPORTED_MODULE_30__["default"] //children: [
       //{ path: 'comments',  name: 'comments', component: Comments },
       //{ path: 'comment/:commid',  name: 'comment-details', component: CommentDetails }
       //{ path: 'comment-new',  name: 'comment-create', component: CommentCreate },
@@ -70071,15 +70595,15 @@ __webpack_require__.r(__webpack_exports__);
     }, {
       path: 'comment/:commid',
       name: 'comment-details',
-      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_34__["default"]
+      component: _components_task_CommentDetails__WEBPACK_IMPORTED_MODULE_35__["default"]
     }, {
       path: 'bot-setting',
       name: 'bot-setting',
-      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_35__["default"]
+      component: _components_telegram_BotSetting__WEBPACK_IMPORTED_MODULE_36__["default"]
     }, {
       path: 'bot-status',
       name: 'bot-status',
-      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_36__["default"]
+      component: _components_telegram_BotStatus__WEBPACK_IMPORTED_MODULE_37__["default"]
     }]
   }],
   //Запись всех перемещений пользователя по переходам

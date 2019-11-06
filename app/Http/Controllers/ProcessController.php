@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Process;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProcessRequest;
 use App\Http\Resources\Process\ProcessCollection;
 use App\Http\Resources\Process\ProcessResource;
+use Gate;
 
 class ProcessController extends Controller
 {
@@ -16,6 +18,10 @@ class ProcessController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Process::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка процессов!']);
+        }
+        
         return new ProcessCollection(Process::with('route')->get());
     }
     
@@ -26,26 +32,12 @@ class ProcessController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ProcessRequest $request)
     {
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255|unique:processes',
-            'sequence' => 'required|unique:processes',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
-        
-        $process = Process::create([
-            'route_id' => $request->input('route_id'),
-            'title' => $request->input('title'),
-            'deadline' => $request->input('deadline'),           
-            'sequence' => $request->input('sequence'),
-            'is_super' => $request->input('is_super'),
-            'is_final' => $request->input('is_final'),
-            'is_active' => $request->input('is_active'),
-        ]);
+        if(Gate::denies('store', Process::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового процесса!']);
+        }
+        $process = Process::create($request->only(['route_id', 'title', 'deadline', 'sequence', 'is_super', 'is_final', 'is_active']));
         
         if($process) {
             return response()->json(['message' => 'Новый процесс успешно создан']);
@@ -58,12 +50,17 @@ class ProcessController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Process  $process
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Process::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного процесса!']);
+        }
+        
         $process = Process::find($id);
+        
         if($process) {
             return new ProcessResource($process);
         }
@@ -80,27 +77,13 @@ class ProcessController extends Controller
      * @param  \App\Process  $process
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Process $process)
+    public function update(ProcessRequest $request, Process $process)
     {
-        /*
-        $validator = $request->validate([
-            'name' => 'required|string|max:255',
-            'sequence' => 'required',
-            'is_super' => 'required',
-            'is_final' => 'required',
-        ]);
-        */
-        $process->route_id = $request->input('route_id');
-        $process->title = $request->input('title');
-        $process->deadline = $request->input('deadline');
-        $process->sequence = $request->input('sequence');
-        $process->is_super = $request->input('is_super');
-        $process->is_final = $request->input('is_final');
-        $process->is_active = $request->input('is_active');        
+        if(Gate::denies('update', Process::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного процесса!']);
+        }
         
-        //$process->update($request->all());
-        
-        if($process->save()) {
+        if($process->update($request->only(['route_id', 'title', 'deadline', 'sequence', 'is_super', 'is_final', 'is_active']))) {
             return response()->json(['message' => 'Изменения для процесса успешно применены']);
         }
         else {
@@ -114,12 +97,15 @@ class ProcessController extends Controller
      * @param  \App\Process  $process
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Process $process)
-    {
-        $process->groups()->detach();
-        $process->delete();
-        
-        return new ProcessCollection(Process::all());
-        //return response()->json('successfully deleted');
-    }
+    //public function destroy(Process $process)
+    //{
+    //    if(Gate::denies('destroy', Process::class)) {
+    //        return response()->json(['message' => 'У Вас недостаточно прав на удаление данного процесса!']);
+    //    }
+    //    
+    //    $process->groups()->detach();
+    //    $process->delete();
+    //    
+    //    return new ProcessCollection(Process::all());
+    //}
 }

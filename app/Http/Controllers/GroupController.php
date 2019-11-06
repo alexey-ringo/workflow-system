@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use Illuminate\Http\Request;
+use App\Http\Requests\GroupRequest;
 use App\Http\Resources\Group\GroupResource;
 use App\Http\Resources\Group\GroupRelationResource;
 use App\Http\Resources\Group\GroupCollection;
+use Gate;
 
 class GroupController extends Controller
 {
@@ -17,9 +19,12 @@ class GroupController extends Controller
      */
     public function index()
     {
-        //return new GroupCollection(Group::all());
-        return GroupResource::collection(Group::with('processes')->get());
-        //return GroupResource::collection(Group::all());
+        if(Gate::denies('index', Group::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка рабочих групп!']);
+        }
+        
+        //return GroupResource::collection(Group::with('processes')->get());
+        return new GroupCollection(Group::with('processes')->get());
     }
 
     /**
@@ -28,8 +33,12 @@ class GroupController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(GroupRequest $request)
     {
+        if(Gate::denies('store', Group::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание новой рабочей группы!']);
+        }
+        
         $group = Group::create([
             'title' => $request->input('title')
         ]);
@@ -49,12 +58,17 @@ class GroupController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Group  $group
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Group::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной рабочей группы!']);
+        }
+        
         $group = Group::find($id);
+        
         if($group) {
             return new GroupRelationResource($group);
         }
@@ -70,21 +84,20 @@ class GroupController extends Controller
      * @param  \App\Group  $group
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Group $group)
+    public function update(GroupRequest $request, Group $group)
     {
-        $validator = $request->validate([
-            'title' => 'required|string|max:50',
-        ]);
+        if(Gate::denies('update', Group::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной рабочей группы!']);
+        }
         
-        $group->title = $request->input('title');
-        
-        if(empty($group->save())) {
+        if(empty($group->update($request->only('title'))))
+        {
             return response()->json(['message' => 'Внутренняя ошибка сервера при сохранении изменений новой рабочей группы!'], 500);
         }
         
         //Если список разрешений операций пуст - отсоединяем
         $group->processes()->detach();
-        //Проверка на наличие полученного от формы значения поля с name="roles"
+        //Проверка на наличие полученного от формы значения поля с name="processes"
         if($request->input('processes')) :
             $group->processes()->attach($request->input('processes'));
         endif;
@@ -100,10 +113,12 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
+        if(Gate::denies('destroy', Group::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данной рабочей группы!']);
+        }
         $group->processes()->detach();
         $group->delete();
         
         return new GroupCollection(Group::all());
-        //return response()->json('successfully deleted');
     }
 }

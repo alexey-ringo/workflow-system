@@ -296,6 +296,7 @@
         deletePhone(id) {
           if(this.phones.length == 1) {
             swal("Ошибка удаления номера", "Клиента нельзя оставлять совсем без телефонных номеров!", "error");
+            return false;
           }
           let uri = `/api/phones/${id}`;
           if (confirm("Do you really want to delete it?")) {

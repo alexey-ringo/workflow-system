@@ -94,7 +94,7 @@
               }
               else {
                 swal('Ошибка - ' + error.response.status, error.response.data.message, "error");
-                this.$router.push({name: 'groups'});
+                this.$router.push({name: 'tariffs'});
               }
             }//Ошибки валидации
             else {
@@ -107,7 +107,7 @@
           else {
             swal('Ошибка', "Внутренняя ошибка сервера", "error");
             console.log('Внутренняя ошибка: ' + error.message);
-            this.$router.push({name: 'groups'});
+            this.$router.push({name: 'tariffs'});
           }
         });
       },

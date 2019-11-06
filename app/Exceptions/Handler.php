@@ -7,7 +7,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
-use App\Exception\WorkflowException;
+use App\Exceptions\WorkflowException;
 use Log;
 
 class Handler extends ExceptionHandler
@@ -60,13 +60,19 @@ class Handler extends ExceptionHandler
             
         if ($exception instanceof ModelNotFoundException) {
             return response()->json(['message' => 'Entry for '.str_replace('App\\', '', $exception->getModel()).' not found'], 404);
-        } /*else if ($exception instanceof FatalThrowableError) {
+        } 
+        else if ($exception instanceof FatalThrowableError) {
             return response()->json(['message' => $exception->getMessage()], 500);
-        }*/ else if ($exception instanceof WorkflowException) {
+        } 
+        //else if ($exception instanceof ReflectionException) {
+        //    return response()->json(['message' => $exception->getMessage()], 500);
+        //}
+        else if ($exception instanceof WorkflowException) {
             return response()->json(['message' => $exception->getMessage()], 422);
-        } /*else if ($exception instanceof QueryException) {
+        } 
+        else if ($exception instanceof QueryException) {
             return response()->json(['message' => $exception->getMessage()], 422);
-        }*/
+        }
         
         return parent::render($request, $exception);
     }
