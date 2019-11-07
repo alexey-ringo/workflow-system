@@ -24,10 +24,10 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         if(Gate::denies('index', Task::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка задач!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка задач!'], 422);
         }
         $currentUser = $request->user('api');
-    //Рабочий вариант    
+      
         return (new TaskCollection(Process::with('tasks.contract.customer', 'groups.users')
                                         ->whereHas('groups.users', function($q) use($currentUser) {
                                             $q->where('users.id', $currentUser->id);
@@ -38,58 +38,6 @@ class TaskController extends Controller
                                                             'canTaskCreate' => $currentUser->canFirstCreate()
                                                         ]
                                                 ]);
-    
-    //$processesWithTasks = Process::with('tasks.contract.customer', 'groups.users')
-    //                                    ->whereHas('groups.users', function($q) use($currentUser) {
-    //                                            $q->where('users.id', $currentUser->id);
-    //                                    })->get();
-
-    //$processesWithActualTasks = $processesWithTasks->where('tasks.status', 1);
-
-    //return (new TaskCollection($processesWithActualTasks))->additional(['meta' => 
-    //                                                    [
-    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
-    //                                                    ]
-    //                                            ]);
-    
-    //Тесты
-    
-    //    return (new TaskCollection(Process::with('tasks'/*, 'groups.users'*/)
-    //                                    ->whereHas('tasks', function($q) {
-    //                                        $q->where('status', 1);
-    //                                        }
-    //                                    )
-    //                                    //->with('groups.users')
-    //                                    //->whereHas('groups.users', function($q) use($currentUser) {
-    //                                    //    $q->where('users.id', $currentUser->id);
-    //                                    //    }
-    //                                    //)
-    //                                    ->get()))
-    //                                    ->additional(['meta' => 
-    //                                                    [
-    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
-    //                                                    ]
-    //                                            ]);
-    //}
-    
-    
-    
-    //    return (new TaskCollection(Process::with([
-    //                                                'tasks' => function($q) { $q->where('status', 1); },
-    //                                            //    'groups.users' => function($q) use($currentUser) { $q->where('groups.users.id', $currentUser->id); }
-    //                                            ])
-    //                                        ->with('tasks.contract.customer', 'groups.users')
-    //                                    ->whereHas('groups.users', function($q) use($currentUser) {
-    //                                        $q->where('users.id', $currentUser->id);
-    //                                    }
-    //                                )
-    //                                ->get()))
-    //                                ->additional(['meta' => 
-    //                                                    [
-    //                                                        'canTaskCreate' => $currentUser->canFirstCreate()
-    //                                                    ]
-    //                                            ]);
-    //}
     
     }
     
@@ -103,7 +51,7 @@ class TaskController extends Controller
     public function store(Request $request, WorkflowService $workflowService)
     {
         if(Gate::denies('store', Task::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание новой задачи!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание новой задачи!'], 422);
         }
         
         $createdTask = $workflowService->createFirstTask();
@@ -120,7 +68,7 @@ class TaskController extends Controller
     public function show($id)
     {
         if(Gate::denies('show', Task::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной задачи!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной задачи!'], 422);
         }
         
         $task = Task::find($id);
@@ -159,7 +107,7 @@ class TaskController extends Controller
     public function update(Request $request, /*Task $task, */WorkflowService $workflowService)
     {
         if(Gate::denies('update', Task::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной задачи!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной задачи!'], 422);
         }
         
         $task = Task::find($request['id']);

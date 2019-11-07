@@ -6,6 +6,7 @@ use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Http\Resources\Permission\PermissionCollection;
 use App\Http\Resources\Permission\PermissionResource;
+use Gate;
 
 class PermissionController extends Controller
 {
@@ -16,6 +17,9 @@ class PermissionController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Permission::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка разрешений операций!'], 422);
+        }
         return new PermissionCollection(Permission::all());
     }
     
@@ -28,6 +32,10 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
+        if(Gate::denies('store', Permission::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового разрешения операции!'], 422);
+        }
+        
         $validator = $request->validate([
             'title' => 'required|string|max:50|unique:permissions',
             'name' => 'required|string|max:50|unique:permissions',
@@ -56,6 +64,10 @@ class PermissionController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Permission::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного разрешения операции!'], 422);
+        }
+        
         $permission = Permission::find($id);
         if($permission) {
             return new PermissionResource($permission);
@@ -75,6 +87,10 @@ class PermissionController extends Controller
      */
     public function update(Request $request, Permission $permission)
     {
+        if(Gate::denies('update', Permission::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного разрешения операции!'], 422);
+        }
+        
         $validator = $request->validate([
             'title' => 'required|string|max:50',
             'name' => 'required|string|max:50',
@@ -98,6 +114,10 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
+        if(Gate::denies('destroy', Permission::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного разрешения операции!'], 422);
+        }
+        
         $permission->roles()->detach();
         $permission->delete();
         

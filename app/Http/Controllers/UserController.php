@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\UserCreateRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\User\UserCollection;
 use App\Http\Resources\User\UserResource;
 use App\Http\Resources\User\UserRelationResource;
+use Gate;
 
-use Validator;
 
 
 class UserController extends Controller
@@ -20,6 +22,10 @@ class UserController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', User::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка пользователей!'], 422);
+        }
+        
         return new UserCollection(User::all());
     }
 
@@ -30,19 +36,12 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UserCreateRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'phone' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|confirmed|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+        if(Gate::denies('store', User::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового пользователя!'], 422);
         }
-
+        
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
 
@@ -65,6 +64,10 @@ class UserController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', User::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр профиля данного пользователя!'], 422);
+        }
+        
         $user = User::find($id);
         if($user) {
             return new UserRelationResource($user);
@@ -82,27 +85,11 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(UserUpdateRequest $request, User $user)
     {
-        $validator = $request->validate([
-            'name' => 'required|string|max:255',
-            //Игнор валидации на уникальность для данной операции и для данного пользователя
-            'phone' => [
-                'required',
-                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
-                ],
-            //Игнор валидации на уникальность для данной операции и для данного пользователя
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                //'users' - таблица
-                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
-            ],
-            //пароль при редактировании можем не менять
-            'password' => 'nullable|string|min:6|confirmed',
-        ]);
+        if(Gate::denies('update', User::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование профиля данного пользователя!'], 422);
+        }
         
         $user->name = $request->input('name');
         $user->phone = $request->input('phone');
@@ -140,6 +127,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        if(Gate::denies('destroy', User::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного пользователя!'], 422);
+        }
+    
         //Какой то непонятной магией Laravel восстанавливает объект $user из пришедшего в метод id !!!
         //$user = User::find($id);
         
@@ -148,6 +139,5 @@ class UserController extends Controller
         $user->delete();
 
         return new UserCollection(User::all());
-        //return response()->json('successfully deleted');
     }
 }

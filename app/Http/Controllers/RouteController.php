@@ -21,7 +21,7 @@ class RouteController extends Controller
     public function index(Request $request)
     {
         if(Gate::denies('index', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка маршрутов!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка маршрутов!'], 422);
         }
         if($request->has('filter')) {
             return new RouteCollection(Route::where('value', '>', 1)->get());
@@ -41,7 +41,7 @@ class RouteController extends Controller
     public function store(RouteStoreRequest $request)
     {
         if(Gate::denies('store', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание нового маршрута!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового маршрута!'], 422);
         }
         
         $route = Route::create($request->only(['title', 'value', 'description', 'is_active']));
@@ -63,7 +63,7 @@ class RouteController extends Controller
     public function show(int $id)
     {
         if(Gate::denies('show', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного маршрута!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного маршрута!'], 422);
         }
         
         $route = Route::find($id);
@@ -87,7 +87,7 @@ class RouteController extends Controller
     public function update(RouteUpdateRequest $request, Route $route)
     {
         if(Gate::denies('update', Route::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного маршрута!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного маршрута!'], 422);
         }
         
         if($route->update($request->only(['title', 'value', 'description', 'is_active']))) {

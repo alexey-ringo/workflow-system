@@ -20,7 +20,7 @@ class GroupController extends Controller
     public function index()
     {
         if(Gate::denies('index', Group::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка рабочих групп!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка рабочих групп!'], 422);
         }
         
         //return GroupResource::collection(Group::with('processes')->get());
@@ -36,7 +36,7 @@ class GroupController extends Controller
     public function store(GroupRequest $request)
     {
         if(Gate::denies('store', Group::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание новой рабочей группы!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание новой рабочей группы!'], 422);
         }
         
         $group = Group::create([
@@ -64,7 +64,7 @@ class GroupController extends Controller
     public function show(int $id)
     {
         if(Gate::denies('show', Group::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной рабочей группы!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной рабочей группы!'], 422);
         }
         
         $group = Group::find($id);
@@ -87,7 +87,7 @@ class GroupController extends Controller
     public function update(GroupRequest $request, Group $group)
     {
         if(Gate::denies('update', Group::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной рабочей группы!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной рабочей группы!'], 422);
         }
         
         if(empty($group->update($request->only('title'))))
@@ -114,7 +114,7 @@ class GroupController extends Controller
     public function destroy(Group $group)
     {
         if(Gate::denies('destroy', Group::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на удаление данной рабочей группы!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данной рабочей группы!'], 422);
         }
         $group->processes()->detach();
         $group->delete();

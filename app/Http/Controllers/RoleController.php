@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Role\RoleCollection;
 use App\Http\Resources\Role\RoleResource;
 use App\Http\Resources\Role\RoleRelationResource;
+use Gate;
 
 class RoleController extends Controller
 {
@@ -17,6 +18,9 @@ class RoleController extends Controller
      */
     public function index()
     {
+        if(Gate::denies('index', Role::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка политик безопасности!'], 422);
+        }
         //return new RoleCollection(Role::all());
         return RoleResource::collection(Role::with('permissions')->get());
         //return RoleResource::collection(Role::all());
@@ -31,6 +35,9 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        if(Gate::denies('store', Role::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на создание новой политики безопасности!'], 422);
+        }
         $validator = $request->validate([
             'title' => 'required|string|max:50|unique:roles'
         ]);
@@ -60,6 +67,10 @@ class RoleController extends Controller
      */
     public function show(int $id)
     {
+        if(Gate::denies('show', Role::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данной политики безопасности!'], 422);
+        }
+        
         $role = Role::find($id);
         if($role) {
             return new RoleRelationResource($role);
@@ -79,6 +90,10 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
+        if(Gate::denies('update', Role::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данной политики безопасности!'], 422);
+        }
+        
         $validator = $request->validate([
             'title' => 'required|string|max:50',
         ]);
@@ -107,6 +122,10 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
+        if(Gate::denies('destroy', Role::class)) {
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данной политики безопасности!'], 422);
+        }
+        
         $role->permissions()->detach();
         $role->delete();
         

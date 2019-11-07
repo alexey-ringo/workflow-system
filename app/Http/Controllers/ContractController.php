@@ -23,7 +23,7 @@ class ContractController extends Controller
     public function index()
     {
         if(Gate::denies('index', Contract::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка контрактов!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка контрактов!'], 422);
         }
         return new ContractCollection(Contract::with('customer', 'tariff')->get());
     }
@@ -39,7 +39,7 @@ class ContractController extends Controller
     public function store(Request $request, WorkflowService $workflowService)
     {
         if(Gate::denies('store', Contract::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание нового контракта!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового контракта!'], 422);
         }
         
         $customer = Customer::find($request->input('id'));
@@ -63,7 +63,7 @@ class ContractController extends Controller
     public function show(int $id)
     {
         if(Gate::denies('show', Contract::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного контракта!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного контракта!'], 422);
         }
         
         $contract = Contract::find($id);
@@ -87,7 +87,7 @@ class ContractController extends Controller
     public function update(Request $request, Customer $customer)
     {
         if(Gate::denies('update', Contract::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного контракта!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного контракта!'], 422);
         }
         /*
         $validator = $request->validate([

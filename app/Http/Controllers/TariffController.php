@@ -20,7 +20,7 @@ class TariffController extends Controller
     public function index()
     {
         if(Gate::denies('index', Tariff::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка тарифов!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка тарифов!'], 422);
         }
         
         return new TariffCollection(Tariff::all());        
@@ -36,7 +36,7 @@ class TariffController extends Controller
     public function store(TariffCreateRequest $request)
     {
         if(Gate::denies('store', Tariff::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание нового тарифа!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового тарифа!'], 422);
         }
         
         $tariff = Tariff::create($request->only(['title', 'description', 'sku', 'price', 'is_active']));
@@ -58,7 +58,7 @@ class TariffController extends Controller
     public function show(int $id)
     {
         if(Gate::denies('show', Tariff::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного тарифа!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр данного тарифа!'], 422);
         }
         
         $tariff = Tariff::find($id);
@@ -83,7 +83,7 @@ class TariffController extends Controller
     public function update(TariffUpdateRequest $request, Tariff $tariff)
     {
         if(Gate::denies('update', Tariff::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного тарифа!']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного тарифа!'], 422);
         }
         
         if($tariff->update($request->only(['description', 'is_active']))) {

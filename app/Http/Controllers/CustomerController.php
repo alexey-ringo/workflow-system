@@ -25,7 +25,7 @@ class CustomerController extends Controller
     public function index()
     {
         if(Gate::denies('index', Customer::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка клиентов']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр списка клиентов'], 422);
         }
         
         return new CustomerCollection(Customer::with('phones')->get());
@@ -41,7 +41,7 @@ class CustomerController extends Controller
     public function store(CustomerStoreRequest $request, WorkflowService $workflowService)
     {
         if(Gate::denies('store', Customer::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на создание нового клиента']);
+            return response()->json(['message' => 'У Вас недостаточно прав на создание нового клиента'], 422);
         }
         
         /** @var App\Services\CustomerResponse $createdCustomer */
@@ -59,7 +59,7 @@ class CustomerController extends Controller
     public function show(int $id)
     {
         if(Gate::denies('show', Customer::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на просмотр информации о данном клиенте']);
+            return response()->json(['message' => 'У Вас недостаточно прав на просмотр информации о данном клиенте'], 422);
         }
         
         $customer = Customer::find($id);
@@ -89,7 +89,7 @@ class CustomerController extends Controller
     public function update(CustomerUpdateRequest $request, Customer $customer)
     {
         if(Gate::denies('update', Customer::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного клиента']);
+            return response()->json(['message' => 'У Вас недостаточно прав на редактирование данного клиента'], 422);
         }
         
         if($customer->update($request->only(['surname', 'name', 'second_name', 'city', 'region', 'street', 'building', 'flat', 'description']))) {
@@ -110,7 +110,7 @@ class CustomerController extends Controller
     public function destroy(Customer $customer)
     {
         if(Gate::denies('destroy', Customer::class)) {
-            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного клиента']);
+            return response()->json(['message' => 'У Вас недостаточно прав на удаление данного клиента'], 422);
         }
         
         if($customer->delete()) {
